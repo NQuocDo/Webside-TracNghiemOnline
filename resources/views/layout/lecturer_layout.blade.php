@@ -61,7 +61,7 @@
                                 thi</span></a></li>
                     <li><a href="{{ asset('lecturer/global') }}"><i class="fa-solid fa-globe"></i><span>Cộng
                                 đồng</span></a></li>
-                    <li><a href="{{ route('score_board') }}"><i class="fa-solid fa-globe"></i><span>Bảng điểm</span></a></li>
+                    <li><a href="{{ route('score_board') }}"><i class="fa-solid fa-check-circle"></i><span>Bảng điểm</span></a></li>
                 </ul>
             </div>
         </aside>
@@ -75,9 +75,6 @@
                     <div class="profile">
                         <img src="{{ asset('images/man.jpg') }}" alt="" class="src">
                         <p style="margin: 15px;color:black;text-decoration:none">{{ $user->ho_ten }}</p>
-                    </div>
-                    <div class="search-box">
-                        <i class="fa-solid fa-magnifying-glass"></i> <input type="text" placeholder="Tìm kiếm đề thi">
                     </div>
                 </div>
 
