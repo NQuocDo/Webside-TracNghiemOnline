@@ -210,21 +210,35 @@
     }
 
     .pagination {
-        margin-top: 30px;
         width: 100%;
+        display: flex;
         justify-content: center;
+        margin-top: 20px;
+        padding-bottom: 20px;
     }
 
-    .pagination a {
-        color: black;
-        margin: auto 10px;
+    .pagination a,
+    .pagination span {
+        color: #007bff;
+        margin: 0 5px;
         text-decoration: none;
-        padding: 5px;
+        padding: 8px 12px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        border: 1px solid #dee2e6;
     }
 
     .pagination a:hover {
-        color: blue;
-        box-shadow: 1px 1px 3px rgb(0, 0, 0, 0.5);
+        background-color: #007bff;
+        color: white;
+        box-shadow: none;
+    }
+
+    .pagination .active span {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+        font-weight: bold;
     }
 </style>
 @section('content')
@@ -302,18 +316,13 @@
         </div>
         <div class="student-manage-footer">
             <div class="pagination">
-                @if ($danhSachSinhVien->onFirstPage())
-                    <a href="#" class="disabled"><i class="fa-solid fa-chevron-left"></i></a>
-                @else
-                    <a href="{{ $danhSachSinhVien->previousPageUrl() }}"><i class="fa-solid fa-chevron-left"></i></a>
-                @endif
-                <a href="{{ $danhSachSinhVien->url($danhSachSinhVien->currentPage()) }}" class="active">
-                    {{ $danhSachSinhVien->currentPage() }}</a>
-                @if ($danhSachSinhVien->onLastPage())
-                    <a href="#" class="disabled"><i class="fa-solid fa-chevron-right"></i></a>
-                @else
-                    <a href="{{ $danhSachSinhVien->nextPageUrl() }}"><i class="fa-solid fa-chevron-right"></i></a>
-                @endif
+                <a href="{{$danhSachSinhVien->previousPageUrl()}}"><i class="fa-solid fa-chevron-left"></i></a>
+                @if($danhSachSinhVien->currentPage() - 1 != 0) <a
+                href="{{$danhSachSinhVien->previousPageUrl()}}">{{$danhSachSinhVien->currentPage() - 1}}</i></a> @endif
+                <a href="{{$danhSachSinhVien->currentPage()}}" class="active"> {{$danhSachSinhVien->currentPage()}}</a>
+                @if($danhSachSinhVien->currentPage() != $danhSachSinhVien->lastPage())<a
+                href="{{$danhSachSinhVien->nextPageUrl()}}">{{$danhSachSinhVien->currentPage() + 1}}</a> @endif
+                <a href="{{$danhSachSinhVien->nextPageUrl()}}"><i class="fa-solid fa-chevron-right"></i></a>
             </div>
         </div>
     </div>

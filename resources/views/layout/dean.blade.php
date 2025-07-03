@@ -35,7 +35,7 @@
                     <li><a href="{{ route('student_management') }}"><i class="fa-solid fa-users"></i><span>Quản lý
                                 Sinh viên</span></a>
                     </li>
-                    <li><a href="{{ asset('dean/subject-management') }}"><i
+                    <li><a href="{{ route('subject_management') }}"><i
                                 class="fa-solid fa-graduation-cap"></i><span>Quản lý Môn học</span></a>
                     </li>
                     <li>
@@ -53,17 +53,17 @@
                                     <i class="fa-solid fa-timeline"></i>Phân quyền dạy học
                                 </a>
                             </li>
-                            <li><a href="{{ asset('dean/question-bank') }}">
+                            <li><a href="{{ route('question_bank') }}">
                                     <i class="fa-solid fa-book-open"></i>Ngân hàng câu hỏi
                                 </a>
                             </li>
                         </ul>
                     </li>
-                    <li><a href="{{ asset('dean/department-statis') }}"><i
+                    <li><a href="{{ route('department_statis') }}"><i
                                 class="fa-solid fa-chart-simple"></i><span>Thống kê kết quả</span></a></li>
                     <li><a href="{{ route('add_user')}}"><i class="fa-solid fa-plus"></i><span>Thêm người
                                 dùng</span></a></li>
-                    <li><a href="{{ route('add_class')}}"><i class="fa-solid fa-plus"></i><span>Thêm lớp học</span></a>
+                    <li><a href="{{ route('add_class')}}"><i class="fa-solid fa-graduation-cap"></i><span>Thêm lớp học</span></a>
                     </li>
                 </ul>
             </div>
@@ -79,13 +79,9 @@
                         <img src="{{ asset('images/man.jpg') }}" alt="" class="src">
                         <p style="margin: 15px;color:black;text-decoration:none">{{ $user->ho_ten }}</p>
                     </div>
-                    <div class="search-box">
-                        <i class="fa-solid fa-magnifying-glass"></i> <input type="text" placeholder="Tìm kiếm đề thi">
-                    </div>
                 </div>
 
                 <div class="main_top_right">
-                    <a href="#" class="main_top_error"> <i class="fa-solid fa-bug me-1"></i> Báo lỗi</a>
                     <input type="checkbox" name="" id="profile-btn" hidden>
                     <label for="profile-btn">
                         <img src="{{ asset('images/lecturer.jpg') }}" alt="sinh viên nam" class="src user-avatar-icon">

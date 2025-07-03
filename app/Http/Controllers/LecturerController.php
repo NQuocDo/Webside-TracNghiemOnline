@@ -128,21 +128,16 @@ class LecturerController extends Controller
             ]);
         }
 
-        // Lấy danh sách môn học giảng viên đang dạy
         $danhSachMonHoc = $giangVien->monHocs ?? collect();
         if (is_null($giangVien->monHocs)) {
             \Log::error('monHocs trả về null từ model GiangVien.');
         }
 
-        // Lấy danh sách mã môn học để lọc
         $maMonHocs = $danhSachMonHoc->pluck('ma_mon_hoc')->toArray();
 
-        // Tìm kiếm câu hỏi thuộc những môn học mà giảng viên đang dạy
         $thongTinCauHoi = CauHoi::with(['dapAns', 'monHoc'])
             ->whereIn('ma_mon_hoc', $maMonHocs)
             ->where('trang_thai', 'hien');
-
-        // Lọc theo từ khóa
         $tuKhoaTimKiem = $request->input('tu_khoa_tim_kiem');
         if ($tuKhoaTimKiem) {
             $thongTinCauHoi->where('noi_dung', 'like', '%' . $tuKhoaTimKiem . '%');
@@ -464,7 +459,6 @@ class LecturerController extends Controller
 
         return redirect()->route('addquestion')->with('success', 'Thêm câu hỏi thành công!');
     }
-
     //hiển thị câu hỏi đã bị xoá tạm thời
     public function hienThiCauHoiVaDapAnBiXoa(Request $request)
     {
@@ -681,27 +675,26 @@ class LecturerController extends Controller
         return redirect()->route('announce_list')->with('success', 'Xoá câu hỏi thành công');
     }
     //hiển thị danh sách sinh viên mà giảng viên dạy
-    public function hienThiDanhSachSinhVien()
+    public function hienThiDanhSachSinhVien(Request $request)
     {
         $user = Auth::user();
 
-        if (!$user || $user->vai_tro !== 'giang_vien') {
-            return redirect()->back()->with('error', 'Bạn không có quyền truy cập.');
-        }
-
         $giangVien = GiangVien::where('ma_nguoi_dung', $user->ma_nguoi_dung)->first();
-
-        if (!$giangVien) {
-            return redirect()->back()->with('error', 'Không tìm thấy giảng viên.');
-        }
-
+        $keyword = $request->query('keyword');
         $lopHoc = $giangVien->lopHocs;
         $danhSachSinhVien = collect();
         foreach ($lopHoc as $lop) {
-            $danhSachSinhVien = $danhSachSinhVien->merge($lop->sinhViens);
+            $sinhViens = $lop->sinhViens;
+            if ($keyword) {
+                $sinhViens = $sinhViens->filter(function ($sv) use ($keyword) {
+                    return stripos($sv->nguoiDung->ho_ten, $keyword) !== false;
+                });
+            }
+            $danhSachSinhVien = $danhSachSinhVien->merge( $sinhViens);
         }
+        $danhSachSinhVien = $danhSachSinhVien->unique('ma_sinh_vien')->values();
 
-        return view('lecturer.student_list')->with('danhSachSinhVien', $danhSachSinhVien);
+        return view('lecturer.student_list')->with('danhSachSinhVien', $danhSachSinhVien)->with('keyword',$keyword);
     }
     //đổi mật khẩu sinh viên
     public function doiMatKhauSinhVien(Request $request)
@@ -934,7 +927,7 @@ class LecturerController extends Controller
 
         return redirect()->back()->with('success', 'Trạng thái bài kiểm tra đã được cập nhật.');
     }
-    //
+    //hiển thị liên hệ
     public function hienThiLienHe()
     {
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
@@ -943,6 +936,7 @@ class LecturerController extends Controller
 
         return view('lecturer.contact')->with('danhSachLienHe', $danhSachLienHe);
     }
+    //xoá liên hệ
     public function xoaLienHe($ma_lien_he)
     {
         $lienHe = LienHe::where('ma_lien_he', $ma_lien_he)->first();
@@ -955,16 +949,16 @@ class LecturerController extends Controller
 
         return back()->with('success', 'Xoá liên hệ thành công.');
     }
+    //hiển thị bảng điểm
     public function hienThiBangDiem(Request $request)
     {
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
         $maGiangVien = GiangVien::where('ma_nguoi_dung', $maNguoiDung)->value('ma_giang_vien');
 
-        // Lọc nếu có
         $maLop = $request->input('lop');
         $maMon = $request->input('mon');
 
-        $bangDiem = DB::table('sinhviens as sv')
+        $bangDiemTruyVan = DB::table('sinhviens as sv')
             ->join('nguoidungs as nd', 'sv.ma_nguoi_dung', '=', 'nd.ma_nguoi_dung')
             ->join('lop_hocs as lh', 'sv.ma_lop_hoc', '=', 'lh.ma_lop_hoc')
             ->join('phan_quyen_days as pqd', 'lh.ma_lop_hoc', '=', 'pqd.ma_lop_hoc')
@@ -987,16 +981,16 @@ class LecturerController extends Controller
                 'bd.ma_bang_diem',
                 'bd.diem_so as diem_so'
             )
-            ->distinct()
-            ->paginate(10);
+            ->distinct();
 
         if ($maLop) {
-            $bangDiem->where('lh.ma_lop_hoc', $maLop);
+            $bangDiemTruyVan->where('lh.ma_lop_hoc', $maLop);
         }
 
         if ($maMon) {
-            $bangDiem->where('mh.ma_mon_hoc', $maMon);
+            $bangDiemTruyVan->where('mh.ma_mon_hoc', $maMon);
         }
+        $bangDiem=$bangDiemTruyVan->paginate(10);
 
         $danhSachLop = DB::table('phan_quyen_days as pq')
             ->join('lop_hocs as lh', 'pq.ma_lop_hoc', '=', 'lh.ma_lop_hoc')
@@ -1005,7 +999,6 @@ class LecturerController extends Controller
             ->distinct()
             ->get();
 
-        // Lấy môn mà giảng viên đang dạy
         $danhSachMon = DB::table('phan_quyen_days as pq')
             ->join('mon_hocs as mh', 'pq.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
             ->where('pq.ma_giang_vien', $maGiangVien)
@@ -1020,6 +1013,7 @@ class LecturerController extends Controller
             ->with('maLop', $maLop)
             ->with('maMon', $maMon);
     }
+    //xoá điểm sinh viên
     public function xoaDiemSinhVien($id)
     {
         DB::table('bang_diems')->where('ma_bang_diem', $id)->delete();

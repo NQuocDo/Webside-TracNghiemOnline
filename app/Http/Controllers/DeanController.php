@@ -269,7 +269,7 @@ class DeanController extends Controller
         if ($giangVienId) {
             $danhSachPhanQuyen = PhanQuyenDay::where('ma_giang_vien', $giangVienId)->get();
         } else {
-            $danhSachPhanQuyen = PhanQuyenDay::all();
+            $danhSachPhanQuyen = PhanQuyenDay::paginate(5);
         }
 
         return view('dean.decentralization')

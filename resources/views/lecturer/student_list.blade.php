@@ -1,26 +1,22 @@
 @extends('layout.lecturer_layout')
+@section('title', 'Quản lý sinh viên')
 <style>
-    /* Cải thiện CSS cho Student List */
     .student-list-content {
         padding: 20px;
         margin: 20px;
         max-width: 1200px;
-        /* Giới hạn chiều rộng tối đa */
         margin: 20px auto;
-        /* Canh giữa */
     }
 
     .student-list-header {
         margin-bottom: 30px;
         float: right;
-        /* Thay vì inline-end để tương thích tốt hơn */
         position: relative;
         display: inline-block;
     }
 
     .student-list-header input {
         padding: 8px 40px 8px 12px;
-        /* Tăng padding bên trái, để chỗ cho icon */
         border-radius: 10px;
         border: 2px solid #e0e0e0;
         font-size: 14px;
@@ -39,13 +35,10 @@
         top: 50%;
         right: 15px;
         transform: translateY(-50%);
-        /* Canh giữa theo chiều dọc */
         color: #666;
         pointer-events: none;
-        /* Không can thiệp vào input */
     }
 
-    /* Clearfix để xử lý float */
     .student-list-content::after {
         content: "";
         display: table;
@@ -64,7 +57,6 @@
 
     .student-list-table thead tr th {
         border: none;
-        /* Bỏ border trắng */
         padding: 15px 10px;
         text-align: center;
         background-color: rgb(31, 43, 62);
@@ -90,7 +82,6 @@
     .student-list-table tbody tr td {
         padding: 12px 10px;
         border: 1px solid #e9ecef;
-        /* Màu border nhẹ hơn */
         font-size: 14px;
         vertical-align: middle;
     }
@@ -119,7 +110,6 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
 
-    /* Thêm các màu khác nhau cho các nút action */
     .actions-cell button.edit-btn {
         background-color: #28a745;
         color: white;
@@ -136,83 +126,55 @@
         color: white;
     }
 
-    /* Container phân trang */
-    .pagination-container {
-        width: 100%;
+    .student-list-footer {
         display: flex;
         justify-content: center;
-        align-items: center;
-        margin-top: 25px;
-        padding: 15px 10px;
-        background-color: #fcfcfc;
-        border-top: 1px solid #eee;
-        border-bottom-left-radius: 12px;
-        border-bottom-right-radius: 12px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        margin-top: 30px;
     }
 
-    /* Nút "Trước" và "Sau" */
-    .pagination-btn {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        padding: 10px 18px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        margin: 0 8px;
-        min-width: 80px;
-        text-align: center;
-    }
-
-    .pagination-btn:hover:not(:disabled) {
-        background-color: #0056b3;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
-    }
-
-    .pagination-btn:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-        opacity: 0.6;
-        transform: none;
-        box-shadow: none;
-    }
-
-    /* Container các số trang */
-    .page-numbers {
+    .pagination {
         display: flex;
-        gap: 6px;
-        margin: 0 15px;
+        align-items: center;
+        gap: 8px;
+        background: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    /* Số trang */
-    .page-number {
-        background-color: #e9ecef;
+    .pagination a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: #f8f9fa;
         color: #495057;
-        padding: 10px 14px;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.3s ease;
+        text-decoration: none;
+        border-radius: 8px;
         font-weight: 500;
-        min-width: 35px;
-        text-align: center;
-        font-size: 14px;
+        transition: all 0.3s ease;
+        border: 1px solid #dee2e6;
     }
 
-    .page-number:hover:not(.active) {
-        background-color: #d4d8db;
-        transform: translateY(-1px);
-    }
-
-    .page-number.active {
-        background-color: #007bff;
+    .pagination a:hover:not(.disabled) {
+        background: #007bff;
         color: white;
-        font-weight: 600;
-        cursor: default;
-        box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+    }
+
+    .pagination a.active {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+    }
+
+    .pagination a.disabled {
+        background: #f8f9fa;
+        color: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.5;
     }
 
     /* Responsive Design */
@@ -289,7 +251,6 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
 
-    /* Empty state */
     .empty-state {
         text-align: center;
         padding: 40px 20px;
@@ -315,9 +276,13 @@
 </style>
 @section('content')
     <div class="student-list-content">
-        <div class="student-list-header">
-            <input type="text" placeholder="Tìm kiếm sinh viên"><i class="fa-solid fa-magnifying-glass"></i>
-        </div>
+        <form method="GET" action="" id="searchForm">
+            <div class="student-list-header">
+                <input type="text" name="keyword" id="keywordInput" placeholder="Tìm kiếm sinh viên"
+                    value="{{ request('keyword') }}">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+        </form>
         <div class="student-list-body">
             <table class="student-list-table">
                 <thead>
@@ -345,18 +310,17 @@
                                 <td class="student-class-cell">{{ $sinhVien->lopHoc->ten_lop_hoc }}</td>
                                 <td class="actions-cell">
                                     @if(isset($sinhVien->nguoiDung))
-    <button type="button"
-        class="btn btn-sm btn-toggle-status"
-        data-id="{{ $sinhVien->nguoiDung->ma_nguoi_dung }}"
-        data-status="{{ $sinhVien->nguoiDung->trang_thai_tai_khoan }}">
-        <i class="fa-solid fa-circle-xmark me-1"></i>
-        <span class="status-label">
-            {{ $sinhVien->nguoiDung->trang_thai_tai_khoan === 'hoat_dong' ? 'Khoá' : 'Mở' }}
-        </span>
-    </button>
-@else
-    <span class="text-muted">Không rõ trạng thái</span>
-@endif
+                                        <button type="button" class="btn btn-sm btn-toggle-status"
+                                            data-id="{{ $sinhVien->nguoiDung->ma_nguoi_dung }}"
+                                            data-status="{{ $sinhVien->nguoiDung->trang_thai_tai_khoan }}">
+                                            <i class="fa-solid fa-circle-xmark me-1"></i>
+                                            <span class="status-label">
+                                                {{ $sinhVien->nguoiDung->trang_thai_tai_khoan === 'hoat_dong' ? 'Khoá' : 'Mở' }}
+                                            </span>
+                                        </button>
+                                    @else
+                                        <span class="text-muted">Không rõ trạng thái</span>
+                                    @endif
 
                                     <button class="changepassword-btn" data-bs-toggle="modal" data-bs-target="#doiMatKhauModal"
                                         onclick="setStudentId('{{ $sinhVien->ma_sinh_vien }}')">
@@ -370,12 +334,6 @@
             </table>
         </div>
         <div class="student-list-footer">
-            <div class="pagination-container">
-                <button id="prevPage" class="pagination-btn" disabled>&laquo; Trước</button>
-                <div id="pageNumbers" class="page-numbers">
-                </div>
-                <button id="nextPage" class="pagination-btn">&raquo; Sau</button>
-            </div>
         </div>
         <!-- Modal đổi mật khẩu -->
         <div class="modal fade" id="doiMatKhauModal" tabindex="-1" aria-labelledby="doiMatKhauLabel" aria-hidden="true">
@@ -414,61 +372,73 @@
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const buttons = document.querySelectorAll('.btn-toggle-status');
+        document.addEventListener("DOMContentLoaded", function () {
+            const keywordInput = document.getElementById('keywordInput');
+            const form = document.getElementById('searchForm');
 
-        buttons.forEach(button => {
-            button.addEventListener('click', function () {
-                const userId = this.dataset.id;
+            if (keywordInput) {
+                let debounce;
+                keywordInput.addEventListener("input", function () {
+                    clearTimeout(debounce);
+                    debounce = setTimeout(() => {
+                        form.submit();
+                    }, 500);
+                });
+            }
+            const buttons = document.querySelectorAll('.btn-toggle-status');
 
-                fetch(`/lecturer/student-list/${userId}/status`, {
-                    method: 'PUT',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json',
-                    }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        const label = this.querySelector('.status-label');
+            buttons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const userId = this.dataset.id;
 
-                        if (data.new_status === 'hoat_dong') {
-                            label.textContent = 'Khoá';
-                        } else {
-                            label.textContent = 'Mở';
+                    fetch(`/lecturer/student-list/${userId}/status`, {
+                        method: 'PUT',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
                         }
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                const label = this.querySelector('.status-label');
 
-                        this.dataset.status = data.new_status;
+                                if (data.new_status === 'hoat_dong') {
+                                    label.textContent = 'Khoá';
+                                } else {
+                                    label.textContent = 'Mở';
+                                }
 
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Thành công!',
-                            text: `Tài khoản đã được cập nhật: ${data.new_status === 'hoat_dong' ? 'Hoạt động' : 'Không hoạt động'}`,
-                            timer: 2000,
-                            showConfirmButton: false,
+                                this.dataset.status = data.new_status;
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công!',
+                                    text: `Tài khoản đã được cập nhật: ${data.new_status === 'hoat_dong' ? 'Hoạt động' : 'Không hoạt động'}`,
+                                    timer: 2000,
+                                    showConfirmButton: false,
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi!',
+                                    text: 'Không thể cập nhật trạng thái.',
+                                });
+                            }
+                        })
+                        .catch(err => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi!',
+                                text: 'Đã xảy ra lỗi khi gửi yêu cầu.',
+                            });
                         });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Lỗi!',
-                            text: 'Không thể cập nhật trạng thái.',
-                        });
-                    }
-                })
-                .catch(err => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Lỗi!',
-                        text: 'Đã xảy ra lỗi khi gửi yêu cầu.',
-                    });
                 });
             });
         });
-    });
 
-    function setStudentId(maSinhVien) {
-        document.getElementById('modal_ma_sinh_vien').value = maSinhVien;
-    }
-</script>
+        function setStudentId(maSinhVien) {
+            document.getElementById('modal_ma_sinh_vien').value = maSinhVien;
+        }
+    </script>
 @endsection
