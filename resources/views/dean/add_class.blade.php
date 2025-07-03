@@ -3,11 +3,9 @@
 @section('title')
     Quản lý Lớp học
 @endsection
-
 <style>
     body {
         font-family: 'Inter', sans-serif;
-        /* Sử dụng font Inter */
         background-color: #f0f2f5;
         margin: 0;
         padding: 0;
@@ -21,7 +19,6 @@
         gap: 20px;
     }
 
-    /* Nút mở popup */
     .add-class-button {
         background-color: #007bff;
         color: white;
@@ -32,7 +29,6 @@
         cursor: pointer;
         transition: background-color 0.3s ease, transform 0.2s ease;
         align-self: flex-start;
-        /* Canh nút sang trái */
         margin-bottom: 20px;
         box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
     }
@@ -47,24 +43,17 @@
         transform: translateY(0);
     }
 
-    /* Modal (Popup) Styling */
     .modal {
         display: none;
-        /* Mặc định ẩn */
         position: fixed;
-        /* Giữ nguyên vị trí khi cuộn */
         z-index: 1000;
-        /* Luôn ở trên cùng */
         left: 0;
         top: 0;
         width: 100%;
         height: 100%;
         overflow: auto;
-        /* Cho phép cuộn nếu nội dung quá lớn */
         background-color: rgba(0, 0, 0, 0.5);
-        /* Nền mờ */
         display: flex;
-        /* Dùng flexbox để căn giữa */
         justify-content: center;
         align-items: center;
     }
@@ -77,10 +66,8 @@
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         max-width: 600px;
         width: 90%;
-        /* Responsive width */
         position: relative;
         animation: animateshow 0.3s ease-out;
-        /* Hiệu ứng mở popup */
     }
 
     @keyframes animateshow {
@@ -120,7 +107,6 @@
         font-weight: 600;
     }
 
-    /* Form bên trong modal */
     .add-class-form {
         display: flex;
         flex-direction: column;
@@ -155,7 +141,6 @@
         color: #333;
         transition: border-color 0.3s ease, box-shadow 0.3s ease;
         resize: vertical;
-        /* Cho phép thay đổi kích thước textarea theo chiều dọc */
     }
 
     .add-class-form input[type="text"]:focus,
@@ -192,7 +177,6 @@
         transform: translateY(0);
     }
 
-    /* Styling cho danh sách lớp học */
     .class-list-section {
         background-color: #fff;
         padding: 30px;
@@ -233,7 +217,6 @@
         background-color: #e9e9e9;
     }
 
-    /* Responsive adjustments */
     @media (max-width: 768px) {
         .add-class-form label {
             width: 100%;
@@ -335,7 +318,6 @@
         }
     }
 </style>
-
 @section('content')
     <div class="class-management-content">
         <button id="openAddClassModalBtn" class="add-class-button">Thêm Lớp học Mới</button>
@@ -417,28 +399,29 @@
     </div>
 
     <script>
-        // Lấy các phần tử DOM
-        var modal = document.getElementById('addClassModal');
-        var btn = document.getElementById('openAddClassModalBtn');
-        var span = document.getElementsByClassName('close-button')[0]; // Lấy nút đóng popup
+        document.addEventListener('DOMContentLoaded', function () {
+            var modal = document.getElementById('addClassModal');
+            var btn = document.getElementById('openAddClassModalBtn');
+            var span = document.querySelector('.close-button');
 
-        // Khi người dùng click vào nút, mở modal
-        btn.onclick = function () {
-            modal.style.display = 'flex'; // Dùng 'flex' để căn giữa
-        }
+            if (btn && modal && span) {
+                btn.onclick = function () {
+                    modal.style.display = 'flex';
+                };
 
-        // Khi người dùng click vào nút đóng (x), đóng modal
-        span.onclick = function () {
-            modal.style.display = 'none';
-        }
+                span.onclick = function () {
+                    modal.style.display = 'none';
+                };
 
-        // Khi người dùng click bất cứ đâu bên ngoài modal, đóng modal đó
-        window.onclick = function (event) {
-            if (event.target == modal) {
-                modal.style.display = 'none';
+                window.onclick = function (event) {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                };
             }
-        }
+        });
     </script>
+
 @endsection
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -466,20 +449,19 @@
                     icon: 'success',
                     title: 'Thành công!',
                     text: '{{ session('success') }}',
-                    showConfirmButton: false, // Tự động đóng sau một khoảng thời gian
-                    timer: 2000 // Tự động đóng sau 2 giây
+                    showConfirmButton: false,
+                    timer: 2000
                 });
             @endif
 
-            // Kiểm tra thông báo lỗi từ session flash
             @if(session('error'))
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi!',
                     text: '{{ session('error') }}',
-                    showConfirmButton: true // Giữ thông báo lỗi cho người dùng đọc
+                    showConfirmButton: true
                 });
             @endif
-                            });
+                                });
     </script>
 @endsection

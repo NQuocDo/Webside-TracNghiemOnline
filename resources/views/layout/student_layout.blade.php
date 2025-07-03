@@ -48,7 +48,10 @@
                     </p>
                 </div>
                 <div class="search-box">
-                    <i class="fa-solid fa-magnifying-glass"></i> <input type="text" placeholder="Tìm kiếm đề thi">
+                    <form action="{{ route('student_exam_list') }}" method="GET">
+                        <input type="text" name="keyword" value="{{ request('keyword') }}"
+                            placeholder="Tìm kiếm bài kiểm tra...">
+                    </form>
                 </div>
                 <div class="main_top_right">
                     <div class="main_top_error"> <i class="fa-solid fa-bug"></i><a

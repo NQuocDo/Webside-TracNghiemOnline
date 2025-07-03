@@ -11,6 +11,7 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
+    /* Popup thêm môn học (giữ nguyên hoặc điều chỉnh nếu cần) */
     .add-subject {
         padding: 30px;
         border-radius: 15px;
@@ -20,6 +21,8 @@
         max-width: 600px;
         margin: 40px auto;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        display: none;
+        /* Ban đầu ẩn, sẽ hiển thị bằng JS */
     }
 
     .add-subject h2 {
@@ -54,6 +57,7 @@
 
     .add-subject-form input[type="text"],
     .add-subject-form input[type="number"] {
+        /* Thêm type="number" */
         flex-grow: 1;
         padding: 12px 15px;
         border: 1px solid #ccc;
@@ -65,6 +69,7 @@
 
     .add-subject-form input[type="text"]:focus,
     .add-subject-form input[type="number"]:focus {
+        /* Thêm type="number" */
         border-color: #007bff;
         box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
         outline: none;
@@ -91,6 +96,7 @@
         background-size: 12px;
     }
 
+    /* Nút thêm môn học trong form (nếu là submit trực tiếp) */
     #add-subject-btn {
         background-color: #28a745;
         color: white;
@@ -102,6 +108,7 @@
         transition: background-color 0.3s ease, transform 0.2s ease;
         margin-top: 20px;
         align-self: flex-end;
+        /* Căn chỉnh nút về bên phải */
         min-width: 180px;
     }
 
@@ -142,6 +149,7 @@
         font-size: 15px;
         white-space: nowrap;
     }
+
     .subject-manage-table th:first-child {
         border-top-left-radius: 8px;
     }
@@ -224,6 +232,28 @@
         margin-right: 5px;
     }
 
+    .search-subject {
+        margin-bottom: 30px;
+        float: inline-end;
+        position: relative;
+        display: inline-block;
+    }
+
+    .search-subject input {
+        padding: 8px 15px;
+        border-radius: 20px;
+        border: 1px solid #ced4da;
+        font-size: 15px;
+        width: 250px;
+    }
+
+    .search-subject i {
+        position: absolute;
+        top: 50%;
+        right: 15px;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
 
     .add-subject-btn-fake {
         background-color: #28a745;
@@ -259,16 +289,31 @@
     }
 
     .search-form {
+        display: flex;
+        gap: 8px;
         max-width: 300px;
-        width: 100%;
     }
 
     .search-input {
-        width: 100%;
-        padding: 6px 10px;
+        padding: 4px 8px;
         font-size: 14px;
         border: 1px solid #ccc;
         border-radius: 4px;
+        flex: 1;
+    }
+
+    .search-btn {
+        padding: 4px 12px;
+        font-size: 14px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .search-btn:hover {
+        background-color: #0056b3;
     }
 
     .pagination a,
@@ -485,16 +530,16 @@
                         icon: 'error',
                         title: 'Lỗi nhập liệu!',
                         html: `
-                                                                                   <ul>
-                                                                                       @foreach ($errors->all() as $error)
-                                                                                           <li>{{ $error }}</li>
-                                                                                       @endforeach
-                                                                                   </ul>
-                                                                               `,
+                                                                           <ul>
+                                                                               @foreach ($errors->all() as $error)
+                                                                                   <li>{{ $error }}</li>
+                                                                               @endforeach
+                                                                           </ul>
+                                                                       `,
                         showConfirmButton: true
                     });
                 @endif
-                                        });
+                                    });
 
         </script>
     @endsection

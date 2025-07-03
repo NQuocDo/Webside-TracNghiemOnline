@@ -25,6 +25,7 @@ class StudentController extends Controller
         $maSinhVien = SinhVien::where('ma_nguoi_dung', $maNguoiDung)->value('ma_sinh_vien');
         $maMonHoc = $request->query('ma_mon_hoc');
         $maGiangVien = $request->query('ma_giang_vien');
+        $keyword = $request->query('keyword');
 
         $danhSachBaiKiemTra = DB::table('bai_kiem_tras as bkt')
             ->join('de_this as dt', 'bkt.ma_de_thi', '=', 'dt.ma_de_thi')
@@ -50,6 +51,9 @@ class StudentController extends Controller
             })
             ->when($maGiangVien, function ($query, $maGiangVien) {
                 $query->where('gv.ma_giang_vien', $maGiangVien);
+            })
+            ->when($keyword, function ($query, $keyword) {
+                $query->where('bkt.ten_bai_kiem_tra', 'like', '%' . $keyword . '%');
             })
             ->select(
                 'bkt.ma_bai_kiem_tra',
