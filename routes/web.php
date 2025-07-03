@@ -171,5 +171,6 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/dean/add-class', [DeanController::class, 'hienThiLopHoc'])->name('add_class');
         Route::post('/dean/add-class/store', [DeanController::class, 'themLopHoc'])->name('add_class_store');
+        Route::delete('/dean/add-class/del/{id}', [DeanController::class, 'xoaLopHoc'])->name('add_class_del');
     });
 });

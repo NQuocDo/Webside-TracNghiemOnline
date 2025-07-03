@@ -98,7 +98,15 @@ class DeanController extends Controller
             return redirect()->back()->with("error", "Bạn không có quyền truy cập trang này.");
         }
 
-        $danhSachMonHoc = MonHoc::paginate(5);
+        $query = MonHoc::query();
+
+        // Nếu có từ khoá tìm kiếm
+        if ($request->filled('keyword')) {
+            $keyword = $request->input('keyword');
+            $query->where('ten_mon_hoc', 'like', "%{$keyword}%");
+        }
+
+        $danhSachMonHoc = $query->paginate(5)->appends($request->all());
 
         return view('dean.subject_management')->with('danhSachMonHoc', $danhSachMonHoc);
     }
@@ -435,6 +443,20 @@ class DeanController extends Controller
             'thongKeDiem' => $diemTrungBinhTheoMon,
             'thongKeCauHoi' => $thongKeCauHoi
         ]);
+    }
+    public function xoaLopHoc($id)
+    {
+        $lopHoc = LopHoc::find($id);
+        $sinhVien = SinhVien::where('ma_lop_hoc', $id)->exists();
+        if (!$lopHoc) {
+            return redirect()->back()->with('error', 'Không tìm thấy lớp học.');
+        }
+        if ($sinhVien) {
+            return redirect()->back()->with('error', 'Không thể xoá lớp học vì đang được sử dụng trong hệ thống.');
+        }
+        $lopHoc->delete();
+
+        return redirect()->route('add_class')->with('success', 'Xoá lớp học thành công');
     }
 
 }

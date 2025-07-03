@@ -11,7 +11,6 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
-    /* Popup thêm môn học (giữ nguyên hoặc điều chỉnh nếu cần) */
     .add-subject {
         padding: 30px;
         border-radius: 15px;
@@ -21,8 +20,6 @@
         max-width: 600px;
         margin: 40px auto;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        display: none;
-        /* Ban đầu ẩn, sẽ hiển thị bằng JS */
     }
 
     .add-subject h2 {
@@ -57,7 +54,6 @@
 
     .add-subject-form input[type="text"],
     .add-subject-form input[type="number"] {
-        /* Thêm type="number" */
         flex-grow: 1;
         padding: 12px 15px;
         border: 1px solid #ccc;
@@ -69,7 +65,6 @@
 
     .add-subject-form input[type="text"]:focus,
     .add-subject-form input[type="number"]:focus {
-        /* Thêm type="number" */
         border-color: #007bff;
         box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
         outline: none;
@@ -96,7 +91,6 @@
         background-size: 12px;
     }
 
-    /* Nút thêm môn học trong form (nếu là submit trực tiếp) */
     #add-subject-btn {
         background-color: #28a745;
         color: white;
@@ -108,7 +102,6 @@
         transition: background-color 0.3s ease, transform 0.2s ease;
         margin-top: 20px;
         align-self: flex-end;
-        /* Căn chỉnh nút về bên phải */
         min-width: 180px;
     }
 
@@ -122,9 +115,6 @@
         transform: translateY(0);
     }
 
-    /* ================== TABLE STYLING ================== */
-
-    /* Container cho bảng */
     .subject-manage-body {
         margin-top: 30px;
         overflow-x: auto;
@@ -134,35 +124,24 @@
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
-        /* Loại bỏ khoảng cách mặc định giữa các ô */
         border-radius: 8px;
-        /* Bo tròn góc cho toàn bộ bảng */
         overflow: hidden;
-        /* Đảm bảo nội dung không tràn ra khỏi border-radius */
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        /* Đổ bóng nhẹ cho bảng */
         margin-bottom: 20px;
-        /* Khoảng cách dưới bảng */
     }
 
     .subject-manage-table thead {
         background-color: #343a40;
-        /* Màu nền header (xám đậm) */
         color: #fff;
     }
 
     .subject-manage-table th {
         padding: 12px 15px;
-        /* Tăng padding để bảng thoáng hơn */
         text-align: left;
-        /* Căn trái theo hình ảnh */
         font-weight: 600;
         font-size: 15px;
         white-space: nowrap;
-        /* Ngăn không cho tiêu đề bị xuống dòng */
     }
-
-    /* Bo tròn góc cho header */
     .subject-manage-table th:first-child {
         border-top-left-radius: 8px;
     }
@@ -173,83 +152,62 @@
 
     .subject-manage-table tbody tr {
         background-color: #fff;
-        /* Nền trắng cho hàng chẵn */
         transition: background-color 0.2s ease;
     }
 
-    /* Zebra striping - Hàng lẻ có nền xám nhạt */
     .subject-manage-table tbody tr:nth-child(odd) {
         background-color: #f8f9fa;
     }
 
     .subject-manage-table tbody tr:hover {
         background-color: #e2e6ea;
-        /* Hiệu ứng hover */
     }
 
     .subject-manage-table td {
         padding: 10px 15px;
-        /* Tăng padding */
         border-bottom: 1px solid #dee2e6;
-        /* Viền dưới mỏng */
         border-right: 1px solid #dee2e6;
-        /* Viền phải mỏng */
         font-size: 14px;
         color: #333;
         vertical-align: middle;
-        /* Căn giữa theo chiều dọc */
     }
 
-    /* Loại bỏ viền phải cho cột cuối cùng */
     .subject-manage-table td:last-child {
         border-right: none;
     }
 
-    /* Loại bỏ viền dưới cho hàng cuối cùng */
     .subject-manage-table tbody tr:last-child td {
         border-bottom: none;
     }
 
-    /* Căn giữa nội dung cho các cột cụ thể */
     .stt-cell,
     .subject-score-cell,
     .subject-semester-cell,
     .subject-diffculty-cell {
         text-align: center;
         width: 60px;
-        /* Giảm chiều rộng cho cột STT */
     }
 
-    /* Cột thao tác */
     .actions-cell {
         text-align: center;
-        /* Căn giữa các nút */
         width: 150px;
-        /* Điều chỉnh độ rộng nếu cần */
         white-space: nowrap;
-        /* Giữ các nút trên một dòng */
     }
 
     .actions-cell button {
         padding: 8px 12px;
-        /* Tăng padding */
         margin: 0 4px;
-        /* Giảm khoảng cách giữa các nút */
         border: none;
         border-radius: 10px;
-        /* Bo tròn nhiều hơn */
         font-size: 14px;
         cursor: pointer;
         display: inline-flex;
-        /* Để căn giữa icon và text */
         align-items: center;
         justify-content: center;
         transition: all 0.2s ease;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        /* Đổ bóng nhẹ */
     }
 
-    /* Nút xóa */
     .btn-delete-confirm {
         background: red;
         color: white;
@@ -264,39 +222,9 @@
 
     .delete-btn i {
         margin-right: 5px;
-        /* Khoảng cách giữa icon và text */
     }
 
-    /* Thanh tìm kiếm (giữ nguyên) */
-    .search-subject {
-        margin-bottom: 30px;
-        float: inline-end;
-        /* Hoặc dùng flexbox để căn chỉnh tốt hơn */
-        position: relative;
-        display: inline-block;
-    }
 
-    .search-subject input {
-        padding: 8px 15px;
-        /* Tăng padding input search */
-        border-radius: 20px;
-        /* Bo tròn nhiều hơn */
-        border: 1px solid #ced4da;
-        font-size: 15px;
-        width: 250px;
-        /* Chiều rộng cố định cho input search */
-    }
-
-    .search-subject i {
-        position: absolute;
-        top: 50%;
-        right: 15px;
-        transform: translateY(-50%);
-        /* Căn giữa icon theo chiều dọc */
-        color: #6c757d;
-    }
-
-    /* Nút "Thêm môn học" ở cuối bảng (nút giả) */
     .add-subject-btn-fake {
         background-color: #28a745;
         color: white;
@@ -306,7 +234,6 @@
         cursor: pointer;
         margin-top: 20px;
         float: right;
-        /* Thay float: inline-end; */
         transition: background-color 0.3s ease, transform 0.2s ease;
         font-size: 16px;
         font-weight: 500;
@@ -317,40 +244,51 @@
         transform: translateY(-2px);
     }
 
-    /* Pagination (giữ nguyên) */
     .pagination {
         width: 100%;
         display: flex;
-        /* Dùng flexbox để căn giữa */
         justify-content: center;
         margin-top: 20px;
         padding-bottom: 20px;
     }
 
+    .search-container {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 16px;
+    }
+
+    .search-form {
+        max-width: 300px;
+        width: 100%;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 6px 10px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
     .pagination a,
     .pagination span {
-        /* Thêm span cho các nút không phải link (như ...) */
         color: #007bff;
-        /* Màu xanh cho link pagination */
         margin: 0 5px;
-        /* Khoảng cách giữa các số trang */
         text-decoration: none;
         padding: 8px 12px;
         border-radius: 5px;
         transition: background-color 0.3s ease, color 0.3s ease;
         border: 1px solid #dee2e6;
-        /* Viền nhẹ */
     }
 
     .pagination a:hover {
         background-color: #007bff;
         color: white;
         box-shadow: none;
-        /* Bỏ shadow cũ */
     }
 
     .pagination .active span {
-        /* Style cho trang hiện tại */
         background-color: #007bff;
         color: white;
         border-color: #007bff;
@@ -398,10 +336,12 @@
                     <button type="submit" id="add-subject-btn">Thêm môn học</button>
                 </form>
             </div>
-            <!-- <div class="search-subject">
-                                <input type="text" placeholder="Tìm kiếm ..." id="searchSubject-input"><i
-                                    class="fa-solid fa-magnifying-glass"></i>
-                            </div> -->
+            <div class="search-container">
+                <form id="form-search-lecturer" action="{{ route('subject_management') }}" method="GET" class="search-form">
+                    <input type="text" name="keyword" id="keyword" class="search-input"
+                        placeholder="Tìm kiếm tên lớp học..." value="{{ request('keyword') }}">
+                </form>
+            </div>
 
             <div class="subject-manage-body">
                 @if ($danhSachMonHoc->isEmpty())
@@ -490,37 +430,46 @@
                         });
                     });
                 });
+                const form = document.getElementById("form-search-lecturer");
+                const keywordInput = document.getElementById("keyword");
+
+                if (form && keywordInput) {
+                    let debounce;
+
+                    keywordInput.addEventListener("input", function () {
+                        clearTimeout(debounce);
+
+                        debounce = setTimeout(() => {
+                            form.submit();
+                        }, 500);
+                    });
+                }
 
                 const hienThiThemMonhocBtn = document.getElementById('add-subject-btn-fake');
                 const addSubjectForm = document.getElementById('add-subject');
 
-                // Kiểm tra xem các phần tử có tồn tại không trước khi thêm sự kiện
+
                 if (hienThiThemMonhocBtn && addSubjectForm) {
                     hienThiThemMonhocBtn.addEventListener('click', function () {
-                        // Kiểm tra trạng thái hiển thị hiện tại của form
                         if (addSubjectForm.style.display === 'none' || addSubjectForm.style.display === '') {
-                            // Nếu đang ẩn (hoặc không có thuộc tính display inline nào được đặt), thì hiển thị
                             addSubjectForm.style.display = 'block';
                         } else {
-                            // Nếu đang hiển thị, thì ẩn đi
                             addSubjectForm.style.display = 'none';
                         }
                     });
                 } else {
                     console.error('Không tìm thấy nút "add-subject-btn-fake" hoặc div "add-subject".');
                 }
-                // Kiểm tra thông báo thành công từ session flash
                 @if(session('success'))
                     Swal.fire({
                         icon: 'success',
                         title: 'Thành công!',
                         text: '{{ session('success') }}',
-                        showConfirmButton: false, // Tự động đóng sau một khoảng thời gian
-                        timer: 2000 // Tự động đóng sau 2 giây
+                        showConfirmButton: false,
+                        timer: 2000
                     });
                 @endif
 
-                // Kiểm tra thông báo lỗi từ session flash
                 @if(session('error'))
                     Swal.fire({
                         icon: 'error',
@@ -536,16 +485,16 @@
                         icon: 'error',
                         title: 'Lỗi nhập liệu!',
                         html: `
-                                   <ul>
-                                       @foreach ($errors->all() as $error)
-                                           <li>{{ $error }}</li>
-                                       @endforeach
-                                   </ul>
-                               `,
+                                                                                   <ul>
+                                                                                       @foreach ($errors->all() as $error)
+                                                                                           <li>{{ $error }}</li>
+                                                                                       @endforeach
+                                                                                   </ul>
+                                                                               `,
                         showConfirmButton: true
                     });
                 @endif
-                });
+                                        });
 
         </script>
     @endsection

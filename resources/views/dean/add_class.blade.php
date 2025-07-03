@@ -383,6 +383,7 @@
                         <th>Năm Học</th>
                         <th>Học Kỳ</th>
                         <th>Mô Tả</th>
+                        <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -397,6 +398,16 @@
                                 <td>{{ $lopHoc->nam_hoc }}</td>
                                 <td>{{ $lopHoc->hoc_ky }}</td>
                                 <td>{{ $lopHoc->mo_ta }}</td>
+                                <td>
+                                    <form id="delete-form-{{ $lopHoc->ma_lop_hoc }}"
+                                        action="{{ route('add_class_del', $lopHoc->ma_lop_hoc) }}" method="POST"
+                                        style="display: none;">
+                                        @csrf
+                                        @method('DELETE')
+                                    </form>
+                                    <button type="button" class="btn btn-danger"
+                                        onclick="confirmDelete('{{ $lopHoc->ma_lop_hoc }}')">Xoá lớp học</button>
+                                </td>
                             </tr>
                         @endforeach
                     @endif
@@ -431,7 +442,24 @@
 @endsection
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
+        function confirmDelete(id) {
+            Swal.fire({
+                title: 'Bạn có chắc chắn muốn xoá?',
+                text: "Lớp học sẽ bị xoá và không thể khôi phục!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Vâng, xoá!',
+                cancelButtonText: 'Huỷ'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-form-' + id).submit();
+                }
+            });
+        }
         document.addEventListener('DOMContentLoaded', function () {
             @if(session('success'))
                 Swal.fire({
@@ -452,6 +480,6 @@
                     showConfirmButton: true // Giữ thông báo lỗi cho người dùng đọc
                 });
             @endif
-        });
+                            });
     </script>
 @endsection
