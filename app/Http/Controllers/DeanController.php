@@ -18,6 +18,7 @@ use App\Models\MonHoc;
 use App\Models\GiangVien;
 use App\Models\CauHoi;
 use App\Models\PhanQuyenDay;
+use App\Models\LichSuLamBai;
 
 class DeanController extends Controller
 {
@@ -30,13 +31,17 @@ class DeanController extends Controller
             $giangVien = Auth::user()->where('vai_tro', 'giang_vien')->get();
             $sinhVien = Auth::user()->where('vai_tro', 'sinh_vien')->get();
             $baiKiemTra = BaiKiemTra::all();
+            $lichSuLamBai = LichSuLamBai::select('ma_lich_su_lam_bai')
+                ->groupBy('ma_lich_su_lam_bai')
+                ->get();
 
             return view('dean.dashboard')
                 ->with('user', $user)
                 ->with('sinhVien', $sinhVien)
                 ->with('monHoc', $monHoc)
                 ->with('giangVien', $giangVien)
-                ->with('baiKiemTra', $baiKiemTra);
+                ->with('baiKiemTra', $baiKiemTra)
+                ->with('lichSuLamBai', $lichSuLamBai);
         }
         return redirect('/login');
     }

@@ -154,27 +154,27 @@
                 <div class="count-card">
                     <p class="card-title">Tổng số môn đang giảng dạy</p>
                     <i class="fas fa-book-open card-icon"></i>
-                    <p class="card-value"> {{ count($monHoc) > 0 ? count($monHoc) : 'Chưa có dữ liệu' }}</p></p>
+                    <p class="card-value"> {{ count($monHoc) > 0 ? count($monHoc) : 'Chưa có dữ liệu' }}</p>
                 </div>
                 <div class="count-card">
                     <p class="card-title">Tổng số giảng viên</p>
                     <i class="fas fa-chalkboard-teacher card-icon"></i>
-                    <p class="card-value"> {{ count($giangVien) > 0 ? count($giangVien) : 'Chưa có dữ liệu' }}</p></p>
+                    <p class="card-value"> {{ count($giangVien) > 0 ? count($giangVien) : 'Chưa có dữ liệu' }}</p>
                 </div>
                 <div class="count-card">
                     <p class="card-title">Tổng số sinh viên</p>
                     <i class="fas fa-user-graduate card-icon"></i>
-                    <p class="card-value"> {{ count($sinhVien) > 0 ? count($sinhVien) : 'Chưa có dữ liệu' }}</p></p>
+                    <p class="card-value"> {{ count($sinhVien) > 0 ? count($sinhVien) : 'Chưa có dữ liệu' }}</p>
                 </div>
                 <div class="count-card">
                     <p class="card-title">Tổng số bài kiểm tra đã tạo</p>
                     <i class="fas fa-clipboard-check card-icon"></i>
-                    <p class="card-value"> {{ count($baiKiemTra) > 0 ? count($baiKiemTra) : 'Chưa có dữ liệu' }}</p></p>
+                    <p class="card-value"> {{ count($baiKiemTra) > 0 ? count($baiKiemTra) : 'Chưa có dữ liệu' }}</p>
                 </div>
                 <div class="count-card">
                     <p class="card-title">Tổng lượt làm bài kiểm tra</p>
                     <i class="fas fa-tasks card-icon"></i>
-                    <p class="card-value">5600</p>
+                    <p class="card-value">{{ count($lichSuLamBai) > 0 ? count($lichSuLamBai) : 'Chưa có dữ liệu' }}</p>
                 </div>
             </div>
         </div>

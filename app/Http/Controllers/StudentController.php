@@ -32,19 +32,23 @@ class StudentController extends Controller
             ->join('mon_hocs as mh', 'dt.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
             ->join('giangviens as gv', 'dt.ma_giang_vien', '=', 'gv.ma_giang_vien')
             ->join('nguoidungs as nd', 'gv.ma_nguoi_dung', '=', 'nd.ma_nguoi_dung')
-            ->join('lop_hocs as lh', function ($join) {
-                $join->on('lh.ma_mon_hoc', '=', 'dt.ma_mon_hoc')
-                    ->on('lh.ma_giang_vien', '=', 'dt.ma_giang_vien');
+
+            ->join('phan_quyen_days as pq', function ($join) {
+                $join->on('pq.ma_mon_hoc', '=', 'dt.ma_mon_hoc')
+                    ->on('pq.ma_giang_vien', '=', 'dt.ma_giang_vien');
             })
-            ->join('sinhviens as sv', 'sv.ma_lop_hoc', '=', 'lh.ma_lop_hoc')
+            ->join('lop_hocs as lh', 'pq.ma_lop_hoc', '=', 'lh.ma_lop_hoc')
+            ->join('sinhviens as sv', function ($join) {
+                $join->on('sv.ma_lop_hoc', '=', 'lh.ma_lop_hoc');
+            })
 
             ->leftJoin('bang_diems as bd', function ($join) use ($maSinhVien) {
                 $join->on('bd.ma_bai_kiem_tra', '=', 'bkt.ma_bai_kiem_tra')
                     ->where('bd.ma_sinh_vien', '=', $maSinhVien);
             })
 
-            ->where('sv.ma_sinh_vien', '=', $maSinhVien)
-            ->where('bkt.trang_thai', '=', 'mo')
+            ->where('sv.ma_sinh_vien', $maSinhVien)
+            ->where('bkt.trang_thai', 'mo')
             ->whereNull('bd.ma_bang_diem')
             ->when($maMonHoc, function ($query, $maMonHoc) {
                 $query->where('mh.ma_mon_hoc', $maMonHoc);
@@ -63,6 +67,7 @@ class StudentController extends Controller
                 'dt.so_luong_cau_hoi',
                 'dt.thoi_gian_lam_bai'
             )
+            ->distinct()
             ->get();
 
         return view('student.exam_list')->with('danhSachBaiKiemTra', $danhSachBaiKiemTra);
@@ -118,7 +123,6 @@ class StudentController extends Controller
             ->select('ch.*')
             ->get();
 
-        // Với mỗi câu hỏi, lấy đáp án của nó
         foreach ($cauHoiList as $cauHoi) {
             $cauHoi->dap_an = DB::table('dap_ans')
                 ->where('ma_cau_hoi', $cauHoi->ma_cau_hoi)
