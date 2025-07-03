@@ -97,10 +97,7 @@ class DeanController extends Controller
         if ($user->vai_tro !== "truong_khoa") {
             return redirect()->back()->with("error", "Bạn không có quyền truy cập trang này.");
         }
-
         $query = MonHoc::query();
-
-        // Nếu có từ khoá tìm kiếm
         if ($request->filled('keyword')) {
             $keyword = $request->input('keyword');
             $query->where('ten_mon_hoc', 'like', "%{$keyword}%");
@@ -175,7 +172,6 @@ class DeanController extends Controller
                 }
             })
             ->paginate(5);
-
         return view('dean.lecturer_list')
             ->with('danhSachGiangVien', $danhSachGiangVien)
             ->with('tuKhoaTimKiem', $tuKhoaTimKiem);
@@ -208,12 +204,25 @@ class DeanController extends Controller
 
     public function xoaGiangVien($id)
     {
-        $giangVien = GiangVien::
-            where('ma_giang_vien', $id)
-            ->first();
+        $giangVien = GiangVien::where('ma_giang_vien', $id)->first();
+
+        if (!$giangVien) {
+            return redirect()->back()->with('error', 'Không tìm thấy giảng viên.');
+        }
+
+        $coPhanQuyen = DB::table('phan_quyen_days')
+            ->where('ma_giang_vien', $id)
+            ->exists();
+
+        if ($coPhanQuyen) {
+            return redirect()->back()->with('error', 'Giảng viên đang được phân quyền, không thể xoá.');
+        }
+        $maNguoiDung = $giangVien->ma_nguoi_dung;
         $giangVien->delete();
 
-        return redirect()->route('lecturer_list')->with('success', 'Xoá giảng viên thành công');
+        DB::table('nguoidungs')->where('ma_nguoi_dung', $maNguoiDung)->delete();
+
+        return redirect()->route('lecturer_list')->with('success', 'Xoá giảng viên và tài khoản thành công.');
     }
 
     public function hienThiDanhSachCauHoiTheoBoLoc(Request $request)

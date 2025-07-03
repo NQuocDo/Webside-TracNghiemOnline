@@ -580,7 +580,9 @@
                                 </td>
                                 <td class="decentralization-subject-cell">{{ $phanQuyen->monHoc->ten_mon_hoc }}</td>
                                 <td class="decentralization-semester-cell">{{ $phanQuyen->monHoc->hoc_ky }}</td>
-                                <td class="decentralization-class-cell">{{ $phanQuyen->lopHoc->ten_lop_hoc }}</td>
+                                <td class="decentralization-class-cell">
+                                    {{ optional($phanQuyen->lopHoc)->ten_lop_hoc ?? 'Chưa có lớp' }}
+                                </td>
                                 <td class="actions-cell">
                                     <form id="delete-form-{{ $phanQuyen->ma_phan_quyen }}"
                                         action="{{ route('decentralization_del', $phanQuyen->ma_phan_quyen) }}" method="POST"
@@ -753,6 +755,6 @@
                     showConfirmButton: true // Giữ thông báo lỗi cho người dùng đọc
                 });
             @endif
-                                            });
+                                                });
     </script>
 @endsection

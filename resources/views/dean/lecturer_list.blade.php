@@ -142,76 +142,36 @@
         margin-right: 5px;
     }
 
-    /* Pagination */
-    .pagination-container {
+    .pagination {
         width: 100%;
         display: flex;
         justify-content: center;
-        align-items: center;
         margin-top: 20px;
-        /* Adjusted from 25px */
-        padding: 10px 0;
-        background-color: #f8f9fa;
-        /* Lighter background */
-        border-top: 1px solid #eee;
-        border-bottom-left-radius: 8px;
-        /* Adjusted from 12px */
-        border-bottom-right-radius: 8px;
-        /* Adjusted from 12px */
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        padding-bottom: 20px;
     }
 
-    .pagination-btn {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        padding: 8px 15px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 0.95em;
-        transition: background-color 0.3s ease;
+    .pagination a,
+    .pagination span {
+        color: #007bff;
         margin: 0 5px;
-        min-width: 80px;
-        text-align: center;
-    }
-
-    .pagination-btn:hover:not(:disabled) {
-        background-color: #0056b3;
-    }
-
-    .pagination-btn:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-        opacity: 0.7;
-    }
-
-    .page-numbers {
-        display: flex;
-        gap: 5px;
-        margin: 0 10px;
-    }
-
-    .page-number {
-        background-color: #e9ecef;
-        color: #495057;
+        text-decoration: none;
         padding: 8px 12px;
-        border-radius: 6px;
-        cursor: pointer;
+        border-radius: 5px;
         transition: background-color 0.3s ease, color 0.3s ease;
-        font-weight: 500;
-        min-width: 30px;
-        text-align: center;
+        border: 1px solid #dee2e6;
     }
 
-    .page-number:hover:not(.active) {
-        background-color: #d4d8db;
-    }
-
-    .page-number.active {
+    .pagination a:hover {
         background-color: #007bff;
         color: white;
-        font-weight: 600;
-        cursor: default;
+        box-shadow: none;
+    }
+
+    .pagination .active span {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+        font-weight: bold;
     }
 </style>
 @section('content')
@@ -231,7 +191,6 @@
                         <th>Tên giảng viên</th>
                         <th>Giới tính</th>
                         <th>Môn đang giảng dạy</th>
-                        <!-- <th>Lớp đang giảng dạy</th> -->
                         <th>Thao tác</th>
                     </tr>
                 </thead>
@@ -261,7 +220,7 @@
                                         {{ $giangVien->nguoiDung->trang_thai_tai_khoan === 'hoat_dong' ? 'Khoá' : 'Mở' }}
                                     </button>
                                     <form id="delete-form-{{ $giangVien->ma_giang_vien }}"
-                                        action="{{ route('lecturer_list', $giangVien->ma_giang_vien) }}" method="POST"
+                                        action="{{ route('lecturer_list_del', $giangVien->ma_giang_vien) }}" method="POST"
                                         style="display: inline;">
                                         @csrf
                                         @method('DELETE')
@@ -281,11 +240,32 @@
             </table>
         </div>
         <div class="lecturer-list-footer">
-            <div class="pagination-container">
-                <button id="prevPage" class="pagination-btn" disabled>&laquo; Trước</button>
-                <div id="pageNumbers" class="page-numbers">
-                </div>
-                <button id="nextPage" class="pagination-btn">&raquo; Sau</button>
+            <div class="pagination">
+                @if ($danhSachGiangVien->onFirstPage())
+                    <span class="disabled"><i class="fa-solid fa-chevron-left"></i></span>
+                @else
+                    <a href="{{ $danhSachGiangVien->previousPageUrl() }}"><i class="fa-solid fa-chevron-left"></i></a>
+                @endif
+
+                @if ($danhSachGiangVien->currentPage() > 1)
+                    <a href="{{ $danhSachGiangVien->url($danhSachGiangVien->currentPage() - 1) }}">
+                        {{ $danhSachGiangVien->currentPage() - 1 }}
+                    </a>
+                @endif
+
+                <a href="#" class="active">{{ $danhSachGiangVien->currentPage() }}</a>
+
+                @if ($danhSachGiangVien->currentPage() < $danhSachGiangVien->lastPage())
+                    <a href="{{ $danhSachGiangVien->url($danhSachGiangVien->currentPage() + 1) }}">
+                        {{ $danhSachGiangVien->currentPage() + 1 }}
+                    </a>
+                @endif
+
+                @if ($danhSachGiangVien->hasMorePages())
+                    <a href="{{ $danhSachGiangVien->nextPageUrl() }}"><i class="fa-solid fa-chevron-right"></i></a>
+                @else
+                    <span class="disabled"><i class="fa-solid fa-chevron-right"></i></span>
+                @endif
             </div>
         </div>
     </div>
@@ -321,13 +301,14 @@
 @endsection
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         function setGiangVienId(maGV) {
             document.getElementById('maGiangVienInput').value = maGV;
         }
-    </script>
-    <script>
+
         document.addEventListener('DOMContentLoaded', function () {
+            // Đổi trạng thái tài khoản giảng viên
             const buttons = document.querySelectorAll('.block-btn');
 
             buttons.forEach(button => {
@@ -382,9 +363,11 @@
                     });
                 });
             });
+
+            // Xoá giảng viên
             const buttonDelete = document.querySelectorAll(".delete-btn");
-            buttonDelete.forEach(buttonDelete => {
-                buttonDelete.addEventListener('click', function (e) {
+            buttonDelete.forEach(button => {
+                button.addEventListener('click', function (e) {
                     e.preventDefault();
                     const userId = this.dataset.id;
                     Swal.fire({
@@ -395,16 +378,16 @@
                         cancelButtonText: 'Huỷ'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            document.getElementById('delete-form-' + id).submit();
+                            document.getElementById('delete-form-' + userId).submit();
                         }
                     });
                 });
             });
-            //tìm kiếm
+
+            // Tìm kiếm tự động
             const form = document.getElementById("form-search-lecturer");
             const keywordInput = document.getElementById("keyword");
 
-            // Khi nhập từ khóa: debounce 500ms rồi submit
             if (keywordInput) {
                 let debounce;
                 keywordInput.addEventListener("input", function () {
@@ -414,28 +397,25 @@
                     }, 500);
                 });
             }
-        });
-        @if (session('success'))
-                    < script >
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Thành công!',
-                        text: @json(session('success')),
-                        confirmButtonText: 'OK'
-                    });
-            </script>
-        @endif
 
-    @if (session('error'))
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Thất bại!',
-                text: @json(session('error')),
-                confirmButtonText: 'Đóng'
-            });
-        </script>
-    @endif
+            // Hiển thị thông báo từ session (success/error)
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công!',
+                    text: @json(session('success')),
+                    confirmButtonText: 'OK'
+                });
+            @endif
 
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Thất bại!',
+                    text: @json(session('error')),
+                    confirmButtonText: 'Đóng'
+                });
+            @endif
+                                    });
     </script>
 @endsection

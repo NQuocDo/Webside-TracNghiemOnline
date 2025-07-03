@@ -147,7 +147,7 @@ Route::middleware(['auth'])->group(function () {
         //Quản lý giảng viên{
         Route::get('/dean/lecturer-list', [DeanController::class, 'hienThiDanhSachGiangVien'])->name('lecturer_list');
         Route::put('/dean/lecturer-list/{id}/status', [DeanController::class, 'thayDoiTrangThaiGiangVien'])->name('lecturer_list_status');//khoá và mở tài khoản sinh viên
-        Route::delete('/dean/lecturer-list/del/{id}', [DeanController::class, 'xoaMonHoc'])->name('lecturer_list_del');//xoá môn học vĩnh viễn
+        Route::delete('/dean/lecturer-list/del/{id}', [DeanController::class, 'xoaGiangVien'])->name('lecturer_list_del');//xoá môn học vĩnh viễn
         Route::post('/dean/lecturer-list/change-password', [DeanController::class, 'doiMatKhauGiangVien'])->name('lecturer_list_changepassword');
 
         //}
