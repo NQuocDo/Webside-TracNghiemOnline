@@ -1,0 +1,414 @@
+@extends('layout.dean')
+@section('title')
+    Quản lý sinh viên
+@endsection
+<style>
+    .student-manage-content {
+        padding: 20px;
+        margin: 20px;
+    }
+
+    .form-search-student {
+        width: 100%;
+        display: flex;
+        align-items: baseline;
+        justify-content: flex-end;
+        margin-bottom: 50px;
+    }
+
+    /* Container cho table */
+    .table-container {
+        overflow-x: auto;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        background: white;
+        margin: 20px 0;
+    }
+
+    /* Styling chính cho table */
+    .student-manage-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: white;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    /* Header styling */
+    .student-manage-table thead {
+        background: linear-gradient(135deg, #1f2b3e 0%, #2c3e50 100%);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .student-manage-table thead th {
+        padding: 16px 12px;
+        text-align: center;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .student-manage-table thead th:last-child {
+        border-right: none;
+    }
+
+    /* Body styling */
+    .student-manage-table tbody tr {
+        transition: all 0.3s ease;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .student-manage-table tbody tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .student-manage-table tbody tr:hover {
+        background-color: #e3f2fd;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .student-manage-table tbody td {
+        padding: 14px 12px;
+        border: none;
+        vertical-align: middle;
+        font-size: 14px;
+        color: #495057;
+    }
+
+    /* Specific cell styling */
+    .stt-cell {
+        text-align: center;
+        font-weight: 600;
+        color: #6c757d;
+        width: 60px;
+    }
+
+    .student-name-cell {
+        font-weight: 500;
+        color: #2c3e50;
+        min-width: 180px;
+    }
+
+    .student-sex-cell {
+        text-align: center;
+        width: 100px;
+    }
+
+    .student-class-cell {
+        min-width: 120px;
+        font-style: italic;
+    }
+
+    /* Actions cell */
+    .actions-cell {
+        width: 200px;
+        text-align: center;
+        padding: 12px 8px;
+    }
+
+    /* Button styling */
+    .actions-cell button {
+        padding: 8px 16px;
+        margin: 0 4px;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 70px;
+        justify-content: center;
+    }
+
+    /* Block button */
+    .block-btn {
+        background: linear-gradient(135deg, #fd7e14 0%, #fd9644 100%);
+        color: white;
+        box-shadow: 0 2px 4px rgba(253, 126, 20, 0.3);
+    }
+
+    .block-btn:hover {
+        background: linear-gradient(135deg, #e8590c 0%, #fd7e14 100%);
+        box-shadow: 0 4px 8px rgba(253, 126, 20, 0.4);
+        transform: translateY(-2px);
+    }
+
+    /* Delete button */
+    .delete-btn {
+        background: linear-gradient(135deg, #dc3545 0%, #e85d75 100%);
+        color: white;
+        box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+    }
+
+    .delete-btn:hover {
+        background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+        box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4);
+        transform: translateY(-2px);
+    }
+
+    /* Button icons */
+    .actions-cell button i {
+        font-size: 12px;
+    }
+
+    /* Empty state styling */
+    .text-center.text-muted {
+        text-align: center;
+        color: #6c757d;
+        font-style: italic;
+        padding: 40px 20px;
+        background-color: #f8f9fa;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .student-manage-table {
+            font-size: 12px;
+        }
+
+        .student-manage-table thead th,
+        .student-manage-table tbody td {
+            padding: 10px 8px;
+        }
+
+        .actions-cell {
+            width: 150px;
+        }
+
+        .actions-cell button {
+            padding: 6px 12px;
+            font-size: 11px;
+            margin: 2px;
+        }
+
+        .student-name-cell {
+            min-width: 120px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .actions-cell button {
+            display: block;
+            width: 100%;
+            margin: 2px 0;
+        }
+
+        .actions-cell {
+            width: 100px;
+        }
+    }
+
+    .pagination {
+        margin-top: 30px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pagination a {
+        color: black;
+        margin: auto 10px;
+        text-decoration: none;
+        padding: 5px;
+    }
+
+    .pagination a:hover {
+        color: blue;
+        box-shadow: 1px 1px 3px rgb(0, 0, 0, 0.5);
+    }
+</style>
+@section('content')
+    <div class="student-manage-content">
+        <form action="{{ route('student_management') }}" method="GET" id="form-search-student-list"
+            class="form-search-student" style="justify-content: end;">
+            <div class="mb-2 me-3">
+                <input type="text" class="form-control" id="keyword" name="tu_khoa_tim_kiem"
+                    placeholder="Tìm theo tên sinh viên" value="{{ $tuKhoaTimKiem }}">
+            </div>
+        </form>
+        <div class="student-manage-body">
+            <table class="student-manage-table">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Tên sinh viên</th>
+                        <th>Mã số sinh viên</th>
+                        <th>Email</th>
+                        <th>Giới tính</th>
+                        <th>Lớp</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if($danhSachSinhVien->isEmpty())
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Không có sinh viên</td>
+                        </tr>
+                    @else
+                        @foreach($danhSachSinhVien as $index => $sinhVien)
+                            @php
+                                $nguoiDung = $sinhVien->nguoiDung;
+                            @endphp
+                            <tr>
+                                <td class="stt-cell" style="text-align:center">
+                                    {{ ($danhSachSinhVien->currentPage() - 1) * $danhSachSinhVien->perPage() + $index + 1 }}
+                                </td>
+
+                                <td class="student-name-cell">
+                                    {{ $nguoiDung->ho_ten ?? 'Không rõ' }}
+                                </td>
+
+                                <td class="student-score-cell">
+                                    {{ $sinhVien->mssv ?? 'Không rõ' }}
+                                </td>
+                                <td class="student-email-cell">
+                                    {{ $nguoiDung->email ?? 'Không rõ' }}
+                                </td>
+
+                                <td class="student-sex-cell">
+                                    {{ $nguoiDung->gioi_tinh ?? 'Không rõ' }}
+                                </td>
+
+                                <td class="student-class-cell">
+                                    {{ $sinhVien->lopHoc->ten_lop_hoc ?? 'Chưa có lớp' }}
+                                </td>
+
+                                <td class="actions-cell">
+                                    <form id="delete-form-{{ $sinhVien->ma_sinh_vien }}"
+                                        action="{{ route('student_management_delete', $sinhVien->ma_sinh_vien) }}" method="POST"
+                                        style="display: inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="delete-btn" data-id="{{ $sinhVien->ma_sinh_vien }}">
+                                            <i class="fas fa-trash-alt"></i> Xóa
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    @endif
+                </tbody>
+            </table>
+        </div>
+        <div class="student-manage-footer">
+            <div class="pagination">
+                @if ($danhSachSinhVien->onFirstPage())
+                    <a href="#" class="disabled"><i class="fa-solid fa-chevron-left"></i></a>
+                @else
+                    <a href="{{ $danhSachSinhVien->previousPageUrl() }}"><i class="fa-solid fa-chevron-left"></i></a>
+                @endif
+                <a href="{{ $danhSachSinhVien->url($danhSachSinhVien->currentPage()) }}" class="active">
+                    {{ $danhSachSinhVien->currentPage() }}</a>
+                @if ($danhSachSinhVien->onLastPage())
+                    <a href="#" class="disabled"><i class="fa-solid fa-chevron-right"></i></a>
+                @else
+                    <a href="{{ $danhSachSinhVien->nextPageUrl() }}"><i class="fa-solid fa-chevron-right"></i></a>
+                @endif
+            </div>
+        </div>
+    </div>
+@endsection
+@section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const buttons = document.querySelectorAll('.block-btn');
+
+            buttons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const userId = this.getAttribute('data-id');
+
+                    Swal.fire({
+                        title: 'Bạn có chắc chắn?',
+                        text: "Thao tác này sẽ thay đổi trạng thái tài khoản!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Xác nhận',
+                        cancelButtonText: 'Huỷ'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch(`/dean/student-management/${userId}/status`, {
+                                method: 'PUT',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Content-Type': 'application/json',
+                                },
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Thực hiện thành công!',
+                                            text: data.message,
+                                            timer: 2000,
+                                            showConfirmButton: false
+                                        });
+                                        setTimeout(() => location.reload(), 2000);
+                                    } else {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Lỗi',
+                                            text: data.message
+                                        });
+                                    }
+                                })
+                                .catch(() => {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Lỗi kết nối',
+                                        text: 'Không thể gửi yêu cầu đến máy chủ.'
+                                    });
+                                });
+                        }
+                    });
+                });
+            });
+            //tìm kiếm
+            const form = document.getElementById("form-search-student-list");
+            const keywordInput = document.getElementById("keyword");
+
+            // Khi nhập từ khóa: debounce 500ms rồi submit
+            if (keywordInput) {
+                let debounce;
+                keywordInput.addEventListener("input", function () {
+                    clearTimeout(debounce);
+                    debounce = setTimeout(() => {
+                        form.submit();
+                    }, 500);
+                });
+            }
+
+            const buttonDelete = document.querySelectorAll(".delete-btn");
+            buttonDelete.forEach(buttonDelete => {
+                buttonDelete.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const userId = this.dataset.id;
+                    Swal.fire({
+                        title: 'Bạn có chắc muốn xoá sinh viên này?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Xoá',
+                        cancelButtonText: 'Huỷ'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById('delete-form-' + id).submit();
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+@endsection
