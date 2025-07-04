@@ -430,7 +430,7 @@
                 <tbody>
                     @if($danhSachPhanQuyen->isEmpty())
                         <tr>
-                            <td colspan="5" class="text-center text-muted">Không có quyền nào được tạo.</td>
+                            <td colspan="6" class="text-center text-muted">Không có quyền nào được tạo.</td>
                         </tr>
                     @else
                         @foreach($danhSachPhanQuyen as $index => $phanQuyen)

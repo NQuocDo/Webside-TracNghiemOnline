@@ -124,15 +124,6 @@ class DeanController extends Controller
         if ($user->vai_tro !== "truong_khoa") {
             return redirect()->back()->with("error", "Bạn không có quyền truy cập trang này.");
         }
-        // $request->validate([
-        //     'name_subject' => 'required|string|max:255',
-        //     'credit_subject' => 'required|integer|min:1',
-        //     'semester_subject' => 'required|integer|min:1',
-        //     'description_subject' => 'nullable|string',
-        //     'criteria_subject' => 'nullable|string|exists:mon_hocs,ma_mon_hoc',
-        //     'difficulty_subject' => 'required|string|max:50',
-        // ]);
-        // dd($request->all());
         $monHoc = MonHoc::create([
             'ten_mon_hoc' => $request->input('name_subject'),
             'so_tin_chi' => $request->input('credit_subject'),
@@ -164,23 +155,25 @@ class DeanController extends Controller
     }
 
     //Quản lý giảng viên
-    public function hienThiDanhSachGiangVien(Request $request)
-    {
-        $tuKhoaTimKiem = $request->input('tu_khoa_tim_kiem');
+        public function hienThiDanhSachGiangVien(Request $request)
+        {
+            $tuKhoaTimKiem = $request->input('tu_khoa_tim_kiem');
 
-        $danhSachGiangVien = GiangVien::with(['nguoiDung', 'monHocs'])
-            ->whereHas('nguoiDung', function ($query) use ($tuKhoaTimKiem) {
-                $query->where('vai_tro', 'giang_vien');
+            $danhSachGiangVien = GiangVien::with(['nguoiDung', 'monHocs'])
+                ->whereHas('nguoiDung', function ($query) use ($tuKhoaTimKiem) {
+                    $query->where('vai_tro', 'giang_vien');
 
-                if ($tuKhoaTimKiem) {
-                    $query->where('ho_ten', 'like', '%' . $tuKhoaTimKiem . '%');
-                }
-            })
-            ->paginate(5);
-        return view('dean.lecturer_list')
-            ->with('danhSachGiangVien', $danhSachGiangVien)
-            ->with('tuKhoaTimKiem', $tuKhoaTimKiem);
-    }
+                    if ($tuKhoaTimKiem) {
+                        $query->where('ho_ten', 'like', '%' . $tuKhoaTimKiem . '%');
+                    }
+                })
+                ->paginate(5);
+
+            return view('dean.lecturer_list', [
+                'danhSachGiangVien' => $danhSachGiangVien,
+                'tuKhoaTimKiem' => $tuKhoaTimKiem,
+            ]);
+        }
     public function thayDoiTrangThaiGiangVien($id)
     {
         $nguoiDung = NguoiDung::where('ma_nguoi_dung', $id)->first();
@@ -263,11 +256,10 @@ class DeanController extends Controller
         $giangVienId = $request->input('giang_vien_id');
         $danhSachGiangVien = GiangVien::with('nguoiDung')->get();
         $danhSachMonHoc = MonHoc::all();
-        $danhSachPhanQuyen = PhanQuyenDay::all();
         $danhSachLopHoc = LopHoc::all();
 
         if ($giangVienId) {
-            $danhSachPhanQuyen = PhanQuyenDay::where('ma_giang_vien', $giangVienId)->get();
+            $danhSachPhanQuyen = PhanQuyenDay::where('ma_giang_vien', $giangVienId)->paginate(5);
         } else {
             $danhSachPhanQuyen = PhanQuyenDay::paginate(5);
         }

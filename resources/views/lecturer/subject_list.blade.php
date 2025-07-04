@@ -69,21 +69,29 @@
                         <th>Tên môn</th>
                         <th>Học kì</th>
                         <th>Lớp</th>
+                        <th>Mô tả</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($danhSachMonHoc as $index => $monHoc)
+                    @if($danhSachMonHoc->isEmpty())
                         <tr>
-                            <td class="subject-score-cell">{{ $index + 1 }}</td>
-                            <td class="subject-name-cell">{{ $monHoc->ten_mon_hoc }}</td>
-                            <td class="subject-semester-cell">{{ $monHoc->mo_ta }}</td>
-                            @foreach($monHoc->phanQuyenDays as $phanQuyen)
-                                <td class="subject-class-cell">{{ $phanQuyen->lopHoc->ten_lop_hoc }}
-                                </td>
-                            @endforeach
+                            <td colspan="5" class="text-center">Giảng viên chưa được phân dạy môn nào.</td>
                         </tr>
-                    @endforeach
+                    @else
+                        @foreach($danhSachMonHoc as $index => $monHoc)
+                            <tr>
+                                <td class="subject-score-cell">{{ $index + 1 }}</td>
+                                <td class="subject-name-cell">{{ $monHoc->ten_mon_hoc }}</td>
+                                <td class="subject-name-cell">{{ $monHoc->hoc_ky }}</td>
+                                <td class="subject-class-cell">
+                                    {{ $monHoc->phanQuyenDays->pluck('lopHoc.ten_lop_hoc')->unique()->implode(', ') }}
+                                </td>
+                                <td class="subject-semester-cell">{{ $monHoc->mo_ta }}</td>
+                            </tr>
+                        @endforeach
+                    @endif
                 </tbody>
+
             </table>
         </div>
         <div class="subject-list-footer" style="margin-top: 15px;">

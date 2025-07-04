@@ -84,7 +84,6 @@
     .lecturer-subject-cell,
     .lecturer-class-cell {
         text-align: left;
-        /* Keep left alignment for list items */
     }
 
     .lecturer-subject-cell ul,
@@ -102,7 +101,6 @@
     .actions-cell {
         text-align: center;
         width: 150px;
-        /* Adjust width as needed */
         white-space: nowrap;
     }
 
@@ -119,14 +117,11 @@
         transition: all 0.2s ease;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         background-color: #007bff;
-        /* Example: Blue for edit */
         color: white;
     }
 
     .actions-cell button.delete-btn {
-        /* Add a class for delete specifically if needed */
         background-color: #dc3545;
-        /* Red for delete */
     }
 
     .actions-cell button:hover {
@@ -269,7 +264,7 @@
             </div>
         </div>
     </div>
-    <!-- Modal Đổi Mật Khẩu -->
+
     <div class="modal fade" id="doiMatKhauModal" tabindex="-1" aria-labelledby="doiMatKhauModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">

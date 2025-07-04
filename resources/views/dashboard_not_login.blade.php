@@ -35,13 +35,12 @@
         <div class="menu_toggle" id="navMenu" onclick="anHienMenu()">☰
             <div class="header_mobile_input">
                 <div class="header_mobile">
-                    <ul class="header_nav_monbile_list">
+                    <ul class="header_nav_monbile_list">    
                         <i class="fa-solid fa-xmark ms-3"></i>
                         <li><a href="https://cntt.caothang.edu.vn/lich-su-phat-trien.html">GIỚI THIỆU</a></li>
-                        <li><a href="">TÍNH NĂNG</a></li>
-                        <li><a href="">TIN TỨC</a></li>
+                        <li><a href="#">TÍNH NĂNG</a></li>
+                        <li><a href="#">TIN TỨC</a></li>
                         <li><a href="">LIÊN HỆ</a></li>
-                        <li><button class="btn_login fw-bold"><a href="{{ asset('/dangnhap') }}">Đăng nhập</a></button>
                         </li>
                     </ul>
                 </div>

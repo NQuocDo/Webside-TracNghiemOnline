@@ -21,12 +21,10 @@
 
     .btn-login {
       background: linear-gradient(90deg, #a7bfff 0%, #f0bbff 100%);
-      /* Thêm transition để hiệu ứng chuyển màu mượt mà hơn khi hover */
       transition: background 0.3s ease;
     }
 
     .btn-login:hover {
-      /* Màu nền đậm hơn khi hover (ví dụ, màu bạn dùng cho btn-google) */
       background: linear-gradient(90deg, #2a56f9 0%, #d92efb 100%);
     }
 
@@ -78,8 +76,6 @@
           @error('password')
         <div class="alert alert-danger">{{ $message }}</div>
       @enderror
-
-          {{-- Thông báo --}}
           @if(session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
       @endif
@@ -89,7 +85,7 @@
           Đăng nhập
         </button>
       </form>
-    </div>
+    </div>                                          
   </div>
 </body>
 
