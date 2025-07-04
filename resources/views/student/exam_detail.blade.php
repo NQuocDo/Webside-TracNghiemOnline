@@ -1,5 +1,7 @@
 @extends('layout.student_layout')
-
+@section('title')
+Trang chi tiết bài kiểm tra
+@endsection
 @section('content')
     <div class="container mt-4">
         <div class="exam-item-main mt-4">

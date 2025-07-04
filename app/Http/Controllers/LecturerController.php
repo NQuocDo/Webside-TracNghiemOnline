@@ -705,7 +705,7 @@ class LecturerController extends Controller
             'xac_nhan_mat_khau' => 'required|same:mat_khau_moi',
         ]);
 
-        $sinhVien = SinhVien::with('nguoiDung')  // eager load quan hệ
+        $sinhVien = SinhVien::with('nguoiDung') 
             ->where('ma_sinh_vien', $request->ma_sinh_vien)
             ->first();
 
@@ -972,6 +972,7 @@ class LecturerController extends Controller
                 $join->on('bd.ma_sinh_vien', '=', 'sv.ma_sinh_vien')
                     ->on('bd.ma_bai_kiem_tra', '=', 'bkt.ma_bai_kiem_tra');
             })
+            ->where('bkt.trang_thai','=','mo')
             ->select(
                 'sv.ma_sinh_vien',
                 'nd.ho_ten as ten_sinh_vien',

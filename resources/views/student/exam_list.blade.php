@@ -108,18 +108,6 @@ Trang Danh sách bài kiểm tra
         font-size: 16px;
     }
 
-    /* .exam-subject {
-        grid-column: 2;
-        grid-row: 2;
-        font-size: 14px;
-        color: #6c757d;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    } */
-
-
     .exam-item .exam-details {
         grid-column: 2;
         grid-row: 3;
@@ -207,7 +195,6 @@ Trang Danh sách bài kiểm tra
         border: 1px solid #f5c6cb;
     }
 
-    /* Page Header */
     .exam-header {
         text-align: center;
         margin-bottom: 30px;
@@ -230,7 +217,6 @@ Trang Danh sách bài kiểm tra
         margin: 0;
     }
 
-    /* Responsive Design */
     @media (max-width: 768px) {
         .exam-list {
             padding: 15px;

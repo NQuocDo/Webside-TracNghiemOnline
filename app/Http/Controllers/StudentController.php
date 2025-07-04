@@ -83,16 +83,11 @@ class StudentController extends Controller
         $monDangHoc = DB::table('sinhviens as sv')
             ->join('nguoidungs as nd_sv', 'sv.ma_nguoi_dung', '=', 'nd_sv.ma_nguoi_dung')
             ->join('lop_hocs as lh', 'sv.ma_lop_hoc', '=', 'lh.ma_lop_hoc')
-
-            // Dùng bảng phân quyền để lấy các môn học mà giảng viên dạy lớp đó
             ->join('phan_quyen_days as pqd', 'lh.ma_lop_hoc', '=', 'pqd.ma_lop_hoc')
             ->join('mon_hocs as mh', 'mh.ma_mon_hoc', '=', 'pqd.ma_mon_hoc')
-
             ->join('giangviens as gv', 'pqd.ma_giang_vien', '=', 'gv.ma_giang_vien')
             ->join('nguoidungs as nd_gv', 'gv.ma_nguoi_dung', '=', 'nd_gv.ma_nguoi_dung')
-
             ->where('sv.ma_sinh_vien', $sinhVien->ma_sinh_vien)
-
             ->select(
                 'mh.ma_mon_hoc',
                 'mh.ten_mon_hoc',
@@ -306,21 +301,17 @@ class StudentController extends Controller
             return back()->with('error', 'Không tìm thấy dữ liệu lịch sử.');
         }
 
-        // Lấy danh sách mã câu hỏi có trong lịch sử
         $maCauHoiList = $lichSu->pluck('ma_cau_hoi')->unique()->toArray();
 
-        // Lấy thông tin câu hỏi + đáp án
         $cauHoiList = CauHoi::whereIn('ma_cau_hoi', $maCauHoiList)
             ->with('dapAns')
             ->get();
 
-        // Chuẩn bị mảng các đáp án đã chọn theo câu hỏi
         $dapAnChon = [];
         foreach ($lichSu as $item) {
             $dapAnChon[$item->ma_cau_hoi][] = $item->ma_dap_an_chon;
         }
 
-        // Chuẩn bị mảng đáp án đúng
         $dapAnDung = [];
         foreach ($cauHoiList as $cauHoi) {
             $dapAnDung[$cauHoi->ma_cau_hoi] = $cauHoi->dapAns->where('ket_qua_dap_an', 1)->pluck('ma_dap_an')->toArray();
@@ -340,9 +331,17 @@ class StudentController extends Controller
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
         $maSinhVien = SinhVien::where('ma_nguoi_dung', $maNguoiDung)->first();
         $validated = $request->validate([
-            'errorTitle' => 'required|string|min:1|max:255',
+            'errorTitle' => 'required|string|min:5|max:255',
             'errorContent' => 'required|string|min:10|max:255',
             'teacherEmail' => 'required|email|max:255|exists:nguoidungs,email'
+        ], [
+            'errorTitle.required' => 'Không để trống tiêu đề',
+            'errorTitle.min' => 'Tiêu đề phải có ít nhất 5 ký tự',
+            'errorContent.required' => 'Không để trống nội dung',
+            'errorContent.min' => 'Nội dung phải có ít nhất 10 ký tự',
+            'teacherEmail.required' => 'Không để trống email giảng viên',
+            'teacherEmail.email' => 'Email không hợp lệ',
+            'teacherEmail.exists' => 'Email giảng viên không tồn tại trong hệ thống',
         ]);
 
         $giangVien = Auth::user()::where('email', $validated['teacherEmail'])->first();
@@ -362,7 +361,7 @@ class StudentController extends Controller
             'ma_giang_vien' => $maGiangVien->ma_giang_vien,
         ]);
 
-        return view('student.contact')->with('success', 'Gửi liên hệ thành công');
+        return redirect()->back()->with('success', 'Gửi liên hệ thành công');
     }
 
 

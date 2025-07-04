@@ -65,7 +65,6 @@ Trang cá nhân
         cursor: pointer;
     }
 
-    /* ---------------------- RESPONSIVE ---------------------- */
     @media (max-width: 768px) {
         .student-account-content {
             display: flex;
@@ -124,7 +123,7 @@ Trang cá nhân
                     <div class="item-right">
                         <div class="form-account">
                             <label for="email">Email<span class="required"></span></label>
-                            <input type="text" id="email" value="{{ $user->email }} ">
+                            <input type="text" id="email" value="{{ $user->email }} " disabled>
                         </div>
                         <div class="form-account">
                             <label for="ho_ten">Họ tên<span class="required"></span></label>

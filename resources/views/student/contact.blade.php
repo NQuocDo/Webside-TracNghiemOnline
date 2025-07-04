@@ -96,12 +96,12 @@
                 @csrf
                 <div class="form-group">
                     <label for="errorTitle" class="required">Tiêu đề</label>
-                    <input type="text" id="errorTitle" name="errorTitle" placeholder="Nhập tiêu đề..." required>
+                    <input type="text" id="errorTitle" name="errorTitle" placeholder="Nhập tiêu đề...">
                 </div>
 
                 <div class="form-group">
                     <label for="errorContent" class="required">Nội dung</label>
-                    <textarea id="errorContent" name="errorContent" placeholder="Mô tả chi tiết..." required></textarea>
+                    <textarea id="errorContent" name="errorContent" placeholder="Mô tả chi tiết..." ></textarea>
                 </div>
 
                 <div class="form-group">

@@ -30,7 +30,6 @@
         font-size: 1rem;
     }
 
-    /* Dropdown chọn môn học */
     .subject-dropdown-container {
         position: relative;
         margin-bottom: 30px;

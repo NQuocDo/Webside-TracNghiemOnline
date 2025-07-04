@@ -177,7 +177,6 @@
         opacity: 0.5;
     }
 
-    /* Responsive Design */
     @media (max-width: 768px) {
         .student-list-content {
             padding: 10px;
@@ -233,7 +232,6 @@
         }
     }
 
-    /* Loading state */
     .student-list-table.loading {
         opacity: 0.6;
         pointer-events: none;
@@ -441,4 +439,25 @@
             document.getElementById('modal_ma_sinh_vien').value = maSinhVien;
         }
     </script>
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                text: @json(session('success')),
+                confirmButtonText: 'OK'
+            });
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Thất bại!',
+                text: @json(session('error')),
+                confirmButtonText: 'Đóng'
+            });
+        </script>
+    @endif
 @endsection

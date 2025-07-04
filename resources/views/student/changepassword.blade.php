@@ -173,14 +173,14 @@ Trang Đổi mật khẩu
                             style="padding: 10px; border-radius: 5px; width: 300px;background-color: #59c0f7;margin-left:15px;">Thay
                             đổi Mật khẩu</button>
                          @if ($errors->any())
-    <div class="alert alert-danger">
-        <ul style="list-style: none;">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif   
+                            <div class="alert alert-danger">
+                                <ul style="list-style: none;">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif   
                     </form>
                 </div>
             </div>

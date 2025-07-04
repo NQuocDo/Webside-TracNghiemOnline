@@ -61,7 +61,8 @@
                                 thi</span></a></li>
                     <li><a href="{{ asset('lecturer/global') }}"><i class="fa-solid fa-globe"></i><span>Cộng
                                 đồng</span></a></li>
-                    <li><a href="{{ route('score_board') }}"><i class="fa-solid fa-check-circle"></i><span>Bảng điểm</span></a></li>
+                    <li><a href="{{ route('score_board') }}"><i class="fa-solid fa-check-circle"></i><span>Bảng
+                                điểm</span></a></li>
                 </ul>
             </div>
         </aside>
@@ -81,7 +82,12 @@
                 <div class="main_top_right">
                     <input type="checkbox" name="" id="profile-btn" hidden>
                     <label for="profile-btn">
-                        <img src="{{ asset('images/lecturer.jpg') }}" alt="sinh viên nam" class="src user-avatar-icon">
+                        @if(empty($user->hinh_anh))
+                             <img src="{{ asset('images/lecturer.jpg') }}" alt="sinh viên nam" class="src user-avatar-icon">
+                        @else
+                            <img src="{{ asset('images/' . $user->hinh_anh) }}" alt="Ảnh người dùng" width="70px"
+                                height="70px">
+                        @endif
                     </label>
                     <div class="menu-profile" id="userDropdownMenu">
                         <button class="border-bottom pb-1"

@@ -531,6 +531,28 @@
             document.getElementById('examForm').submit();
         }
     </script>
+
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                text: @json(session('success')),
+                confirmButtonText: 'OK'
+            });
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Thất bại!',
+                text: @json(session('error')),
+                confirmButtonText: 'Đóng'
+            });
+        </script>
+    @endif
 </body>
 
 

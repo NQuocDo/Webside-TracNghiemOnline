@@ -158,7 +158,6 @@
         box-shadow: 0 4px 15px rgba(44, 90, 160, 0.4);
     }
 
-    /* Responsive Design */
     @media (max-width: 768px) {
         .dashboard-wrapper {
             padding: 15px;
@@ -205,7 +204,6 @@
         }
     }
 
-    /* Animation for page load */
     .item {
         animation: fadeInUp 0.6s ease forwards;
         opacity: 0;
@@ -239,7 +237,6 @@
 @section('content')
     <div class="dashboard-wrapper">
         <div class="dashboard-main-content">
-            <!-- Page Header -->
             <div class="page-header">
                 <h2>
                     <span class="icon">📚</span>
@@ -248,7 +245,6 @@
                 <p class="subtitle">Quản lý và theo dõi các môn học của bạn</p>
             </div>
 
-            <!-- Course Items -->
             <div class="item-content">
                 @if($monDangHoc->isEmpty())
                     <li>Không có</li>
