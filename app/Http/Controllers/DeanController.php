@@ -135,45 +135,44 @@ class DeanController extends Controller
 
         return redirect()->route('subject_management')->with('success', 'Thêm môn học thành công');
     }
-
+    //xoá môn hoc
     public function xoaMonHoc($id)
     {
+        $monHoc = MonHoc::where('ma_mon_hoc', $id)->first();
 
-        try {
-            DB::beginTransaction();
-
-            $monHoc = MonHoc::where('ma_mon_hoc', $id)->first();
-            $monHoc->phanQuyenDays()->delete();
-            $monHoc->delete();
-            DB::commit();
-
-            return redirect()->route('subject_management')->with('success', 'Xoá môn học thành công');
-        } catch (\Exception $e) {
-            DB::rollBack(); // Hoàn tác nếu có lỗi
-            return redirect()->back()->with('error', 'Không thể xóa môn học: ' . $e->getMessage());
+        if (!$monHoc) {
+            return redirect()->back()->with('error', 'Không tìm thấy môn học.');
         }
+
+        if ($monHoc->phanQuyenDays()->exists()) {
+            return redirect()->back()->with('error', 'Không thể xoá môn học vì đã được phân quyền cho giảng viên.');
+        }
+
+        $monHoc->delete();
+
+        return redirect()->route('subject_management')->with('success', 'Xoá môn học thành công.');
     }
 
     //Quản lý giảng viên
-        public function hienThiDanhSachGiangVien(Request $request)
-        {
-            $tuKhoaTimKiem = $request->input('tu_khoa_tim_kiem');
+    public function hienThiDanhSachGiangVien(Request $request)
+    {
+        $tuKhoaTimKiem = $request->input('tu_khoa_tim_kiem');
 
-            $danhSachGiangVien = GiangVien::with(['nguoiDung', 'monHocs'])
-                ->whereHas('nguoiDung', function ($query) use ($tuKhoaTimKiem) {
-                    $query->where('vai_tro', 'giang_vien');
+        $danhSachGiangVien = GiangVien::with(['nguoiDung', 'monHocs'])
+            ->whereHas('nguoiDung', function ($query) use ($tuKhoaTimKiem) {
+                $query->where('vai_tro', 'giang_vien');
 
-                    if ($tuKhoaTimKiem) {
-                        $query->where('ho_ten', 'like', '%' . $tuKhoaTimKiem . '%');
-                    }
-                })
-                ->paginate(5);
+                if ($tuKhoaTimKiem) {
+                    $query->where('ho_ten', 'like', '%' . $tuKhoaTimKiem . '%');
+                }
+            })
+            ->paginate(5);
 
-            return view('dean.lecturer_list', [
-                'danhSachGiangVien' => $danhSachGiangVien,
-                'tuKhoaTimKiem' => $tuKhoaTimKiem,
-            ]);
-        }
+        return view('dean.lecturer_list', [
+            'danhSachGiangVien' => $danhSachGiangVien,
+            'tuKhoaTimKiem' => $tuKhoaTimKiem,
+        ]);
+    }
     public function thayDoiTrangThaiGiangVien($id)
     {
         $nguoiDung = NguoiDung::where('ma_nguoi_dung', $id)->first();

@@ -468,7 +468,8 @@
             <div class="pagination">
                 <a href="{{$danhSachPhanQuyen->previousPageUrl()}}"><i class="fa-solid fa-chevron-left"></i></a>
                 @if($danhSachPhanQuyen->currentPage() - 1 != 0) <a
-                href="{{$danhSachPhanQuyen->previousPageUrl()}}">{{$danhSachPhanQuyen->currentPage() - 1}}</i></a> @endif
+                    href="{{$danhSachPhanQuyen->previousPageUrl()}}">{{$danhSachPhanQuyen->currentPage() - 1}}</i></a>
+                @endif
                 <a href="{{$danhSachPhanQuyen->currentPage()}}" class="active"> {{$danhSachPhanQuyen->currentPage()}}</a>
                 @if($danhSachPhanQuyen->currentPage() != $danhSachPhanQuyen->lastPage())<a
                 href="{{$danhSachPhanQuyen->nextPageUrl()}}">{{$danhSachPhanQuyen->currentPage() + 1}}</a> @endif
@@ -619,6 +620,6 @@
                     showConfirmButton: true // Giữ thông báo lỗi cho người dùng đọc
                 });
             @endif
-                                                    });
+                                                        });
     </script>
 @endsection

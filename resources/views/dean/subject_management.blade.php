@@ -11,7 +11,6 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
-    /* Popup thêm môn học (giữ nguyên hoặc điều chỉnh nếu cần) */
     .add-subject {
         padding: 30px;
         border-radius: 15px;
@@ -22,7 +21,6 @@
         margin: 40px auto;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         display: none;
-        /* Ban đầu ẩn, sẽ hiển thị bằng JS */
     }
 
     .add-subject h2 {
@@ -57,7 +55,6 @@
 
     .add-subject-form input[type="text"],
     .add-subject-form input[type="number"] {
-        /* Thêm type="number" */
         flex-grow: 1;
         padding: 12px 15px;
         border: 1px solid #ccc;
@@ -69,7 +66,6 @@
 
     .add-subject-form input[type="text"]:focus,
     .add-subject-form input[type="number"]:focus {
-        /* Thêm type="number" */
         border-color: #007bff;
         box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
         outline: none;
@@ -96,7 +92,6 @@
         background-size: 12px;
     }
 
-    /* Nút thêm môn học trong form (nếu là submit trực tiếp) */
     #add-subject-btn {
         background-color: #28a745;
         color: white;
@@ -108,7 +103,6 @@
         transition: background-color 0.3s ease, transform 0.2s ease;
         margin-top: 20px;
         align-self: flex-end;
-        /* Căn chỉnh nút về bên phải */
         min-width: 180px;
     }
 
