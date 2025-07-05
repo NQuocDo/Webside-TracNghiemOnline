@@ -1,6 +1,5 @@
 @extends('layout.lecturer_layout')
 <style>
-    /* Question Management Styles */
     .main-question-header {
         width: 100%;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -180,7 +179,6 @@
         color: #dc3545 !important;
     }
 
-    /* Actions column */
     .actions-cell {
         width: 180px;
         text-align: center;

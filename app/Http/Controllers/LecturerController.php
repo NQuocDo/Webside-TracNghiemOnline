@@ -405,8 +405,11 @@ class LecturerController extends Controller
         }
 
         for ($i = 1; $i <= $count; $i++) {
+            $noiDung = $request->input("question_content_$i");
+            if (!$noiDung || trim($noiDung) === '') {
+                continue;
+            }
             $request->validate([
-                "question_content_$i" => 'required|string',
                 "difficulty_$i" => 'required|string',
                 "subject_$i" => 'required|string|in:' . implode(',', $monHocDuocDay),
                 "answers_{$i}" => 'required|array|min:1',
@@ -420,24 +423,21 @@ class LecturerController extends Controller
                 $isExists = CauHoi::where('ma_cau_hoi', $maCauHoi)->exists();
             } while ($isExists);
             $cauHoi->ma_cau_hoi = $maCauHoi;
-            $cauHoi->noi_dung = $request->input("question_content_$i");
+            $cauHoi->noi_dung = $noiDung;
             $cauHoi->ghi_chu = $request->input("note_$i") ?? null;
             $cauHoi->do_kho = $request->input("difficulty_$i");
             $cauHoi->ma_mon_hoc = $request->input("subject_$i");
             $cauHoi->ma_giang_vien = $giangVienId;
 
-            // ✅ Lưu ảnh vào public/images thay vì storage
             if ($request->hasFile("question_image_$i")) {
                 $file = $request->file("question_image_$i");
                 $fileName = uniqid('img_') . '.' . $file->getClientOriginalExtension();
 
-                // Đảm bảo thư mục tồn tại
                 $destination = public_path('images');
                 if (!file_exists($destination)) {
                     mkdir($destination, 0755, true);
                 }
 
-                // Di chuyển file vào thư mục public/images
                 $file->move($destination, $fileName);
                 $cauHoi->hinh_anh = $fileName;
             }
@@ -690,11 +690,11 @@ class LecturerController extends Controller
                     return stripos($sv->nguoiDung->ho_ten, $keyword) !== false;
                 });
             }
-            $danhSachSinhVien = $danhSachSinhVien->merge( $sinhViens);
+            $danhSachSinhVien = $danhSachSinhVien->merge($sinhViens);
         }
         $danhSachSinhVien = $danhSachSinhVien->unique('ma_sinh_vien')->values();
 
-        return view('lecturer.student_list')->with('danhSachSinhVien', $danhSachSinhVien)->with('keyword',$keyword);
+        return view('lecturer.student_list')->with('danhSachSinhVien', $danhSachSinhVien)->with('keyword', $keyword);
     }
     //đổi mật khẩu sinh viên
     public function doiMatKhauSinhVien(Request $request)
@@ -705,7 +705,7 @@ class LecturerController extends Controller
             'xac_nhan_mat_khau' => 'required|same:mat_khau_moi',
         ]);
 
-        $sinhVien = SinhVien::with('nguoiDung') 
+        $sinhVien = SinhVien::with('nguoiDung')
             ->where('ma_sinh_vien', $request->ma_sinh_vien)
             ->first();
 
@@ -779,11 +779,9 @@ class LecturerController extends Controller
 
         $ma_giang_vien = $giangVien->ma_giang_vien;
 
-        do {
-            $maDeThi = 'MDT' . now()->format('His') . rand(10, 99);
-        } while (DeThi::where('ma_de_thi', $maDeThi)->exists());
+        $maDeThi = 'MDT' . substr(uniqid(), -5) . rand(10, 99);
         $dethi = DeThi::create([
-            'ma_de_thi' => 'MDT' . now()->format('is') . rand(10, 99),
+            'ma_de_thi' => $maDeThi,
             'ten_de_thi' => $request->input('ten_de_thi'),
             'thoi_gian_lam_bai' => $request->input('thoi_gian_lam_bai'),
             'so_luong_cau_hoi' => count($maCauHois),
@@ -795,13 +793,9 @@ class LecturerController extends Controller
             return redirect()->back()->with('error', 'Đã có lỗi xảy ra! Vui lòng kiểm tra lại');
         }
         foreach ($maCauHois as $maCauHoi) {
-            do {
-                $maChiTiet = 'CTDT' . now()->format('is') . rand(10, 99);
-            } while (
-                DB::table('chi_tiet_de_thi_va_cau_hois')->where('ma_chi_tiet_dtch', $maChiTiet)->exists()
-            );
+            $maCTCH = 'CT' . substr(uniqid(), -4) . rand(1, 9);
             DB::table('chi_tiet_de_thi_va_cau_hois')->insert([
-                'ma_chi_tiet_dtch' => 'CTDT' . now()->format('is') . rand(10, 99),
+                'ma_chi_tiet_dtch' => $maCTCH,
                 'ma_de_thi' => $dethi->ma_de_thi,
                 'ma_cau_hoi' => $maCauHoi,
                 'created_at' => now(),
@@ -816,14 +810,11 @@ class LecturerController extends Controller
     {
         $giangVien = auth()->user()->giangVien;
         $ma_giang_vien = $giangVien->ma_giang_vien;
-
         $maMonHocLoc = $request->input('ma_mon_hoc');
-
         $danhSachMonHoc = $giangVien->monHocs;
-
-        // Query đề thi
         $query = DeThi::with(['baiKiemTras', 'monHoc'])
-            ->where('ma_giang_vien', $ma_giang_vien);
+            ->where('ma_giang_vien', $ma_giang_vien)
+            ->where('trang_thai', 'hien');
 
         if ($maMonHocLoc) {
             $query->where('ma_mon_hoc', $maMonHocLoc);
@@ -845,17 +836,11 @@ class LecturerController extends Controller
             return redirect()->back()->with('error', 'Không tìm thấy đề thi cần xoá.');
         }
 
-        // Kiểm tra từng bài kiểm tra có lịch sử làm bài
+        $deThi->cauHoi()->detach();
         foreach ($deThi->baiKiemTras as $bkt) {
-            if ($bkt->lichSuLamBais->count() > 0) {
-                return redirect()->back()->with('error', 'Không thể xoá đề thi vì đã có sinh viên làm bài.');
-            }
+            $bkt->update(['trang_thai_hien_thi' => 'an']);
         }
-
-        // Nếu không có lịch sử làm bài: Xoá đề thi an toàn
-        $deThi->cauHoi()->detach();         // Xoá liên kết đề thi - câu hỏi
-        $deThi->baiKiemTras()->delete();    // Xoá bài kiểm tra liên quan
-        $deThi->delete();                   // Xoá đề thi
+        $deThi->update(['trang_thai' => 'an']);
 
         return redirect()->route('exam_list')->with('success', 'Xoá đề thi thành công.');
     }
@@ -928,13 +913,36 @@ class LecturerController extends Controller
         return redirect()->back()->with('success', 'Trạng thái bài kiểm tra đã được cập nhật.');
     }
     //hiển thị liên hệ
-    public function hienThiLienHe()
+    public function hienThiLienHe(Request $request)
     {
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
         $maGiangVien = GiangVien::where('ma_nguoi_dung', $maNguoiDung)->first();
-        $danhSachLienHe = LienHe::where('ma_giang_vien', $maGiangVien->ma_giang_vien)->paginate(10);
+        $keyword = $request->query('keyword');
+        $trangThai = $request->query('trang_thai');
 
-        return view('lecturer.contact')->with('danhSachLienHe', $danhSachLienHe);
+        $query = LienHe::where('ma_giang_vien', $maGiangVien->ma_giang_vien);
+        if (!empty($keyword)) {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('tieu_de', 'like', '%' . $keyword . '%')
+                    ->orWhere('noi_dung', 'like', '%' . $keyword . '%');
+            });
+        }
+
+        if (!empty($trangThai)) {
+            $query->where('trang_thai', $trangThai);
+        } else {
+            $query->where('trang_thai', 'hien');
+        }
+
+        $danhSachLienHe = $query->paginate(10)->appends([
+            'keyword' => $keyword,
+            'trang_thai' => $trangThai,
+        ]);
+
+        return view('lecturer.contact')
+            ->with('danhSachLienHe', $danhSachLienHe)
+            ->with('keyword', $keyword)
+            ->with('trangThai', $trangThai);
     }
     //xoá liên hệ
     public function xoaLienHe($ma_lien_he)
@@ -945,9 +953,10 @@ class LecturerController extends Controller
             return back()->with('error', 'Liên hệ không tồn tại.');
         }
 
-        $lienHe->delete();
+        $lienHe->trang_thai = 'an';
+        $lienHe->save();
 
-        return back()->with('success', 'Xoá liên hệ thành công.');
+        return back()->with('success', 'Đã ẩn liên hệ này.');
     }
     //hiển thị bảng điểm
     public function hienThiBangDiem(Request $request)
@@ -972,7 +981,7 @@ class LecturerController extends Controller
                 $join->on('bd.ma_sinh_vien', '=', 'sv.ma_sinh_vien')
                     ->on('bd.ma_bai_kiem_tra', '=', 'bkt.ma_bai_kiem_tra');
             })
-            ->where('bkt.trang_thai','=','mo')
+            ->where('bkt.trang_thai', '=', 'mo')
             ->select(
                 'sv.ma_sinh_vien',
                 'nd.ho_ten as ten_sinh_vien',
@@ -991,7 +1000,7 @@ class LecturerController extends Controller
         if ($maMon) {
             $bangDiemTruyVan->where('mh.ma_mon_hoc', $maMon);
         }
-        $bangDiem=$bangDiemTruyVan->paginate(10);
+        $bangDiem = $bangDiemTruyVan->paginate(10);
 
         $danhSachLop = DB::table('phan_quyen_days as pq')
             ->join('lop_hocs as lh', 'pq.ma_lop_hoc', '=', 'lh.ma_lop_hoc')

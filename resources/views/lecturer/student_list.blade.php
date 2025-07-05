@@ -307,19 +307,6 @@
                                 <td class="student-score-cell">{{ $sinhVien->mssv }}</td>
                                 <td class="student-class-cell">{{ $sinhVien->lopHoc->ten_lop_hoc }}</td>
                                 <td class="actions-cell">
-                                    @if(isset($sinhVien->nguoiDung))
-                                        <button type="button" class="btn btn-sm btn-toggle-status"
-                                            data-id="{{ $sinhVien->nguoiDung->ma_nguoi_dung }}"
-                                            data-status="{{ $sinhVien->nguoiDung->trang_thai_tai_khoan }}">
-                                            <i class="fa-solid fa-circle-xmark me-1"></i>
-                                            <span class="status-label">
-                                                {{ $sinhVien->nguoiDung->trang_thai_tai_khoan === 'hoat_dong' ? 'Khoá' : 'Mở' }}
-                                            </span>
-                                        </button>
-                                    @else
-                                        <span class="text-muted">Không rõ trạng thái</span>
-                                    @endif
-
                                     <button class="changepassword-btn" data-bs-toggle="modal" data-bs-target="#doiMatKhauModal"
                                         onclick="setStudentId('{{ $sinhVien->ma_sinh_vien }}')">
                                         <i class="fa-solid fa-eye"></i> Đổi mật khẩu
@@ -383,56 +370,6 @@
                     }, 500);
                 });
             }
-            const buttons = document.querySelectorAll('.btn-toggle-status');
-
-            buttons.forEach(button => {
-                button.addEventListener('click', function () {
-                    const userId = this.dataset.id;
-
-                    fetch(`/lecturer/student-list/${userId}/status`, {
-                        method: 'PUT',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Content-Type': 'application/json',
-                        }
-                    })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                const label = this.querySelector('.status-label');
-
-                                if (data.new_status === 'hoat_dong') {
-                                    label.textContent = 'Khoá';
-                                } else {
-                                    label.textContent = 'Mở';
-                                }
-
-                                this.dataset.status = data.new_status;
-
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Thành công!',
-                                    text: `Tài khoản đã được cập nhật: ${data.new_status === 'hoat_dong' ? 'Hoạt động' : 'Không hoạt động'}`,
-                                    timer: 2000,
-                                    showConfirmButton: false,
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Lỗi!',
-                                    text: 'Không thể cập nhật trạng thái.',
-                                });
-                            }
-                        })
-                        .catch(err => {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Lỗi!',
-                                text: 'Đã xảy ra lỗi khi gửi yêu cầu.',
-                            });
-                        });
-                });
-            });
         });
 
         function setStudentId(maSinhVien) {

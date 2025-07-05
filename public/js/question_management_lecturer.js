@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", function () {
     alertify.set("notifier", "position", "top-right");
     alertify.set("notifier", "delay", 3);
@@ -124,7 +123,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             );
         });
-        
     });
     const restoreButton = document.querySelectorAll(".btn-restore"); // Chọn tất cả các nút có class .delete-btn
 
@@ -148,15 +146,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 thongBaoTieuDeXacNhan,
                 thongBaoNoiDungXacNhan,
                 function () {
-                    fetch(`/lecturer/question_del/${questionId}/update-status`, {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": csrfToken,
-                        },
+                    fetch(
+                        `/lecturer/question_del/${questionId}/update-status`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRF-TOKEN": csrfToken,
+                            },
 
-                        body: JSON.stringify({ trang_thai_moi: trangThaiMoi }),
-                    })
+                            body: JSON.stringify({
+                                trang_thai_moi: trangThaiMoi,
+                            }),
+                        }
+                    )
                         .then((response) => {
                             if (!response.ok) {
                                 return response.text().then((text) => {
@@ -242,26 +245,84 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 500);
         });
     }
-});
+    const checkAll = document.getElementById("checkAll");
+    const checkboxes = document.querySelectorAll(".question-checkbox");
 
-//review ảnh trang editquestion
-const imageInput = document.getElementById("imageInput");
-const previewImage = document.getElementById("previewImage");
+    // Lấy dữ liệu đã chọn trước đó từ localStorage
+    let selectedQuestions = JSON.parse(
+        localStorage.getItem("selectedQuestions") || "[]"
+    );
 
-imageInput.addEventListener("change", function () {
-    const file = this.files[0];
+    // Đánh dấu lại các checkbox đã chọn từ localStorage
+    checkboxes.forEach((cb) => {
+        if (selectedQuestions.includes(cb.value)) {
+            cb.checked = true;
+        }
 
-    if (file) {
-        // Tạo URL tạm thời cho tệp đã chọn
-        const objectURL = URL.createObjectURL(file);
+        // Mỗi khi checkbox thay đổi, cập nhật lại localStorage
+        cb.addEventListener("change", function () {
+            const val = this.value;
+            if (this.checked) {
+                if (!selectedQuestions.includes(val)) {
+                    selectedQuestions.push(val);
+                }
+            } else {
+                selectedQuestions = selectedQuestions.filter(
+                    (id) => id !== val
+                );
+            }
+            localStorage.setItem(
+                "selectedQuestions",
+                JSON.stringify(selectedQuestions)
+            );
+        });
+    });
 
-        previewImage.src = objectURL;
-        previewImage.style.display = "block"; // Hiển thị ảnh
-        previewImage.onload = () => {
-            URL.revokeObjectURL(objectURL);
-        };
-    } else {
-        previewImage.src = "#";
-        previewImage.style.display = "none"; // Ẩn ảnh
+    // Xử lý "Chọn tất cả" trên trang hiện tại
+    if (checkAll) {
+        checkAll.addEventListener("change", function () {
+            checkboxes.forEach((cb) => {
+                cb.checked = this.checked;
+
+                const val = cb.value;
+                if (this.checked) {
+                    if (!selectedQuestions.includes(val)) {
+                        selectedQuestions.push(val);
+                    }
+                } else {
+                    selectedQuestions = selectedQuestions.filter(
+                        (id) => id !== val
+                    );
+                }
+            });
+            localStorage.setItem(
+                "selectedQuestions",
+                JSON.stringify(selectedQuestions)
+            );
+        });
+    }
+
+    const formCreateQuetion = document.getElementById("form-create-exam");
+    const createExamBtn = document.getElementById("create-exam-btn");
+
+    if (formCreateQuetion && createExamBtn) {
+        createExamBtn.addEventListener("click", function () {
+            // Xoá các hidden cũ nếu có
+            const oldHidden = document.querySelectorAll(
+                ".dynamic-hidden-question"
+            );
+            oldHidden.forEach((el) => el.remove());
+
+            selectedQuestions.forEach((id) => {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "ma_cau_hoi[]";
+                input.value = id;
+                input.classList.add("dynamic-hidden-question");
+                formCreateQuetion.appendChild(input);
+            });
+
+            formCreateQuetion.submit();
+        });
     }
 });

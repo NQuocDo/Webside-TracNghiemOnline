@@ -16,6 +16,7 @@ class DeThi extends Model
         'ten_de_thi',
         'thoi_gian_lam_bai',
         'so_luong_cau_hoi',
+        'trang_thai',
         'ma_mon_hoc',
         'ma_giang_vien'
     ];

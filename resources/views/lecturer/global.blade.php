@@ -1,18 +1,15 @@
 @extends('layout.lecturer_layout')
 @section('title')
-Trang Cộng đồng
+    Trang Cộng đồng
 @endsection
 <style>
-    /* ========== CONTAINER CHÍNH ========== */
-    .global-content { /* Đổi từ .question-content */
+    .global-content {
         padding: 20px;
         background-color: #f8f9fa;
         min-height: 100vh;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* ========== HEADER SECTION ========== */
-    /* Không có phần header trong CSS bạn cung cấp, nhưng các style button có thể dùng lại */
     .add-question-btn {
         display: inline-flex;
         align-items: center;
@@ -36,7 +33,6 @@ Trang Cộng đồng
         text-decoration: none;
     }
 
-    /* ========== FORM SEARCH ========== */
     .form-search-question {
         display: flex;
         align-items: center;
@@ -45,10 +41,10 @@ Trang Cộng đồng
         padding: 20px;
         border-radius: 12px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        margin-bottom: 25px; /* Điều chỉnh margin-bottom */
-        justify-content: flex-start; /* Thêm để phù hợp với mẫu */
-        width: auto; /* Bỏ width: 100% để phù hợp */
-        padding-right: 20px; /* Điều chỉnh padding */
+        margin-bottom: 25px;
+        justify-content: flex-start;
+        width: auto;
+        padding-right: 20px;
     }
 
     .form-search-question .mb-2 {
@@ -87,8 +83,7 @@ Trang Cộng đồng
         box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
     }
 
-    /* ========== TABLE CONTAINER ========== */
-    .main-question-body { /* Thêm lớp bao quanh bảng nếu cần */
+    .main-question-body {
         background: white;
         border-radius: 12px;
         overflow: hidden;
@@ -96,22 +91,21 @@ Trang Cộng đồng
         margin-bottom: 25px;
     }
 
-    /* ========== TABLE STYLING ========== */
-    .global-table { /* Đổi từ .question-table */
+    .global-table {
         width: 100%;
         border-collapse: collapse;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        border: 1px solid #dee2e6;
     }
 
-    /* Header */
-    .global-table thead { /* Đổi từ .question-table thead */
+    .global-table thead {
         background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
         position: sticky;
         top: 0;
         z-index: 10;
     }
 
-    .global-table thead th { /* Đổi từ .question-table thead th */
+    .global-table thead th {
         padding: 16px 12px;
         text-align: center;
         color: white;
@@ -121,15 +115,16 @@ Trang Cộng đồng
         letter-spacing: 0.5px;
         border-right: 1px solid rgba(255, 255, 255, 0.1);
         white-space: nowrap;
-        border: none; /* Bỏ border cũ */
+        border: none;
     }
 
     .global-table thead th:last-child {
         border-right: none;
     }
 
-    /* Body */
-    .global-table tbody tr { /* Đổi từ .question-table tbody tr */
+    .global-table tbody tr {
+        border-radius: 12px;
+        background-color: #eaf4ff;
         border-bottom: 1px solid #e9ecef;
         transition: all 0.3s ease;
     }
@@ -144,22 +139,19 @@ Trang Cộng đồng
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
-    .global-table tbody td { /* Đổi từ .question-table tbody td */
+    .global-table tbody td {
         padding: 16px 12px;
         vertical-align: top;
         border-right: 1px solid #e9ecef;
         font-size: 14px;
-        border: none; /* Bỏ border cũ */
-        border-bottom: 1px solid #e9ecef; /* Thêm lại border-bottom */
+        border: none;
+        border-bottom: 1px solid #e9ecef;
     }
 
     .global-table tbody td:last-child {
         border-right: none;
     }
 
-    /* ========== SPECIFIC CELLS ========== */
-
-    /* STT và Checkbox cell */
     .checkbox-stt-cell {
         text-align: center;
         font-weight: 600;
@@ -173,7 +165,6 @@ Trang Cộng đồng
         cursor: pointer;
     }
 
-    /* Question content */
     .question-text {
         font-weight: 600;
         color: #2c3e50;
@@ -185,14 +176,14 @@ Trang Cộng đồng
     .answers-container {
         display: flex;
         align-items: center;
-        gap: 8px; /* Điều chỉnh gap từ 30px */
+        gap: 8px;
         margin-bottom: 8px;
         padding: 8px 12px;
         border-radius: 8px;
         background-color: #f8f9fa;
         border: 1px solid #e9ecef;
         transition: all 0.2s ease;
-        flex-wrap: nowrap; /* Đảm bảo không xuống dòng trừ khi cần */
+        flex-wrap: nowrap;
     }
 
     .answers-container:hover {
@@ -201,14 +192,15 @@ Trang Cộng đồng
 
     .answer-item {
         flex: 1;
-        font-size: 13px; /* Điều chỉnh font-size */
-        color: #495057; /* Điều chỉnh color */
+        font-size: 13px;
+        color: #495057;
         margin: 0;
-        background-color: transparent; /* Bỏ background-color cũ */
-        padding: 0; /* Bỏ padding cũ */
-        border-radius: 0; /* Bỏ border-radius cũ */
-        border: none; /* Bỏ border cũ */
-        white-space: normal; /* Cho phép xuống dòng */
+        background-color: transparent;
+        padding: 0;
+        border-radius: 0;
+        border: none;
+        white-space: normal;
+        g */
     }
 
     .answers-container .fas {
@@ -224,13 +216,11 @@ Trang Cộng đồng
         color: #dc3545 !important;
     }
 
-    /* Difficulty cell */
     .global-table tbody td:nth-child(3) {
         text-align: center;
         width: 100px;
     }
 
-    /* Image cell */
     .global-table tbody td:nth-child(4) {
         text-align: center;
         width: 100px;
@@ -252,7 +242,6 @@ Trang Cộng đồng
         font-style: italic;
     }
 
-    /* Subject cell */
     .subject-cell {
         text-align: center;
         font-weight: 500;
@@ -260,7 +249,6 @@ Trang Cộng đồng
         width: 120px;
     }
 
-    /* Scope cell */
     .scope-cell {
         width: 150px;
         text-align: center;
@@ -283,7 +271,6 @@ Trang Cộng đồng
         box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
     }
 
-    /* Actions cell */
     .actions-cell {
         width: 140px;
         text-align: center;
@@ -340,7 +327,6 @@ Trang Cộng đồng
         box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4);
     }
 
-    /* ========== CREATE EXAM SECTION ========== */
     .create-exam {
         padding: 20px;
         text-align: center;
@@ -371,8 +357,7 @@ Trang Cộng đồng
         box-shadow: 0 6px 12px rgba(23, 162, 184, 0.4);
     }
 
-    /* ========== PAGINATION ========== */
-    .main-question-footer { /* Thêm lớp bao quanh phân trang nếu cần */
+    .main-question-footer {
         display: flex;
         justify-content: center;
         margin-top: 30px;
@@ -386,9 +371,9 @@ Trang Cộng đồng
         padding: 15px 20px;
         border-radius: 12px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        margin-top: 30px; /* Đảm bảo có margin-top */
-        width: auto; /* Bỏ width 100% */
-        justify-content: center; /* Đảm bảo căn giữa */
+        margin-top: 30px;
+        width: auto;
+        justify-content: center;
     }
 
     .pagination a {
@@ -404,8 +389,8 @@ Trang Cộng đồng
         font-weight: 500;
         transition: all 0.3s ease;
         border: 1px solid #dee2e6;
-        margin: 0 0; /* Loại bỏ margin auto 10px */
-        padding: 0; /* Loại bỏ padding 5px */
+        margin: 0 0;
+        padding: 0;
     }
 
     .pagination a:hover:not(.disabled) {
@@ -428,7 +413,6 @@ Trang Cộng đồng
         opacity: 0.5;
     }
 
-    /* ========== EMPTY STATE ========== */
     .text-center.text-muted {
         text-align: center;
         color: #6c757d;
@@ -437,7 +421,6 @@ Trang Cộng đồng
         background-color: #f8f9fa;
     }
 
-    /* ========== RESPONSIVE DESIGN ========== */
     @media (max-width: 1200px) {
         .global-table {
             font-size: 13px;
@@ -593,8 +576,9 @@ Trang Cộng đồng
                             <td data-label="Độ khó">{{ $cauHoi->do_kho }}</td>
                             <td data-label="Hình ảnh" style="text-align: center">
                                 @if($cauHoi->hinh_anh)
-                                    <img src="{{ asset('storage/cauhoi_images/' . $cauHoi->hinh_anh) }}" width="70px" height="70px"
-                                        alt="Ảnh nhỏ" class="thumb-img" data-id="{{ $cauHoi->ma_cau_hoi }}">
+                                    <img src="{{ asset('images/' . $cauHoi->hinh_anh) }}" width="70px" height="70px" alt="Ảnh nhỏ"
+                                        class="thumb-img" data-src="{{ asset('images/' . $cauHoi->hinh_anh) }}"
+                                        data-id="{{ $cauHoi->ma_cau_hoi }}">
                                 @else
                                     <span class="text-muted">Không có</span>
                                 @endif
@@ -629,5 +613,17 @@ Trang Cộng đồng
     </div>
 @endsection
 @section('scripts')
-    <script src="{{ asset('js/question_management_lecturer.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const thumbs = document.querySelectorAll('.thumb-img');
+
+            thumbs.forEach(img => {
+                img.addEventListener('click', function () {
+                    const src = this.getAttribute('data-src');
+                    const popup = window.open('', '_blank');
+                    popup.document.write(`<title>Xem ảnh</title><img src="${src}" style="max-width: 100%; margin: auto; display: block;">`);
+                });
+            });
+        });
+    </script>
 @endsection

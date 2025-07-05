@@ -1,60 +1,197 @@
 @extends('layout.lecturer_layout')
 <style>
     .editquestion-content {
-        margin: 20px;
+        padding: 20px;
+        margin: 0;
+        background: #f8f9fa;
+        min-height: 100vh;
     }
 
     .form-editquestion {
-        margin: 50px 0px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid black;
+        background: white;
+        margin: 15px 0;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #ffc107;
+        position: relative;
+        overflow: hidden;
     }
 
+    .form-editquestion::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #ffc107, #e0a800);
+    }
+
+    .form-editquestion div {
+        margin-bottom: 20px;
+    }
 
     .form-editquestion label {
-        width: 20%;
-        margin-bottom: 15px;
+        display: block;
+        margin-bottom: 8px;
+        color: #2c3e50;
+        font-weight: 600;
+        font-size: 0.95rem;
     }
 
-    .form-editquestion #questionContent {
-        padding: 10px;
-        width: 50%;
-        border-radius: 5px;
+    .form-editquestion input[type="text"],
+    .form-editquestion input[type="file"],
+    .form-editquestion select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e1e8ed;
+        border-radius: 6px;
+        background: white;
+        color: #2c3e50;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+        font-weight: 500;
     }
 
-    .form-editquestion #questionNote {
+    .form-editquestion input[type="file"] {
         padding: 10px;
-        width: 50%;
-        border-radius: 5px;
+        border-style: dashed;
+        background: #f8f9fa;
+        border-color: #ffc107;
+    }
+
+    .form-editquestion input[type="file"]:hover {
+        background: #f1f3f4;
+        border-color: #e0a800;
+    }
+
+    .form-editquestion input[type="text"]:focus,
+    .form-editquestion select:focus {
+        border-color: #ffc107;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
+        background: #fafbfc;
     }
 
     .answer-inputs-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-bottom: 15px;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        border: 2px solid #e1e8ed;
+        position: relative;
     }
 
-    .answer-inputs-container .answer-input {
-        min-width: 150px;
-        padding: 10px;
-        border: 1px solid #ccc;
+    .answer-inputs-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #28a745, #20c997);
+    }
+
+    .answer-option-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 12px;
+        background: white;
+        border-radius: 6px;
+        border: 2px solid #e1e8ed;
+        transition: all 0.3s ease;
+    }
+
+    .answer-option-group:hover {
+        border-color: #4a90e2;
+        box-shadow: 0 2px 8px rgba(74, 144, 226, 0.1);
+    }
+
+    .answer-option-group input[type="text"] {
+        flex: 1;
+        margin-right: 15px;
+        border: 1px solid #e1e8ed;
+        padding: 10px 12px;
         border-radius: 4px;
-        box-sizing: border-box;
+        font-weight: 500;
+    }
+
+    .answer-option-group input[type="text"]:focus {
+        border-color: #4a90e2;
+        box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+    }
+
+    .answer-option-group input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: #28a745;
+        margin-right: 8px;
     }
 
     .editquestion-btn {
-        padding: 10px 20px;
-        border-radius: 5px;
-        background-color: #59c0f7;
+        display: block;
+        width: 250px;
+        margin: 30px auto;
+        padding: 15px 30px;
+        background: linear-gradient(135deg, #ffc107, #e0a800);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 700;
         cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
     }
 
     .editquestion-btn:hover {
-        border-radius: 10px;
-        box-shadow: 3px 3px 5px rgb(0, 0, 0, 0.3);
+        background: linear-gradient(135deg, #e0a800, #d39e00);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+    }
+
+    .editquestion-btn:active {
+        transform: translateY(0);
+    }
+
+    .question h4 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 25px;
+        text-align: center;
+        color: #2c3e50;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .form-editquestion {
+            padding: 20px 15px;
+        }
+
+        .answer-option-group {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+
+        .answer-option-group input[type="text"] {
+            width: 100%;
+            margin-right: 0;
+            margin-bottom: 0;
+        }
+
+        .editquestion-btn {
+            width: 100%;
+            margin: 20px 0;
+        }
     }
 </style>
 @section('content')
@@ -62,9 +199,7 @@
         <div class="question">
             <h4>Sửa Câu Hỏi</h4>
             @php
-                // Lấy danh sách các ID đáp án đúng hiện tại từ cơ sở dữ liệu
                 $currentCorrectAnswerIds = $cauHoi->dapAns->where('ket_qua_dap_an', 1)->pluck('ma_dap_an')->toArray();
-                // KHÔNG cần biến $selectedCorrectAnswerIds ở đây nữa, chúng ta sẽ sử dụng old() trực tiếp
             @endphp
             <form action="{{ route('capNhatCauHoi', $cauHoi->ma_cau_hoi) }}" method="POST" class="form-editquestion"
                 enctype="multipart/form-data">
@@ -79,13 +214,9 @@
                 <div>
                     <label for="question-img"> Hình ảnh (nếu có):</label>
                     <input type="file" id="imageInput" accept="image/*" name="hinh_anh">
-                    @if ($cauHoi->hinh_anh)
-                        <img id="previewImage" src="{{ asset('storage/' . $cauHoi->hinh_anh) }}" alt="Ảnh hiện tại"
-                            style="max-width: 150px; max-height: 150px; margin-top: 10px; display: block;">
-                    @else
-                        <img id="previewImage" src="#" alt="Ảnh xem trước"
-                            style="max-width: 150px; max-height: 150px; margin-top: 10px; display: none;">
-                    @endif
+                    <img id="xemTruocHinhAnh_1" src="{{ $cauHoi->hinh_anh ? asset('images/' . $cauHoi->hinh_anh) : '#' }}"
+                        alt="Ảnh xem trước"
+                        style="max-width: 150px; max-height: 150px; margin-top: 10px; {{ $cauHoi->hinh_anh ? 'display:block;' : 'display:none;' }}">
                 </div>
                 <div>
                     <label for="questionNote"> Ghi chú (nếu có):</label>

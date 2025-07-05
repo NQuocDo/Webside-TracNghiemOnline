@@ -1,6 +1,5 @@
 @extends('layout.lecturer_layout')
 <style>
-    /* Container chính */
     .lecturer-exam-list {
         padding: 40px 20px;
         background: #f5f7fa;
@@ -12,7 +11,6 @@
         margin: 0 auto;
     }
 
-    /* Tiêu đề trang */
     .page-header {
         text-align: center;
         margin-bottom: 32px;
@@ -83,14 +81,12 @@
         background: #f1f2f6;
     }
 
-    /* Danh sách đề thi */
     .exam-list-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 20px;
     }
 
-    /* Card đề thi */
     .exam-card {
         background: #ffffff;
         border-radius: 16px;
@@ -108,7 +104,6 @@
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
     }
 
-    /* Nội dung trong card */
     .exam-title {
         font-size: 1.2rem;
         font-weight: 700;
@@ -175,7 +170,6 @@
         background-color: rgb(4, 139, 243);
     }
 
-    /* Trạng thái rỗng */
     .empty-state {
         text-align: center;
         padding: 60px 20px;
@@ -187,7 +181,6 @@
         color: #636e72;
     }
 
-    /* Responsive nhỏ */
     @media (max-width: 480px) {
         .exam-title {
             font-size: 1.05rem;
@@ -271,7 +264,7 @@
                                 method="POST" style="display: inline;">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="delete-btn btn-delete-confirm" data-id="{{ $deThi->ma_de_thi }}">
+                                <button type="submit" class="delete-btn btn-delete-test" data-id="{{ $deThi->ma_de_thi }}">
                                     Xóa đề thi
                                 </button>
                             </form>
@@ -302,7 +295,6 @@
                                                 </div>
 
                                                 <div class="test-actions">
-                                                    {{-- Khoá/Mở bài kiểm tra --}}
                                                     <form action="{{ route('exam_create_status', $bkt->ma_bai_kiem_tra) }}" method="POST"
                                                         style="display:inline;">
                                                         @csrf
@@ -311,8 +303,6 @@
                                                             {{ $bkt->trang_thai === 'khoa' ? 'Mở' : 'Khoá' }}
                                                         </button>
                                                     </form>
-
-                                                    {{-- Xoá bài kiểm tra --}}
                                                     <form action="{{ route('exam_create_del', $bkt->ma_bai_kiem_tra) }}" method="POST"
                                                         id="delete-form-{{$bkt->ma_bai_kiem_tra}}" style="display:inline;">
                                                         @csrf
@@ -346,14 +336,14 @@
                     const examtId = this.getAttribute('data-id');
 
                     Swal.fire({
-                        title: 'Bạn có chắc không?',
-                        text: "Thao tác này sẽ xoá bài kiểm tra!",
+                        title: '⚠️ Bạn chắc chắn muốn xoá đề thi này?',
+                        html: "<b>Tất cả các bài kiểm tra liên quan sẽ bị xoá!</b><br>Hãy đảm bảo bạn đã kiểm tra kỹ trước khi thực hiện.",
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#d33',
                         cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Xoá',
-                        cancelButtonText: 'Huỷ'
+                        confirmButtonText: 'Xoá ngay',
+                        cancelButtonText: 'Huỷ bỏ'
                     }).then((result) => {
                         if (result.isConfirmed) {
                             document.getElementById('delete-form-' + examtId).submit();
@@ -385,8 +375,6 @@
                     }).then((result) => {
                         if (result.isConfirmed) {
                             const form = document.getElementById('create-form-' + examCreateId);
-
-                            // Tạo input mới để chứa tên bài kiểm tra
                             const input = document.createElement('input');
                             input.type = 'hidden';
                             input.name = 'ten_bai_kiem_tra';
@@ -399,8 +387,6 @@
                 });
             });
 
-
-            // ✅ Di chuyển vào đây:
             @if(session('success'))
                 Swal.fire({
                     icon: 'success',
@@ -419,6 +405,6 @@
                     showConfirmButton: true
                 });
             @endif
-          });
+              });
     </script>
 @endsection

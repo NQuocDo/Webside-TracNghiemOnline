@@ -38,6 +38,33 @@
         text-decoration: none;
     }
 
+    .add-question-btn-import {
+        margin-left: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+        color: white;
+        text-decoration: none;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 6px rgba(253, 126, 20, 0.3);
+        outline: none;
+    }
+
+    .add-question-btn-import:hover {
+        background: linear-gradient(135deg, #e67e22 0%, #f1c40f 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(253, 126, 20, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+
     .form-search-question {
         display: flex;
         align-items: center;
@@ -527,6 +554,7 @@
             <a href="{{ route('addquestion') }}" class="add-question-btn">
                 Thêm câu hỏi
             </a>
+            <button type="button" class="add-question-btn-import">Thêm câu hỏi pdf</button>
         </div>
         <form action="{{ route('question') }}" method="GET" id="filter-form" class="form-search-question"
             style="justify-content: end;">
@@ -552,7 +580,10 @@
                 <table class="question-table">
                     <thead>
                         <tr>
-                            <th>STT</th>
+                            <th>
+                                <input type="checkbox" id="checkAll" style="margin-right: 5px;">
+                                STT
+                            </th>
                             <th>Nội dung Câu hỏi</th>
                             <th>Độ khó</th>
                             <th>Hình ảnh</th>
@@ -720,6 +751,7 @@
                 text: @json(session('success')),
                 confirmButtonText: 'OK'
             });
+            localStorage.removeItem("selectedQuestions");
         </script>
     @endif
 

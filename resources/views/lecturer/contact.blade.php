@@ -1,43 +1,5 @@
 @extends('layout.lecturer_layout')
 <style>
-    .main-contact-header {
-        width: 100%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 20px 0;
-        margin-bottom: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .add-contact-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        border: none;
-        border-radius: 8px;
-        margin: 20px 35px;
-        background: linear-gradient(135deg, #007bff, #0056b3);
-        color: #fff;
-        font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
-        text-decoration: none;
-    }
-
-    .add-contact-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
-        background: linear-gradient(135deg, #0056b3, #004085);
-        color: #fff;
-    }
-
-    .add-contact-btn:active {
-        transform: translateY(0);
-    }
-
     .contact-content {
         padding: 30px;
         margin: 20px;
@@ -50,16 +12,25 @@
         display: flex;
         gap: 15px;
         margin-bottom: 20px;
-        flex-wrap: wrap;
         align-items: center;
-        justify-content: flex-end;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        justify-content: end;
     }
 
     .contact-header .search-container {
         position: relative;
         flex: 1;
-        min-width: 200px;
         max-width: 300px;
+        min-width: 200px;
+    }
+
+    .contact-header .filter-container select {
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 8px;
+        border: 2px solid #dee2e6;
+        min-width: 180px;
     }
 
     .contact-header input {
@@ -438,9 +409,20 @@
 </style>
 @section('content')
     <div class="contact-content">
-        <div class="contact-header">
-            <input type="text" placeholder="Tìm kiếm liên hệ"><i class="fa-solid fa-magnifying-glass"></i>
-        </div>
+        <form id="filter-form" method="GET" action="{{ route('lecturer_contact') }}" class="contact-header">
+            <div class="search-container">
+                <input type="text" id="keyword" name="keyword" placeholder="Tìm kiếm liên hệ"
+                    value="{{ old('keyword', $keyword ?? '') }}">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+
+            <div class="filter-container">
+                <select name="trang_thai" id="trangThaiSelect">
+                    <option value="hien" {{ ($trangThai ?? '') === 'hien' ? 'selected' : '' }}>Hiện</option>
+                    <option value="an" {{ ($trangThai ?? '') === 'an' ? 'selected' : '' }}>Ẩn</option>
+                </select>
+            </div>
+        </form>
         <table class="contact-table">
             <thead>
                 <tr>
@@ -449,39 +431,41 @@
                     <th>Gmail</th>
                     <th>Tiêu đề</th>
                     <th>Nội dung</th>
-                    <th>Thao tác</th>
+                    @if(($trangThai ?? '') != 'an')
+                        <th>Thao tác</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
-                @if($danhSachLienHe->isEmpty())
+                @forelse($danhSachLienHe as $index => $lienHe)
+                    {{-- Chỉ hiển thị nếu là "hien" hoặc nếu lọc đang chọn là "an" --}}
+                    @if($lienHe->trang_thai == 'hien' || ($trangThai ?? '') == 'an')
+                        <tr>
+                            <td class="stt-cell">{{ $index + 1 }}</td>
+                            <td class="student-name-cell">{{ $lienHe->sinhVien->nguoiDung->ho_ten }}</td>
+                            <td class="student-mail-cell">{{ $lienHe->sinhVien->nguoiDung->email }}</td>
+                            <td class="student-title-cell">{{ $lienHe->tieu_de }}</td>
+                            <td class="student-error-content-cell">{{ $lienHe->noi_dung }}</td>
+
+                            @if(($trangThai ?? '') != 'an' && $lienHe->trang_thai == 'hien')
+                                <td class="actions-cell">
+                                    <form id="delete-form-{{ $lienHe->ma_lien_he }}"
+                                        action="{{ route('lecturer_contact_del', $lienHe->ma_lien_he) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="del-btn btn-delete-confirm" data-id="{{ $lienHe->ma_lien_he }}">
+                                            <i class="fas fa-trash-alt"></i> Xoá
+                                        </button>
+                                    </form>
+                                </td>
+                            @endif
+                        </tr>
+                    @endif
+                @empty
                     <tr>
                         <td colspan="6" class="text-center">Không có liên hệ</td>
                     </tr>
-                @else
-                    @foreach($danhSachLienHe as $index => $lienHe)
-                        <tr>
-                            <td class="stt-cell"> {{ $index + 1 }}</td>
-                            <td class="student-name-cell">{{ $lienHe->sinhVien->nguoiDung->ho_ten }}
-                            </td>
-                            <td class="student-mail-cell">{{ $lienHe->sinhVien->nguoiDung->email }}
-                            </td>
-                            <td class="student-title-cell">{{ $lienHe->tieu_de }}
-                            </td>
-                            <td class="student-error-content-cell">{{ $lienHe->noi_dung }}
-                            <td class="actions-cell">
-                                <form id="delete-form-{{ $lienHe->ma_lien_he }}"
-                                    action="{{ route('lecturer_contact_del', $lienHe->ma_lien_he) }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" class="del-btn btn-delete-confirm" data-id="{{ $lienHe->ma_lien_he }}">
-                                        <i class="fas fa-trash-alt"></i> Xoá
-                                    </button>
-                                </form>
-
-                            </td>
-                        </tr>
-                    @endforeach
-                @endif
+                @endforelse
             </tbody>
         </table>
         <div class="contact-footer">
@@ -502,50 +486,71 @@
         </div>
     </div>
 @endsection
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const deleteButtons = document.querySelectorAll('.btn-delete-confirm');
+@section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const deleteButtons = document.querySelectorAll('.btn-delete-confirm');
 
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function (event) {
-                const lienHeId = this.getAttribute('data-id');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function (event) {
+                    const lienHeId = this.getAttribute('data-id');
 
-                Swal.fire({
-                    title: 'Bạn có chắc muốn xoá liên hệ này?',
-                    text: "Thao tác này không thể hoàn tác!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Xoá',
-                    cancelButtonText: 'Huỷ'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        document.getElementById('delete-form-' + lienHeId).submit();
-                    }
+                    Swal.fire({
+                        title: 'Bạn có chắc muốn xoá liên hệ này?',
+                        text: "Thao tác này không thể hoàn tác!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Xoá',
+                        cancelButtonText: 'Huỷ'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById('delete-form-' + lienHeId).submit();
+                        }
+                    });
                 });
             });
-        });
-    });
-</script>
+            const form = document.getElementById("filter-form");
+            const keywordInput = document.getElementById("keyword");
+            const trangThaiSelect = document.getElementById("trangThaiSelect");
 
-@if (session('success'))
-    <script>
-        Swal.fire({
-            icon: 'success',
-            title: 'Thành công',
-            text: @json(session('success'))
+            if (trangThaiSelect) {
+                trangThaiSelect.addEventListener("change", function () {
+                    form.submit();
+                });
+            }
+
+            if (keywordInput) {
+                let debounce;
+                keywordInput.addEventListener("input", function () {
+                    clearTimeout(debounce);
+                    debounce = setTimeout(() => {
+                        form.submit();
+                    }, 500);
+                });
+            }
         });
     </script>
-@endif
 
-@if (session('error'))
-    <script>
-        Swal.fire({
-            icon: 'error',
-            title: 'Lỗi',
-            text: @json(session('error'))
-        });
-    </script>
-@endif
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công',
+                text: @json(session('success'))
+            });
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: @json(session('error'))
+            });
+        </script>
+    @endif
+@endsection

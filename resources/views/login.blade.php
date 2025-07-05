@@ -63,7 +63,7 @@
         @csrf
         <div class="flex flex-col">
           <label class="text-gray-900 text-sm font-normal mb-1" for="email">Tài khoản đăng nhập</label>
-          <input name="email" type="text" placeholder="Nhập tài khoản hoặc email"
+          <input name="email" type="text" value="{{ old('email') }}" placeholder="Nhập tài khoản hoặc email"
             class="border border-gray-300 rounded-md py-2 px-3 text-gray-500 placeholder-gray-400" />
           @error('email')
         <div class="alert alert-danger">{{ $message }}</div>

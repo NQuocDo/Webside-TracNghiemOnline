@@ -19,6 +19,7 @@ class BaiKiemTra extends Model
         'ma_de_thi',
         'ten_bai_kiem_tra',
         'trang_thai',
+        'trang_thai_hien_thi',
         'thoi_gian_khoa',
     ];
 
