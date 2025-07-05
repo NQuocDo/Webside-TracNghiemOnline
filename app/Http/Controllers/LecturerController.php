@@ -21,6 +21,8 @@ use App\Models\MonHoc;
 use App\Models\BangDiem;
 use App\Models\LichSuLamBai;
 use App\Models\LopHoc;
+use Smalot\PdfParser\Parser;
+use Illuminate\Support\Str;
 
 
 
@@ -383,6 +385,31 @@ class LecturerController extends Controller
         return view('lecturer.addquestion')->with('danhSachMonHoc', $danhSachMonHoc);
     }
     //thêm câu hỏi
+    private function parseQuestions($text)
+    {
+        $lines = explode("\n", $text);
+        $questions = [];
+        $current = [];
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (preg_match('/^Câu\s+\d+[:\.]?\s*(.*)/i', $line, $matches)) {
+                if (!empty($current)) {
+                    $questions[] = $current;
+                    $current = [];
+                }
+                $current['question'] = $matches[1];
+                $current['answers'] = [];
+            } elseif (preg_match('/^([A-D])[\.\:]\s*(.*)/', $line, $matches)) {
+                $current['answers'][$matches[1]] = $matches[2];
+            } elseif (preg_match('/^Đáp án đúng[:\s]+([A-D])/', $line, $matches)) {
+                $current['correct'] = $matches[1];
+            }
+        }
+        if (!empty($current)) {
+            $questions[] = $current;
+        }
+        return $questions;
+    }
     public function themCauHoi(Request $request)
     {
         $user = Auth::user();
@@ -399,66 +426,117 @@ class LecturerController extends Controller
             ->pluck('ma_mon_hoc')
             ->toArray();
 
-        $count = 0;
-        while ($request->has("question_content_" . ($count + 1))) {
-            $count++;
-        }
+        DB::beginTransaction();
+        try {
+            // Nhập từ file PDF
+            if ($request->hasFile('pdf_file')) {
+                $request->validate([
+                    'pdf_file' => 'mimes:pdf|max:2048',
+                    'subject_pdf' => 'required|in:' . implode(',', $monHocDuocDay),
+                    'difficulty_pdf' => 'required|string'
+                ]);
+                $parser = new Parser();
+                $pdf = $parser->parseFile($request->file('pdf_file')->getRealPath());
+                $text = $pdf->getText();
+                $questions = $this->parseQuestions($text);
 
-        for ($i = 1; $i <= $count; $i++) {
-            $noiDung = $request->input("question_content_$i");
-            if (!$noiDung || trim($noiDung) === '') {
-                continue;
-            }
-            $request->validate([
-                "difficulty_$i" => 'required|string',
-                "subject_$i" => 'required|string|in:' . implode(',', $monHocDuocDay),
-                "answers_{$i}" => 'required|array|min:1',
-            ], [
-                "subject_{$i}.in" => "Môn học không thuộc quyền giảng dạy của bạn."
-            ]);
+                foreach ($questions as $q) {
+                    do {
+                        $maCauHoi = 'CH' . strtoupper(substr(Str::uuid()->toString(), -4)) . rand(10, 99);
+                    } while (CauHoi::where('ma_cau_hoi', $maCauHoi)->exists());
 
-            $cauHoi = new CauHoi();
-            do {
-                $maCauHoi = 'CH' . now()->format('is') . rand(10, 99);
-                $isExists = CauHoi::where('ma_cau_hoi', $maCauHoi)->exists();
-            } while ($isExists);
-            $cauHoi->ma_cau_hoi = $maCauHoi;
-            $cauHoi->noi_dung = $noiDung;
-            $cauHoi->ghi_chu = $request->input("note_$i") ?? null;
-            $cauHoi->do_kho = $request->input("difficulty_$i");
-            $cauHoi->ma_mon_hoc = $request->input("subject_$i");
-            $cauHoi->ma_giang_vien = $giangVienId;
-
-            if ($request->hasFile("question_image_$i")) {
-                $file = $request->file("question_image_$i");
-                $fileName = uniqid('img_') . '.' . $file->getClientOriginalExtension();
-
-                $destination = public_path('images');
-                if (!file_exists($destination)) {
-                    mkdir($destination, 0755, true);
+                    $cauHoi = new CauHoi([
+                        'ma_cau_hoi' => $maCauHoi,
+                        'noi_dung' => $q['question'],
+                        'do_kho' => $request->input('difficulty_pdf'),
+                        'ma_mon_hoc' => $request->input('subject_pdf'),
+                        'ma_giang_vien' => $giangVienId
+                    ]);
+                    if (!$cauHoi->save()) {
+                        throw new \Exception("Không thể lưu câu hỏi: {$maCauHoi}");
+                    }
+                    foreach ($q['answers'] as $label => $text) {
+                        DapAn::create([
+                            'ma_cau_hoi' => $cauHoi->ma_cau_hoi,
+                            'noi_dung' => $text,
+                            'ket_qua_dap_an' => ($label == $q['correct']) ? 1 : 0,
+                        ]);
+                    }
                 }
-
-                $file->move($destination, $fileName);
-                $cauHoi->hinh_anh = $fileName;
             }
 
-            $cauHoi->save();
+            //  Nhập từ form
+            $count = 0;
+            while ($request->has("question_content_" . ($count + 1))) {
+                $count++;
+            }
 
-            $answers = $request->input("answers_{$i}");
-            foreach ($answers as $answer) {
-                if (!isset($answer['text']) || trim($answer['text']) === '') {
+            for ($i = 1; $i <= $count; $i++) {
+                $noiDung = $request->input("question_content_$i");
+                if (!$noiDung || trim($noiDung) === '') {
                     continue;
                 }
-                DapAn::create([
-                    'ma_cau_hoi' => $cauHoi->ma_cau_hoi,
-                    'noi_dung' => $answer['text'],
-                    'ket_qua_dap_an' => isset($answer['is_correct']) ? 1 : 0,
+
+                $request->validate([
+                    "difficulty_$i" => 'required|string',
+                    "subject_$i" => 'required|string|in:' . implode(',', $monHocDuocDay),
+                    "answers_{$i}" => 'required|array|min:1',
+                ], [
+                    "subject_{$i}.in" => "Môn học không thuộc quyền giảng dạy của bạn."
                 ]);
+
+                do {
+                    $maCauHoi = 'CH' . strtoupper(substr(Str::uuid()->toString(), -4)) . rand(10, 99);
+                } while (CauHoi::where('ma_cau_hoi', $maCauHoi)->exists());
+
+                $cauHoi = new CauHoi([
+                    'ma_cau_hoi' => $maCauHoi,
+                    'noi_dung' => $noiDung,
+                    'ghi_chu' => $request->input("note_$i") ?? null,
+                    'do_kho' => $request->input("difficulty_$i"),
+                    'ma_mon_hoc' => $request->input("subject_$i"),
+                    'ma_giang_vien' => $giangVienId
+                ]);
+
+                if ($request->hasFile("question_image_$i")) {
+                    $file = $request->file("question_image_$i");
+                    $fileName = uniqid('img_') . '.' . $file->getClientOriginalExtension();
+
+                    $destination = public_path('images');
+                    if (!file_exists($destination)) {
+                        mkdir($destination, 0755, true);
+                    }
+
+                    $file->move($destination, $fileName);
+                    $cauHoi->hinh_anh = $fileName;
+                }
+
+                if (!$cauHoi->save()) {
+                    throw new \Exception("Không thể lưu câu hỏi: {$maCauHoi}");
+                }
+
+                $answers = $request->input("answers_{$i}");
+                foreach ($answers as $answer) {
+                    if (!isset($answer['text']) || trim($answer['text']) === '') {
+                        continue;
+                    }
+                    DapAn::create([
+                        'ma_cau_hoi' => $maCauHoi,
+                        'noi_dung' => $answer['text'],
+                        'ket_qua_dap_an' => isset($answer['is_correct']) ? 1 : 0,
+                    ]);
+                }
             }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors('Lỗi thêm câu hỏi: ' . $e->getMessage());
         }
 
         return redirect()->route('addquestion')->with('success', 'Thêm câu hỏi thành công!');
     }
+
     //hiển thị câu hỏi đã bị xoá tạm thời
     public function hienThiCauHoiVaDapAnBiXoa(Request $request)
     {

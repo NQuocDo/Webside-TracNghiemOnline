@@ -78,7 +78,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/lecturer/question/{id}/edit', [LecturerController::class, 'hienThiCauHoi'])->name('hienThiCauHoi');//hiển thị câu hỏi ở Trang sửa
         Route::put('/lecturer/question/{id}', [LecturerController::class, 'capNhatCauHoi'])->name('capNhatCauHoi');//sửa câu hỏi
         Route::get('/lecturer/question/addquestion', [LecturerController::class, 'hienThiTrangThemCauHoi'])->name('addquestion');//hiển thị trang thêm câu hỏi
-        Route::post('/lecturer/question/addquestion/store', [LecturerController::class, 'themCauHoi'])->name('question.store');//thêm câu hỏi
+        Route::post('/lecturer/question/addquestion/store', [LecturerController::class, 'themCauHoi'])->name('question_store');//thêm câu hỏi
         Route::get('/lecturer/question-del', [LecturerController::class, 'hienThiCauHoiVaDapAnBiXoa'])->name('question_del');//hiển thị câu hỏi và đáp án bị ẩn
         Route::delete('/lecturer/question/del/{id}', [LecturerController::class, 'xoaCauHoi'])->name('question_del_id');//xoá câu hỏi vĩnh viễn
         Route::put('/lecturer/question_del/{id}/update-status', [LecturerController::class, 'capNhatTrangThaiCauHoi'])->name('capNhatTrangThaiCauHoi');//khôi phục câu hỏi đã xoá

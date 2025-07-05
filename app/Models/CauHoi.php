@@ -17,6 +17,7 @@ class CauHoi extends Model
 
     // Cần điền fillable hoặc guarded nếu bạn dùng mass assignment
     protected $fillable = [
+        'ma_cau_hoi',
         'noi_dung',
         'hinh_anh',
         'ghi_chu',

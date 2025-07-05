@@ -429,12 +429,125 @@
     ::-webkit-scrollbar-thumb:hover {
         background: #a8a8a8;
     }
+
+    .pdfPopup {
+        display: none;
+        /* Hiển thị bằng JS khi cần */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .pdfPopup-content {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .pdfPopup-content h3 {
+        margin-bottom: 20px;
+        color: #333;
+        text-align: center;
+    }
+
+    .pdfPopup .form-group {
+        margin-bottom: 15px;
+    }
+
+    .pdfPopup .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #2c3e50;
+    }
+
+    .pdfPopup .form-group select,
+    .pdfPopup .form-group input[type="file"] {
+        width: 100%;
+        padding: 10px 12px;
+        border: 2px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .pdfPopup .form-group input[type="file"] {
+        background: #f9f9f9;
+    }
+
+    .pdfPopup-btn {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+        color: white;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .pdfPopup-btn:hover {
+        background: linear-gradient(135deg, #e67e22 0%, #f1c40f 100%);
+        transform: translateY(-1px);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .add-question-btn-import {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+        color: white;
+        text-decoration: none;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 6px rgba(253, 126, 20, 0.3);
+        outline: none;
+        margin-bottom: 10px;
+        justify-content: end;
+    }
+
+    .add-question-btn-import:hover {
+        background: linear-gradient(135deg, #e67e22 0%, #f1c40f 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(253, 126, 20, 0.4);
+        color: white;
+        text-decoration: none;
+    }
 </style>
 
 @section('content')
     <div class="addquestion-content">
         <h1 class="page-title">Thêm Câu Hỏi Mới</h1>
 
+        <button type="button" class="add-question-btn-import">Thêm câu hỏi pdf</button>
         <div class="count-question">
             <label for="question-count">Số lượng câu hỏi:</label>
             <select id="question-count" class="form-select">
@@ -448,7 +561,7 @@
         </div>
 
         <div class="question">
-            <form action="{{ route('question.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('question_store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="form-addquestion">
                     <div class="question-header">
@@ -512,6 +625,60 @@
                 <button type="submit" class="addquestion-btn">Lưu Tất Cả Câu Hỏi</button>
             </form>
         </div>
+        <div class="pdfPopup" id="pdfPopup">
+            <div class="pdfPopup-content">
+                <h3>Thêm Câu Hỏi từ PDF</h3>
+                <form action="{{ route('question_store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul style="color: red;">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    <div class="form-group">
+                        <label for="monHoc">Chọn Môn Học:</label>
+                        <select id="monHoc" name="subject_pdf" required>
+                            <option value="">-- Chọn môn học --</option>
+                            @foreach($danhSachMonHoc as $monHoc)
+                                <option value="{{ $monHoc->ma_mon_hoc }}">{{ $monHoc->ten_mon_hoc }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="difficulty_pdf">Chọn Độ khó:</label>
+                        <select name="difficulty_pdf" required>
+                            <option value="">Chọn độ khó</option>
+                            <option value="Dễ">Dễ</option>
+                            <option value="Trung bình">Trung bình</option>
+                            <option value="Khó">Khó</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pdf_file">Chọn File PDF:</label>
+                        <input type="file" name="pdf_file" id="pdf_file" accept="application/pdf" required>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>📄 Định dạng mẫu trong file PDF:</label>
+                        <div
+                            style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; font-size: 14px; font-family: monospace; white-space: pre-line;">
+                            Câu 1: Thủ đô của Việt Nam là gì?
+                            A. TP.HCM
+                            B. Hà Nội
+                            C. Đà Nẵng
+                            D. Hải Phòng
+                            Đáp án đúng: B
+                        </div>
+                    </div>
+                    <button type="submit" class="pdfPopup-btn">Thêm Câu Hỏi</button>
+                </form>
+            </div>
+        </div>
     </div>
 @endsection
 
@@ -544,7 +711,7 @@
                 });
             @endif
 
-                    const btn = document.getElementById("count-question-btn");
+            btn = document.getElementById("count-question-btn");
             const select = document.getElementById("question-count");
             const container = document.getElementById("form-container");
             const danhSachMonHoc = @json($danhSachMonHoc ?? []);
@@ -565,62 +732,62 @@
                 for (let i = 0; i < count; i++) {
                     const index = currentIndex++;
                     const formHTML = `
-                                <div class="form-addquestion new-form">
-                                    <div class="question-header">
-                                        <span class="question-number">Câu ${index}</span>
-                                        <h3>Thông tin câu hỏi</h3>
-                                    </div>
+                                                        <div class="form-addquestion new-form">
+                                                            <div class="question-header">
+                                                                <span class="question-number">Câu ${index}</span>
+                                                                <h3>Thông tin câu hỏi</h3>
+                                                            </div>
 
-                                    <div class="form-group">
-                                        <label>Nội dung câu hỏi:</label>
-                                        <input type="text" name="question_content_${index}" placeholder="Nhập nội dung câu hỏi...">
-                                    </div>
+                                                            <div class="form-group">
+                                                                <label>Nội dung câu hỏi:</label>
+                                                                <input type="text" name="question_content_${index}" placeholder="Nhập nội dung câu hỏi...">
+                                                            </div>
 
-                                    <div class="form-group">
-                                        <label>Hình ảnh (tùy chọn):</label>
-                                        <input type="file" name="question_image_${index}" accept="image/*" class="input-hinh-anh" data-index="${index}">
-                                        <img id="xemTruocHinhAnh_${index}" class="xem-truoc-hinh-anh" src="#" alt="Xem trước"
-                                            style="display: none; max-width: 200px; margin-top: 10px;">
-                                    </div>
+                                                            <div class="form-group">
+                                                                <label>Hình ảnh (tùy chọn):</label>
+                                                                <input type="file" name="question_image_${index}" accept="image/*" class="input-hinh-anh" data-index="${index}">
+                                                                <img id="xemTruocHinhAnh_${index}" class="xem-truoc-hinh-anh" src="#" alt="Xem trước"
+                                                                    style="display: none; max-width: 200px; margin-top: 10px;">
+                                                            </div>
 
-                                    <div class="form-group">
-                                        <label>Ghi chú (tùy chọn):</label>
-                                        <input type="text" name="note_${index}" placeholder="Thêm ghi chú cho câu hỏi...">
-                                    </div>
+                                                            <div class="form-group">
+                                                                <label>Ghi chú (tùy chọn):</label>
+                                                                <input type="text" name="note_${index}" placeholder="Thêm ghi chú cho câu hỏi...">
+                                                            </div>
 
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label>Độ khó:</label>
-                                            <select name="difficulty_${index}">
-                                                <option value="">Chọn độ khó</option>
-                                                <option value="Dễ">Dễ</option>
-                                                <option value="Trung bình">Trung bình</option>
-                                                <option value="Khó">Khó</option>
-                                            </select>
-                                        </div>
+                                                            <div class="form-row">
+                                                                <div class="form-group">
+                                                                    <label>Độ khó:</label>
+                                                                    <select name="difficulty_${index}">
+                                                                        <option value="">Chọn độ khó</option>
+                                                                        <option value="Dễ">Dễ</option>
+                                                                        <option value="Trung bình">Trung bình</option>
+                                                                        <option value="Khó">Khó</option>
+                                                                    </select>
+                                                                </div>
 
-                                        <div class="form-group">
-                                            <label>Môn học:</label>
-                                            <select name="subject_${index}">
-                                                <option value="">Chọn môn học</option>
-                                                ${options}
-                                            </select>
-                                        </div>
-                                    </div>
+                                                                <div class="form-group">
+                                                                    <label>Môn học:</label>
+                                                                    <select name="subject_${index}">
+                                                                        <option value="">Chọn môn học</option>
+                                                                        ${options}
+                                                                    </select>
+                                                                </div>
+                                                            </div>
 
-                                    <div class="answer-inputs-container">
-                                        <h4>Các đáp án (chọn đáp án đúng)</h4>
-                                        ${[0, 1, 2, 3].map(j => `
-                                            <div class="answer-option-group">
-                                                <input type="text" name="answers_${index}[${j}][text]" 
-                                                       placeholder="Đáp án ${String.fromCharCode(65 + j)}">
-                                                <input type="checkbox" name="answers_${index}[${j}][is_correct]" 
-                                                       value="1" id="answer_${index}_${j}">
-                                                <label for="answer_${index}_${j}" class="checkbox-label">Đúng</label>
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                                </div>`;
+                                                            <div class="answer-inputs-container">
+                                                                <h4>Các đáp án (chọn đáp án đúng)</h4>
+                                                                ${[0, 1, 2, 3].map(j => `
+                                                                    <div class="answer-option-group">
+                                                                        <input type="text" name="answers_${index}[${j}][text]" 
+                                                                               placeholder="Đáp án ${String.fromCharCode(65 + j)}">
+                                                                        <input type="checkbox" name="answers_${index}[${j}][is_correct]" 
+                                                                               value="1" id="answer_${index}_${j}">
+                                                                        <label for="answer_${index}_${j}" class="checkbox-label">Đúng</label>
+                                                                    </div>
+                                                                `).join('')}
+                                                            </div>
+                                                        </div>`;
                     container.insertAdjacentHTML("beforeend", formHTML);
                 }
 
@@ -647,6 +814,19 @@
                         preview.src = "#";
                         preview.style.display = "none";
                     }
+                }
+            });
+            document.querySelector(".add-question-btn-import").addEventListener("click", function () {
+                document.getElementById("pdfPopup").style.display = "flex";
+            });
+
+            function closePdfPopup() {
+                document.getElementById("pdfPopup").style.display = "none";
+            }
+            document.body.addEventListener("click", function (e) {
+                const popup = document.getElementById("pdfPopup");
+                if (e.target === popup) {
+                    closePdfPopup();
                 }
             });
         });
