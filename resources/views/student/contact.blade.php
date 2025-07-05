@@ -96,17 +96,26 @@
                 @csrf
                 <div class="form-group">
                     <label for="errorTitle" class="required">Tiêu đề</label>
-                    <input type="text" id="errorTitle" name="errorTitle" placeholder="Nhập tiêu đề...">
+                    <input type="text" id="errorTitle" name="errorTitle" placeholder="Nhập tiêu đề..." value="{{ old('errorTitle') }}">
+                    @error ('errorTitle')
+                         <div class="alert alert-danger mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="form-group">
                     <label for="errorContent" class="required">Nội dung</label>
-                    <textarea id="errorContent" name="errorContent" placeholder="Mô tả chi tiết..." ></textarea>
+                    <textarea id="errorContent" name="errorContent" placeholder="Mô tả chi tiết..." value="{{ old('errorContent') }}"></textarea>
+                    @error ('errorContent')
+                         <div class="alert alert-danger mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="form-group">
                     <label for="teacherEmail" class="required">Email giảng viên</label>
-                    <input type="email" id="teacherEmail" name="teacherEmail" placeholder="Email giảng viên.." required>
+                    <input type="email" id="teacherEmail" name="teacherEmail" placeholder="Email giảng viên.." value="{{ old('teacherEmail') }}">
+                    @error ('teacherEmail')
+                         <div class="alert alert-danger mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="contact-footer">
@@ -115,15 +124,6 @@
                     </button>
                 </div>
             </form>
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
         </div>
     </div>
 @endsection

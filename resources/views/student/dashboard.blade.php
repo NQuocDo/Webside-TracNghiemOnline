@@ -257,7 +257,7 @@
                                 <span class="quiz-code">Học kỳ: {{ $mon->hoc_ky }}</span>
                             </div>
                             <div class="card-body">
-                                <img src="" alt="Giảng viên" class="src-lecturer">
+                                <img src="{{ !empty($mon->hinh_anh) ? asset('images/'.$mon->hinh_anh) : asset('images/lecturer.jpg') }}"  alt="Giảng viên" class="src-lecturer"> 
                                 <h6 class="lecturer-name" name="lecturer-score" value="{{ $mon->ma_giang_vien }}">GV:
                                     {{ $mon->ten_giang_vien }}</h6>
                             </div>

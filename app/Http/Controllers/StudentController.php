@@ -94,9 +94,10 @@ class StudentController extends Controller
                 'mh.hoc_ky',
                 'nd_sv.ho_ten as ten_sinh_vien',
                 'nd_gv.ho_ten as ten_giang_vien',
+                'nd_gv.hinh_anh as hinh_anh',
                 'gv.ma_giang_vien as ma_giang_vien',
                 'lh.ten_lop_hoc',
-                'lh.ma_lop_hoc'
+                'lh.ma_lop_hoc',
             )
             ->distinct()
             ->get();

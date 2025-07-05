@@ -1,6 +1,6 @@
 @extends('layout.student_layout')
 @section('title')
-Trang Danh sách bài kiểm tra
+    Trang Danh sách bài kiểm tra
 @endsection
 <style>
     .exam-list {
@@ -218,55 +218,72 @@ Trang Danh sách bài kiểm tra
     }
 
     @media (max-width: 768px) {
-        .exam-list {
-            padding: 15px;
-        }
-
         .exam-item {
-            grid-template-columns: auto 1fr;
-            grid-template-rows: auto auto auto auto;
-            gap: 10px 15px;
-            padding: 15px 20px;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto auto auto auto auto auto;
+            gap: 12px;
+            padding: 16px;
         }
 
         .exam-item .fa-clipboard-question {
-            grid-row: 1 / span 3;
-            font-size: 28px;
-            width: 45px;
-            height: 45px;
+            grid-column: 1;
+            grid-row: 1;
+            margin-bottom: 10px;
+            font-size: 26px;
+            width: 40px;
+            height: 40px;
         }
 
-        .exam-item .exam-title {
+        .exam-title,
+        .exam-instructor,
+        .exam-subject,
+        .exam-details,
+        .exam-actions {
+            grid-column: 1;
+        }
+
+        .exam-title {
             font-size: 18px;
+            line-height: 1.4;
         }
 
-        .exam-item .exam-details {
-            grid-row: 3;
+        .exam-instructor,
+        .exam-subject {
+            font-size: 13px;
+            color: #6c757d;
+            margin: 0;
+        }
+
+        .exam-details {
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
+            font-size: 13px;
         }
 
-        .exam-item .exam-actions {
-            grid-column: 1 / span 2;
-            grid-row: 4;
+        .exam-actions {
+            margin-top: 10px;
             justify-content: center;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e9ecef;
         }
 
         .exam-btn {
-            min-width: 120px;
-            padding: 12px 24px;
+            width: 100%;
+            padding: 12px;
             font-size: 14px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .exam-btn {
+            font-size: 13px;
+            padding: 10px;
         }
 
         .exam-header h1 {
-            font-size: 24px;
+            font-size: 22px;
         }
 
         .exam-header p {
-            font-size: 14px;
+            font-size: 13px;
         }
     }
 

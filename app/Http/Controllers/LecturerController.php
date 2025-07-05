@@ -815,6 +815,7 @@ class LecturerController extends Controller
     //tạo dề thi với 2 loại ngẫu nhiên và chọn đáp án
     public function taoDeThi(Request $request)
     {
+        
         if ($request->filled('ma_mon_hoc') && $request->filled('so_luong')) {
             $maMonHoc = $request->input('ma_mon_hoc');
             $soLuong = (int) $request->input('so_luong');

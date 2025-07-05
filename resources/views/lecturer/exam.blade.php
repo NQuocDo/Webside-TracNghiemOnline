@@ -323,10 +323,10 @@
                 <input type="hidden" name="ma_mon_hoc" value="{{ $maMonHoc }}">
                 <div class="exam-question-header">
                     <span>Tên đề thi:</span>
-                    <input type="text" value="" name="ten_de_thi" placeholder="Nhập tên đề thi" class="exam-info" required>
+                    <input type="text" value="" name="ten_de_thi" placeholder="Nhập tên đề thi" class="exam-info"  required title="Vui lòng nhập tên đề thi">
+                
                     <span>Thời gian làm bài</span>
-                    <input type="text" value="" name="thoi_gian_lam_bai" placeholder="Nhập thời gian" class="exam-time"
-                        required>
+                    <input type="text" value="30" name="thoi_gian_lam_bai" placeholder="Số phút" class="exam-time" required>
                 </div>
                 <div class="exam-question-body">
                     @foreach ($cauHoiDaChon as $index => $cauHoi)
@@ -337,8 +337,8 @@
                             <div class="question-content">{{ $cauHoi->noi_dung }}</div>
 
                             @if ($cauHoi->hinh_anh)
-                                <img src="{{ asset('storage/cauhoi_images/' . $cauHoi->hinh_anh) }}" alt="Hình câu hỏi"
-                                    class="question-src" width="10%">
+                                <img src="{{ asset('images/' . $cauHoi->hinh_anh) }}" alt="Hình câu hỏi" class="question-src"
+                                    width="10%">
                             @endif
 
                             @if ($cauHoi->ghi_chu)
@@ -376,6 +376,7 @@
 @endsection
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     @if (session('success'))
         <script>
             Swal.fire({
