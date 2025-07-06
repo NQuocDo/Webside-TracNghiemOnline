@@ -399,16 +399,40 @@
     .add-decentralization-btn:hover {
         background-color: #218838;
     }
+
+    .btn-delete-confirm {
+        background-color: #dc3545;
+        /* đỏ cảnh báo */
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        font-size: 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-delete-confirm:hover {
+        background-color: #c82333;
+        transform: scale(1.05);
+    }
+
+    .btn-delete-confirm i {
+        font-size: 14px;
+    }
 </style>
 @section('content')
     <div class="decentralization-content">
         <form action="{{ route('decentralization') }}" method="GET" id="filter-form-decentralization"
-            class="form-search-decentralization" style="justify-content: end;">
+            class="form-search-decentralization">
             <div class="mb-2 me-3">
                 <select class="form-select" name="giang_vien_id" id="giangVienSelect">
                     <option value="">-- Tất cả giảng viên --</option>
                     @foreach ($danhSachGiangVien as $giangVien)
-                        <option value="{{ $giangVien->ma_giang_vien }}">
+                        <option value="{{ $giangVien->ma_giang_vien }}" {{ request('giang_vien_id') == $giangVien->ma_giang_vien ? 'selected' : '' }}>
                             {{ $giangVien->nguoiDung->ho_ten }}
                         </option>
                     @endforeach
@@ -435,7 +459,7 @@
                     @else
                         @foreach($danhSachPhanQuyen as $index => $phanQuyen)
                             <tr>
-                                <td class="decentralization-code-cell">{{$index + 1}}</td>
+                                <td class="decentralization-code-cell">{{ $index + 1 }}</td>
                                 <td class="decentralization-lecturer-cell">
                                     {{ $phanQuyen->giangVien && $phanQuyen->giangVien->nguoiDung ? $phanQuyen->giangVien->nguoiDung->ho_ten : 'N/A' }}
                                 </td>
@@ -445,6 +469,11 @@
                                     {{ optional($phanQuyen->lopHoc)->ten_lop_hoc ?? 'Chưa có lớp' }}
                                 </td>
                                 <td class="actions-cell">
+                                    <a href="javascript:void(0);" class="btn btn-primary btn-sm btn-edit-decentralization"
+                                        data-id="{{ $phanQuyen->ma_phan_quyen }}" data-lecturer="{{ $phanQuyen->ma_giang_vien }}"
+                                        data-subject="{{ $phanQuyen->ma_mon_hoc }}" data-class="{{ $phanQuyen->ma_lop_hoc }}">
+                                        <i class="fas fa-edit"></i> Sửa
+                                    </a>
                                     <form id="delete-form-{{ $phanQuyen->ma_phan_quyen }}"
                                         action="{{ route('decentralization_del', $phanQuyen->ma_phan_quyen) }}" method="POST"
                                         style="display:inline;">
@@ -460,20 +489,20 @@
                     @endif
                 </tbody>
             </table>
-            <button type="button" id="add-decentralization-btn-fake">Thêm quyền giảng
-                dạy</button>
-
+            <button type="button" id="add-decentralization-btn-fake">Thêm quyền giảng dạy</button>
         </div>
         <div class="decentralization-footer">
             <div class="pagination">
-                <a href="{{$danhSachPhanQuyen->previousPageUrl()}}"><i class="fa-solid fa-chevron-left"></i></a>
-                @if($danhSachPhanQuyen->currentPage() - 1 != 0) <a
-                    href="{{$danhSachPhanQuyen->previousPageUrl()}}">{{$danhSachPhanQuyen->currentPage() - 1}}</i></a>
+                <a href="{{ $danhSachPhanQuyen->previousPageUrl() }}"><i class="fa-solid fa-chevron-left"></i></a>
+                @if($danhSachPhanQuyen->currentPage() - 1 != 0)
+                    <a href="{{ $danhSachPhanQuyen->previousPageUrl() }}">{{ $danhSachPhanQuyen->currentPage() - 1 }}</a>
                 @endif
-                <a href="{{$danhSachPhanQuyen->currentPage()}}" class="active"> {{$danhSachPhanQuyen->currentPage()}}</a>
-                @if($danhSachPhanQuyen->currentPage() != $danhSachPhanQuyen->lastPage())<a
-                href="{{$danhSachPhanQuyen->nextPageUrl()}}">{{$danhSachPhanQuyen->currentPage() + 1}}</a> @endif
-                <a href="{{$danhSachPhanQuyen->nextPageUrl()}}"><i class="fa-solid fa-chevron-right"></i></a>
+                <a href="{{ $danhSachPhanQuyen->url($danhSachPhanQuyen->currentPage()) }}"
+                    class="active">{{ $danhSachPhanQuyen->currentPage() }}</a>
+                @if($danhSachPhanQuyen->currentPage() != $danhSachPhanQuyen->lastPage())
+                    <a href="{{ $danhSachPhanQuyen->nextPageUrl() }}">{{ $danhSachPhanQuyen->currentPage() + 1 }}</a>
+                @endif
+                <a href="{{ $danhSachPhanQuyen->nextPageUrl() }}"><i class="fa-solid fa-chevron-right"></i></a>
             </div>
         </div>
     </div>
@@ -483,10 +512,13 @@
         <span class="close-modal">&times;</span>
         <div class="decentralization-header">
             <div class="header-title">
-                <h3>Thêm quyền giảng dạy</h3>
+                <h3 id="modal-title">Thêm quyền giảng dạy</h3>
             </div>
             <div class="header-content">
-                <form action="{{ route('decentralization.store') }}" method="POST" class="add-decentralization-form">
+                <form action="{{ route('decentralization.store') }}" method="POST" class="add-decentralization-form"
+                    id="decentralization-form">
+                    <input type="hidden" name="_method" id="form-method" value="POST">
+                    <input type="hidden" name="phan_quyen_id" id="phanQuyenId">
                     @csrf
                     <div>
                         <label for="">Giảng viên:</label>
@@ -505,7 +537,7 @@
                             <select name="subject" id="subject_select" required>
                                 <option value="" disabled selected>-- Chọn môn học --</option>
                                 @foreach($danhSachMonHoc as $monHoc)
-                                    <option value="{{ $monHoc->ma_mon_hoc}}">{{ $monHoc->ten_mon_hoc }}</option>
+                                    <option value="{{ $monHoc->ma_mon_hoc }}">{{ $monHoc->ten_mon_hoc }}</option>
                                 @endforeach
                             </select>
                         </section>
@@ -515,27 +547,33 @@
                             <select name="class" id="class_select" required>
                                 <option value="" disabled selected>-- Chọn lớp học --</option>
                                 @foreach($danhSachLopHoc as $lopHoc)
-                                    <option value="{{ $lopHoc->ma_lop_hoc}}">{{ $lopHoc->ten_lop_hoc }}</option>
+                                    <option value="{{ $lopHoc->ma_lop_hoc }}">{{ $lopHoc->ten_lop_hoc }}</option>
                                 @endforeach
                             </select>
                         </section>
                     </div>
-                    <button type="submit" class="add-decentralization-btn">Thêm quyền dạy học</button>
+                    <button type="submit" class="add-decentralization-btn" id="submitBtn">Thêm quyền dạy học</button>
                 </form>
             </div>
         </div>
     </div>
-
 @endsection
+
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-
         document.addEventListener('DOMContentLoaded', function () {
             const openModalBtn = document.getElementById('add-decentralization-btn-fake');
             const decentralizationModal = document.getElementById('decentralizationModal');
             const modalOverlay = document.getElementById('decentralizationModalOverlay');
             const closeModalBtn = decentralizationModal.querySelector('.close-modal');
+            const filterForm = document.getElementById("filter-form-decentralization");
+            const select = document.getElementById("giangVienSelect");
+            const form = document.getElementById('decentralization-form');
+            const formMethod = document.getElementById('form-method');
+            const idInput = document.getElementById('phanQuyenId');
+            const submitBtn = document.getElementById('submitBtn');
+            const modalTitle = document.getElementById('modal-title');
 
             function openModal() {
                 modalOverlay.classList.remove('hide-animation');
@@ -547,21 +585,56 @@
             function closeOutModal() {
                 modalOverlay.classList.add('hide-animation');
                 decentralizationModal.classList.add('hide-animation');
-
-                // Chờ animation kết thúc trước khi ẩn hoàn toàn
                 setTimeout(() => {
                     modalOverlay.classList.remove('active', 'hide-animation');
                     decentralizationModal.classList.remove('active', 'hide-animation');
-                }, 300); // Thời gian này phải khớp với transition duration trong CSS (0.3s)
+                }, 300);
+                form.action = '{{ route('decentralization.store') }}';
+                formMethod.value = 'POST';
+                idInput.value = '';
+                submitBtn.textContent = 'Thêm quyền dạy học';
+                modalTitle.textContent = 'Thêm quyền giảng dạy';
             }
-            const deleteButtons = document.querySelectorAll('.btn-delete-confirm');
 
+            if (filterForm && select) {
+                select.addEventListener("change", function () {
+                    filterForm.submit();
+                });
+            }
+
+            openModalBtn.addEventListener('click', openModal);
+            closeModalBtn.addEventListener('click', closeOutModal);
+            modalOverlay.addEventListener('click', closeOutModal);
+            decentralizationModal.addEventListener('click', function (event) {
+                event.stopPropagation();
+            });
+
+            const editButtons = document.querySelectorAll('.btn-edit-decentralization');
+            editButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const id = this.dataset.id;
+                    const lecturer = this.dataset.lecturer;
+                    const subject = this.dataset.subject;
+                    const classId = this.dataset.class;
+
+                    document.getElementById('lecturer_select').value = lecturer;
+                    document.getElementById('subject_select').value = subject;
+                    document.getElementById('class_select').value = classId;
+
+                    form.action = `/dean/decentralization/update/${id}`;
+                    formMethod.value = 'PUT';
+                    idInput.value = id;
+                    submitBtn.textContent = 'Cập nhật quyền dạy học';
+                    modalTitle.textContent = 'Cập nhật quyền giảng dạy';
+                    openModal();
+                });
+            });
+
+            const deleteButtons = document.querySelectorAll('.btn-delete-confirm');
             deleteButtons.forEach(button => {
                 button.addEventListener('click', function (event) {
-                    event.preventDefault(); // 🚫 Ngăn form submit ngay lập tức
-
+                    event.preventDefault();
                     const subjectId = this.getAttribute('data-id');
-
                     Swal.fire({
                         title: 'Bạn có chắc không?',
                         text: "Bạn có chắc chắn xoá quyền dạy câu hỏi này",
@@ -578,48 +651,25 @@
                     });
                 });
             });
-            const form = document.getElementById("filter-form-decentralization");
-            const select = document.getElementById("giangVienSelect");
 
-            if (form && select) {
-                select.addEventListener("change", function () {
-                    form.submit();
-                });
-            }
-
-            // Mở modal khi click nút
-            openModalBtn.addEventListener('click', openModal);
-
-            // Đóng modal khi click nút đóng
-            closeModalBtn.addEventListener('click', closeOutModal);
-
-            // Đóng modal khi click ra ngoài overlay
-            modalOverlay.addEventListener('click', closeOutModal);
-
-            // Ngăn chặn đóng modal khi click vào nội dung modal (để tránh xung đột với overlay)
-            decentralizationModal.addEventListener('click', function (event) {
-                event.stopPropagation();
-            });
-            // Kiểm tra thông báo thành công từ session flash
             @if(session('success'))
                 Swal.fire({
                     icon: 'success',
                     title: 'Thành công!',
                     text: '{{ session('success') }}',
-                    showConfirmButton: false, // Tự động đóng sau một khoảng thời gian
-                    timer: 2000 // Tự động đóng sau 2 giây
+                    showConfirmButton: false,
+                    timer: 2000
                 });
             @endif
 
-            // Kiểm tra thông báo lỗi từ session flash
             @if(session('error'))
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi!',
                     text: '{{ session('error') }}',
-                    showConfirmButton: true // Giữ thông báo lỗi cho người dùng đọc
+                    showConfirmButton: true
                 });
             @endif
-                                                        });
+                });
     </script>
 @endsection

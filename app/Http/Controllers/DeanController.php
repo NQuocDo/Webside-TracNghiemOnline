@@ -19,6 +19,7 @@ use App\Models\GiangVien;
 use App\Models\CauHoi;
 use App\Models\PhanQuyenDay;
 use App\Models\LichSuLamBai;
+use Carbon\Carbon;
 
 class DeanController extends Controller
 {
@@ -70,8 +71,15 @@ class DeanController extends Controller
                 if (!empty($tuKhoaTimKiem)) {
                     $query->where('ho_ten', 'like', '%' . $tuKhoaTimKiem . '%');
                 }
+                $query->where(function ($q) {
+                    $q->where('trang_thai_tai_khoan', 'hoat_dong')
+                        ->orWhere(function ($q2) {
+                            $q2->where('trang_thai_tai_khoan', 'khong_hoat_dong')
+                                ->where('updated_at', '>=', Carbon::now()->subMonths(6));
+                        });
+                });
             })
-            ->latest() // sắp xếp theo thời gian mới nhất (nếu có cột created_at)
+            ->latest()
             ->paginate(10);
 
         return view('dean.student_management', [
@@ -152,22 +160,46 @@ class DeanController extends Controller
 
         return redirect()->route('subject_management')->with('success', 'Xoá môn học thành công.');
     }
+    //sửa môn học
+    public function suaMonHoc(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name_subject' => 'required',
+        ]);
+        $monHoc = MonHoc::findOrFail($id);
+        $monHoc->update([
+            'ten_mon_hoc' => $request->name_subject,
+            'so_tin_chi' => $request->credit_subject,
+            'hoc_ky' => $request->semester_subject,
+            'mo_ta' => $request->description_subject,
+            'tieu_chi_ket_thuc_mon' => $request->criteria_subject,
+            'do_kho' => $request->difficulty_subject,
+        ]);
+
+        return redirect()->back()->with('success', 'Cập nhật môn học thành công');
+    }
 
     //Quản lý giảng viên
     public function hienThiDanhSachGiangVien(Request $request)
     {
         $tuKhoaTimKiem = $request->input('tu_khoa_tim_kiem');
-
+        $thoiGianGioiHan = Carbon::now()->subMonths(6);
         $danhSachGiangVien = GiangVien::with(['nguoiDung', 'monHocs'])
-            ->whereHas('nguoiDung', function ($query) use ($tuKhoaTimKiem) {
-                $query->where('vai_tro', 'giang_vien');
+            ->whereHas('nguoiDung', function ($query) use ($tuKhoaTimKiem, $thoiGianGioiHan) {
+                $query->where('vai_tro', 'giang_vien')
+                    ->where(function ($q) use ($thoiGianGioiHan) {
+                        $q->where('trang_thai_tai_khoan', '!=', 'khong_hoat_dong')
+                            ->orWhere(function ($subQ) use ($thoiGianGioiHan) {
+                                $subQ->where('trang_thai_tai_khoan', 'khong_hoat_dong')
+                                    ->where('updated_at', '>=', $thoiGianGioiHan);
+                            });
+                    });
 
                 if ($tuKhoaTimKiem) {
                     $query->where('ho_ten', 'like', '%' . $tuKhoaTimKiem . '%');
                 }
             })
             ->paginate(5);
-
         return view('dean.lecturer_list', [
             'danhSachGiangVien' => $danhSachGiangVien,
             'tuKhoaTimKiem' => $tuKhoaTimKiem,
@@ -199,28 +231,6 @@ class DeanController extends Controller
         ]);
     }
 
-    public function xoaGiangVien($id)
-    {
-        $giangVien = GiangVien::where('ma_giang_vien', $id)->first();
-
-        if (!$giangVien) {
-            return redirect()->back()->with('error', 'Không tìm thấy giảng viên.');
-        }
-
-        $coPhanQuyen = DB::table('phan_quyen_days')
-            ->where('ma_giang_vien', $id)
-            ->exists();
-
-        if ($coPhanQuyen) {
-            return redirect()->back()->with('error', 'Giảng viên đang được phân quyền, không thể xoá.');
-        }
-        $maNguoiDung = $giangVien->ma_nguoi_dung;
-        $giangVien->delete();
-
-        DB::table('nguoidungs')->where('ma_nguoi_dung', $maNguoiDung)->delete();
-
-        return redirect()->route('lecturer_list')->with('success', 'Xoá giảng viên và tài khoản thành công.');
-    }
 
     public function hienThiDanhSachCauHoiTheoBoLoc(Request $request)
     {
@@ -308,6 +318,17 @@ class DeanController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Không thể xoá quyền dạy học. Vui lòng kiểm tra ràng buộc dữ liệu.');
         }
+    }
+    public function suaPhanQuyen(Request $request, $id)
+    {
+        $phanQuyen = PhanQuyenDay::find($id);
+
+        $phanQuyen->ma_giang_vien = $request->input('lecturer');
+        $phanQuyen->ma_mon_hoc = $request->input('subject');
+        $phanQuyen->ma_lop_hoc = $request->input('class');
+        $phanQuyen->save();
+
+        return redirect()->back()->with('success', 'Cập nhật quyền giảng dạy thành công.');
     }
     //}
 
@@ -462,6 +483,21 @@ class DeanController extends Controller
         $lopHoc->delete();
 
         return redirect()->route('add_class')->with('success', 'Xoá lớp học thành công');
+    }
+    //khoá sinh viên
+    public function thayDoiTrangThaiSinhVien($id)
+    {
+
+        $sinhVien = SinhVien::with('nguoiDung')->where('ma_nguoi_dung', $id)->first();
+
+        $nguoiDung = $sinhVien->nguoiDung;
+        $nguoiDung->trang_thai_tai_khoan = $nguoiDung->trang_thai_tai_khoan === 'hoat_dong' ? 'khong_hoat_dong' : 'hoat_dong';
+        $nguoiDung->save();
+
+        return response()->json([
+            'success' => true,
+            'new_status' => $nguoiDung->trang_thai_tai_khoan
+        ]);
     }
 
 }

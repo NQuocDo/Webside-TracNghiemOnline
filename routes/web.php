@@ -104,7 +104,6 @@ Route::middleware(['auth'])->group(function () {
         //{Quản lý sinh viên dang dạy
         Route::get('/lecturer/student-list', [LecturerController::class, 'hienThiDanhSachSinhVien'])->name('student_list');//hiển thị danh sách sinh viên
         Route::post('/lecturer/student-list/update', [LecturerController::class, 'doiMatKhauSinhVien'])->name('student_list_update');//đổi mật khẩu sinh viên
-        Route::put('/lecturer/student-list/{id}/status', [LecturerController::class, 'thayDoiTrangThaiSinhVien'])->name('student_management_status');//khoá và mở tài khoản sinh viên
 
         //{Quản lý môn học
         Route::get('/lecturer/subject-list', [LecturerController::class, 'hienThiMonGiangVienDay'])->name('subject_list');//hiển thị danh sách môn học giảng viên đang dạy
@@ -136,25 +135,26 @@ Route::middleware(['auth'])->group(function () {
         //Quản lý sinh viên{
         Route::get('/dean/student-management', [DeanController::class, 'hienThiDanhSachSinhVien'])->name('student_management');//hiển thị danh sách sinh viên
         Route::delete('dean/student-management/{id}/delete', [DeanController::class, 'xoaSinhVien'])->name('student_management_delete');//Xoá sinh viên
-        //}
+        Route::put('/dean/student-management/{id}/status', [DeanController::class, 'thayDoiTrangThaiSinhVien'])->name('student_management_status');//khoá và mở tài khoản sinh viên
 
         //Quản lý môn học{
         Route::get('/dean/subject-management', [DeanController::class, 'hienThiMonHoc'])->name('subject_management');//hiển thị danh sách môn học
         Route::post('/dean/subject-management/store', [DeanController::class, 'themMonHoc'])->name('subject_management.store');//thêm môn học
+        Route::put('/dean/subject_management/{id}', [DeanController::class, 'suaMonHoc'])->name('subject_management.update');//sửa môn học
         Route::delete('/dean/subject-management/del/{id}', [DeanController::class, 'xoaMonHoc'])->name('subject_management_del');//xoá môn học vĩnh viễn
         //}
 
         //Quản lý giảng viên{
         Route::get('/dean/lecturer-list', [DeanController::class, 'hienThiDanhSachGiangVien'])->name('lecturer_list');
-        Route::put('/dean/lecturer-list/{id}/status', [DeanController::class, 'thayDoiTrangThaiGiangVien'])->name('lecturer_list_status');//khoá và mở tài khoản sinh viên
-        Route::delete('/dean/lecturer-list/del/{id}', [DeanController::class, 'xoaGiangVien'])->name('lecturer_list_del');//xoá môn học vĩnh viễn
+        Route::put('/dean/lecturer-list/{id}/status', [DeanController::class, 'thayDoiTrangThaiGiangVien'])->name('lecturer_list_status');//khoá và mở tài khoản giảng viên
         Route::post('/dean/lecturer-list/change-password', [DeanController::class, 'doiMatKhauGiangVien'])->name('lecturer_list_changepassword');
 
         //}
 
         //Quản lý quyền dạy học{
         Route::get('/dean/decentralization', [DeanController::class, 'hienthiQuyenGiangDay'])->name('decentralization');
-        Route::post('/dean/decentralization/store', [DeanController::class, 'themQuyenDayHoc'])->name('decentralization.store');//thêm quyền dạy học
+        Route::post('/dean/decentralization/store', [DeanController::class, 'themQuyenDayHoc'])->name('decentralization.store');
+        Route::put('/dean/decentralization/update/{id}', [DeanController::class, 'suaPhanQuyen'])->name('decentralization.update');//thêm quyền dạy học
         Route::delete('/dean/decentralization/del/{id}', [DeanController::class, 'xoaQuyenDayHoc'])->name('decentralization_del');
         //}
 

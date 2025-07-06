@@ -214,15 +214,6 @@
                                         <i class="fa-solid fa-circle-xmark"></i>
                                         {{ $giangVien->nguoiDung->trang_thai_tai_khoan === 'hoat_dong' ? 'Khoá' : 'Mở' }}
                                     </button>
-                                    <form id="delete-form-{{ $giangVien->ma_giang_vien }}"
-                                        action="{{ route('lecturer_list_del', $giangVien->ma_giang_vien) }}" method="POST"
-                                        style="display: inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="delete-btn" data-id="{{ $giangVien->ma_giang_vien }}">
-                                            <i class="fas fa-trash-alt"></i> Xóa
-                                        </button>
-                                    </form>
                                     <button class="changepassword-btn" data-bs-toggle="modal" data-bs-target="#doiMatKhauModal"
                                         onclick="setGiangVienId('{{ $giangVien->ma_giang_vien }}')">
                                         <i class="fa-solid fa-eye"></i> Đổi mật khẩu
@@ -354,26 +345,6 @@
                                         text: 'Không thể gửi yêu cầu đến máy chủ.'
                                     });
                                 });
-                        }
-                    });
-                });
-            });
-
-            // Xoá giảng viên
-            const buttonDelete = document.querySelectorAll(".delete-btn");
-            buttonDelete.forEach(button => {
-                button.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const userId = this.dataset.id;
-                    Swal.fire({
-                        title: 'Bạn có chắc muốn xoá giảng viên này?',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Xoá',
-                        cancelButtonText: 'Huỷ'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            document.getElementById('delete-form-' + userId).submit();
                         }
                     });
                 });

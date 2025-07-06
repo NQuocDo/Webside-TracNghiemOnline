@@ -342,6 +342,7 @@
                 <form action="{{ route('subject_management.store') }}" method="POST" class="add-subject-form"
                     id="add-subject-form">
                     @csrf
+                    <input type="hidden" name="edit_id" id="edit-id">
                     <div>
                         <label for="">Tên môn học</label>
                         <input type="text" id="" name="name_subject">
@@ -410,6 +411,14 @@
                                     <td class="subject-criteria-cell">{{ $monHoc->tieu_chi_ket_thuc_mon }}</td>
                                     <td class="subject-diffculty-cell">{{ $monHoc->do_kho }}</td>
                                     <td class="actions-cell">
+                                        <a href="javascript:void(0);" class="btn btn-primary btn-sm edit-subject-btn"
+                                            data-id="{{ $monHoc->ma_mon_hoc }}" data-name="{{ $monHoc->ten_mon_hoc }}"
+                                            data-credit="{{ $monHoc->so_tin_chi }}" data-semester="{{ $monHoc->hoc_ky }}"
+                                            data-description="{{ $monHoc->mo_ta }}"
+                                            data-criteria="{{ $monHoc->tieu_chi_ket_thuc_mon }}"
+                                            data-difficulty="{{ $monHoc->do_kho }}" title="Sửa môn học">
+                                            <i class="fas fa-edit"></i> Sửa
+                                        </a>
                                         <form id="delete-form-{{ $monHoc->ma_mon_hoc }}"
                                             action="{{ route('subject_management_del', $monHoc->ma_mon_hoc) }}" method="POST"
                                             style="display:inline;">
@@ -499,6 +508,40 @@
                 } else {
                     console.error('Không tìm thấy nút "add-subject-btn-fake" hoặc div "add-subject".');
                 }
+                document.querySelectorAll('.edit-subject-btn').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const form = document.getElementById('add-subject-form');
+                        const id = button.dataset.id;
+
+                        form.action = `/dean/subject_management/${id}`; // Đúng route update
+                        form.querySelector('input[name="name_subject"]').value = button.dataset.name;
+                        form.querySelector('input[name="credit_subject"]').value = button.dataset.credit;
+                        form.querySelector('input[name="semester_subject"]').value = button.dataset.semester;
+                        form.querySelector('input[name="description_subject"]').value = button.dataset.description;
+                        form.querySelector('input[name="criteria_subject"]').value = button.dataset.criteria;
+                        form.querySelector('select[name="difficulty_subject"]').value = button.dataset.difficulty;
+
+                        document.getElementById('edit-id').value = id;
+
+                        // Thêm input _method nếu chưa có
+                        let methodInput = form.querySelector('input[name="_method"]');
+                        if (!methodInput) {
+                            methodInput = document.createElement('input');
+                            methodInput.setAttribute('type', 'hidden');
+                            methodInput.setAttribute('name', '_method');
+                            methodInput.setAttribute('value', 'PUT');
+                            form.appendChild(methodInput);
+                        }
+
+                        document.getElementById('add-subject-btn').innerText = 'Cập nhật môn học';
+
+                        const addSubjectForm = document.getElementById('add-subject');
+                        if (addSubjectForm.style.display === 'none' || addSubjectForm.style.display === '') {
+                            addSubjectForm.style.display = 'block';
+                        }
+                        form.scrollIntoView({ behavior: 'smooth' });
+                    });
+                });
                 @if(session('success'))
                     Swal.fire({
                         icon: 'success',
@@ -511,29 +554,28 @@
 
                 @if(session('error'))
                     Swal.fire({
-                        icon: 'error',
-                        title: 'Lỗi!',
+                        icon: 'warning',
+                        title: 'Không thể thực hiện!',
                         text: '{{ session('error') }}',
-                        showConfirmButton: true // Giữ thông báo lỗi cho người dùng đọc
+                        showConfirmButton: true
                     });
                 @endif
 
-                // Xử lý lỗi validation từ $errors bag (nếu bạn dùng $request->validate() trong controller)
                 @if ($errors->any())
                     Swal.fire({
                         icon: 'error',
                         title: 'Lỗi nhập liệu!',
                         html: `
-                                                                           <ul>
-                                                                               @foreach ($errors->all() as $error)
-                                                                                   <li>{{ $error }}</li>
-                                                                               @endforeach
-                                                                           </ul>
-                                                                       `,
+                                                       <ul>
+                                                           @foreach ($errors->all() as $error)
+                                                            <li>{{ $error }}</li>
+                                                           @endforeach
+                                                       </ul>
+                                                  `,
                         showConfirmButton: true
                     });
                 @endif
-                                    });
+                              });
 
         </script>
     @endsection

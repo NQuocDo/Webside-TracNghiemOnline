@@ -797,21 +797,6 @@ class LecturerController extends Controller
 
         return redirect()->back()->with('success', 'Đổi mật khẩu thành công.');
     }
-    //khoá sinh viên
-    public function thayDoiTrangThaiSinhVien($id)
-    {
-
-        $sinhVien = SinhVien::with('nguoiDung')->where('ma_nguoi_dung', $id)->first();
-
-        $nguoiDung = $sinhVien->nguoiDung;
-        $nguoiDung->trang_thai_tai_khoan = $nguoiDung->trang_thai_tai_khoan === 'hoat_dong' ? 'khong_hoat_dong' : 'hoat_dong';
-        $nguoiDung->save();
-
-        return response()->json([
-            'success' => true,
-            'new_status' => $nguoiDung->trang_thai_tai_khoan
-        ]);
-    }
     //tạo dề thi với 2 loại ngẫu nhiên và chọn đáp án
     public function taoDeThi(Request $request)
     {

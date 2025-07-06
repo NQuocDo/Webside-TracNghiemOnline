@@ -16,7 +16,6 @@
         margin-bottom: 50px;
     }
 
-    /* Container cho table */
     .table-container {
         overflow-x: auto;
         border-radius: 12px;
@@ -25,7 +24,6 @@
         margin: 20px 0;
     }
 
-    /* Styling chính cho table */
     .student-manage-table {
         width: 100%;
         border-collapse: collapse;
@@ -35,7 +33,6 @@
         overflow: hidden;
     }
 
-    /* Header styling */
     .student-manage-table thead {
         background: linear-gradient(135deg, #1f2b3e 0%, #2c3e50 100%);
         position: sticky;
@@ -59,7 +56,6 @@
         border-right: none;
     }
 
-    /* Body styling */
     .student-manage-table tbody tr {
         transition: all 0.3s ease;
         border-bottom: 1px solid #e9ecef;
@@ -83,7 +79,6 @@
         color: #495057;
     }
 
-    /* Specific cell styling */
     .stt-cell {
         text-align: center;
         font-weight: 600;
@@ -107,14 +102,12 @@
         font-style: italic;
     }
 
-    /* Actions cell */
     .actions-cell {
         width: 200px;
         text-align: center;
         padding: 12px 8px;
     }
 
-    /* Button styling */
     .actions-cell button {
         padding: 8px 16px;
         margin: 0 4px;
@@ -131,20 +124,18 @@
         justify-content: center;
     }
 
-    /* Block button */
-    .block-btn {
+    .btn-toggle-status {
         background: linear-gradient(135deg, #fd7e14 0%, #fd9644 100%);
         color: white;
         box-shadow: 0 2px 4px rgba(253, 126, 20, 0.3);
     }
 
-    .block-btn:hover {
+    .btn-toggle-status:hover {
         background: linear-gradient(135deg, #e8590c 0%, #fd7e14 100%);
         box-shadow: 0 4px 8px rgba(253, 126, 20, 0.4);
         transform: translateY(-2px);
     }
 
-    /* Delete button */
     .delete-btn {
         background: linear-gradient(135deg, #dc3545 0%, #e85d75 100%);
         color: white;
@@ -157,12 +148,10 @@
         transform: translateY(-2px);
     }
 
-    /* Button icons */
     .actions-cell button i {
         font-size: 12px;
     }
 
-    /* Empty state styling */
     .text-center.text-muted {
         text-align: center;
         color: #6c757d;
@@ -171,7 +160,6 @@
         background-color: #f8f9fa;
     }
 
-    /* Responsive design */
     @media (max-width: 768px) {
         .student-manage-table {
             font-size: 12px;
@@ -298,6 +286,18 @@
                                 </td>
 
                                 <td class="actions-cell">
+                                    @if(isset($sinhVien->nguoiDung))
+                                        <button type="button" class="btn btn-sm btn-toggle-status"style="color:white;"
+                                            data-id="{{ $sinhVien->nguoiDung->ma_nguoi_dung }}"
+                                            data-status="{{ $sinhVien->nguoiDung->trang_thai_tai_khoan }}">
+                                            <i class="fa-solid fa-circle-xmark me-1"></i>
+                                            <span class="status-label">
+                                                {{ $sinhVien->nguoiDung->trang_thai_tai_khoan === 'hoat_dong' ? 'Khoá' : 'Mở' }}
+                                            </span>
+                                        </button>
+                                    @else
+                                        <span class="text-muted">Không rõ trạng thái</span>
+                                    @endif
                                     <form id="delete-form-{{ $sinhVien->ma_sinh_vien }}"
                                         action="{{ route('student_management_delete', $sinhVien->ma_sinh_vien) }}" method="POST"
                                         style="display: inline;">
@@ -331,21 +331,19 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const buttons = document.querySelectorAll('.block-btn');
-
-            buttons.forEach(button => {
+            document.querySelectorAll('.btn-toggle-status').forEach(button => {
                 button.addEventListener('click', function () {
-                    const userId = this.getAttribute('data-id');
+                    const userId = this.dataset.id;
 
                     Swal.fire({
                         title: 'Bạn có chắc chắn?',
                         text: "Thao tác này sẽ thay đổi trạng thái tài khoản!",
                         icon: 'warning',
                         showCancelButton: true,
+                        confirmButtonText: 'Xác nhận',
+                        cancelButtonText: 'Huỷ',
                         confirmButtonColor: '#3085d6',
                         cancelButtonColor: '#d33',
-                        confirmButtonText: 'Xác nhận',
-                        cancelButtonText: 'Huỷ'
                     }).then((result) => {
                         if (result.isConfirmed) {
                             fetch(`/dean/student-management/${userId}/status`, {
@@ -353,43 +351,38 @@
                                 headers: {
                                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                                     'Content-Type': 'application/json',
-                                },
+                                }
                             })
-                                .then(response => response.json())
+                                .then(res => res.json())
                                 .then(data => {
                                     if (data.success) {
+                                        const label = button.querySelector('.status-label');
+                                        label.textContent = data.new_status === 'hoat_dong' ? 'Khoá' : 'Mở';
+                                        button.dataset.status = data.new_status;
+
                                         Swal.fire({
                                             icon: 'success',
-                                            title: 'Thực hiện thành công!',
-                                            text: data.message,
+                                            title: 'Thành công!',
+                                            text: `Tài khoản đã chuyển sang trạng thái ${data.new_status === 'hoat_dong' ? 'hoạt động' : 'không hoạt động'}`,
                                             timer: 2000,
-                                            showConfirmButton: false
+                                            showConfirmButton: false,
                                         });
-                                        setTimeout(() => location.reload(), 2000);
                                     } else {
-                                        Swal.fire({
-                                            icon: 'error',
-                                            title: 'Lỗi',
-                                            text: data.message
-                                        });
+                                        Swal.fire('Lỗi!', data.message || 'Không thể cập nhật trạng thái.', 'error');
                                     }
                                 })
                                 .catch(() => {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Lỗi kết nối',
-                                        text: 'Không thể gửi yêu cầu đến máy chủ.'
-                                    });
+                                    Swal.fire('Lỗi!', 'Đã xảy ra lỗi khi gửi yêu cầu.', 'error');
                                 });
                         }
                     });
                 });
             });
-            //tìm kiếm
+
+            // Tìm kiếm sinh viên
             const form = document.getElementById("form-search-student-list");
             const keywordInput = document.getElementById("keyword");
 
-            // Khi nhập từ khóa: debounce 500ms rồi submit
             if (keywordInput) {
                 let debounce;
                 keywordInput.addEventListener("input", function () {
@@ -400,8 +393,8 @@
                 });
             }
 
-            const buttonDelete = document.querySelectorAll(".delete-btn");
-            buttonDelete.forEach(buttonDelete => {
+            // Xác nhận xoá sinh viên
+            document.querySelectorAll(".delete-btn").forEach(buttonDelete => {
                 buttonDelete.addEventListener('click', function (e) {
                     e.preventDefault();
                     const userId = this.dataset.id;
@@ -413,7 +406,7 @@
                         cancelButtonText: 'Huỷ'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            document.getElementById('delete-form-' + id).submit();
+                            document.getElementById('delete-form-' + userId).submit();
                         }
                     });
                 });
