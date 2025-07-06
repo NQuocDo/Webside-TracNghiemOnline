@@ -763,9 +763,10 @@ class LecturerController extends Controller
         $danhSachSinhVien = collect();
         foreach ($lopHoc as $lop) {
             $sinhViens = $lop->sinhViens;
-            if ($sinhViens->trang_thai === 'an') {
-                return false;
-            }
+            $sinhViens = $sinhViens->filter(function ($sv) {
+                return $sv->trang_thai !== 'an';
+            });
+
             if ($keyword) {
                 $sinhViens = $sinhViens->filter(function ($sv) use ($keyword) {
                     return stripos($sv->nguoiDung->ho_ten, $keyword) !== false;
