@@ -287,7 +287,7 @@
 
                                 <td class="actions-cell">
                                     @if(isset($sinhVien->nguoiDung))
-                                        <button type="button" class="btn btn-sm btn-toggle-status"style="color:white;"
+                                        <button type="button" class="btn btn-sm btn-toggle-status" style="color:white;"
                                             data-id="{{ $sinhVien->nguoiDung->ma_nguoi_dung }}"
                                             data-status="{{ $sinhVien->nguoiDung->trang_thai_tai_khoan }}">
                                             <i class="fa-solid fa-circle-xmark me-1"></i>
@@ -412,5 +412,23 @@
                 });
             });
         });
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                text: '{{ session('success') }}',
+                showConfirmButton: false,
+                timer: 2000
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                icon: 'warning',
+                title: 'Không thể thực hiện!',
+                text: '{{ session('error') }}',
+                showConfirmButton: true
+            });
+        @endif
     </script>
 @endsection

@@ -763,6 +763,9 @@ class LecturerController extends Controller
         $danhSachSinhVien = collect();
         foreach ($lopHoc as $lop) {
             $sinhViens = $lop->sinhViens;
+            if ($sinhViens->trang_thai === 'an') {
+                return false;
+            }
             if ($keyword) {
                 $sinhViens = $sinhViens->filter(function ($sv) use ($keyword) {
                     return stripos($sv->nguoiDung->ho_ten, $keyword) !== false;
@@ -800,7 +803,7 @@ class LecturerController extends Controller
     //tạo dề thi với 2 loại ngẫu nhiên và chọn đáp án
     public function taoDeThi(Request $request)
     {
-        
+
         if ($request->filled('ma_mon_hoc') && $request->filled('so_luong')) {
             $maMonHoc = $request->input('ma_mon_hoc');
             $soLuong = (int) $request->input('so_luong');

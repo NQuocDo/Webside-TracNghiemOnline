@@ -65,6 +65,7 @@ class DeanController extends Controller
                 $query->where('vai_tro', 'sinh_vien');
             }
         ])
+            ->where('trang_thai', '!=', 'an')
             ->whereHas('nguoiDung', function ($query) use ($tuKhoaTimKiem) {
                 $query->where('vai_tro', 'sinh_vien');
 
@@ -93,7 +94,10 @@ class DeanController extends Controller
         $sinhVien = SinhVien::
             where('ma_sinh_vien', $id)
             ->first();
-        $sinhVien->delete();
+        if ($sinhVien) {
+            $sinhVien->trang_thai = 'an';
+            $sinhVien->save();
+        }
 
         return redirect()->route('student_management')->with('success', 'Xoá sinh viên thành công');
     }
@@ -498,6 +502,21 @@ class DeanController extends Controller
             'success' => true,
             'new_status' => $nguoiDung->trang_thai_tai_khoan
         ]);
+    }
+    public function suaLopHoc(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'ten_lop_hoc' => 'required|string|max:255',
+            'nganh' => 'required|string|max:255',
+            'nam_hoc' => 'required|integer|min:1900|max:2100',
+            'hoc_ky' => 'required|integer|min:1|max:10',
+            'mo_ta' => 'nullable|string|max:1000',
+        ]);
+
+        $lopHoc = LopHoc::find($id);
+        $lopHoc->update($validated);
+
+        return redirect()->back()->with('success', 'Cập nhật lớp học thành công!');
     }
 
 }

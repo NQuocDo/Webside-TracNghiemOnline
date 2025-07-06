@@ -4,33 +4,23 @@
     Quản lý Lớp học
 @endsection
 <style>
-    body {
-        font-family: 'Inter', sans-serif;
-        background-color: #f0f2f5;
-        margin: 0;
-        padding: 0;
-    }
-
     .class-management-content {
-        padding: 20px;
-        margin: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
+        padding: 30px;
+        margin: 20px auto;
+        max-width: 1200px;
     }
 
     .add-class-button {
-        background-color: #007bff;
-        color: white;
-        padding: 12px 25px;
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: #fff;
+        padding: 12px 30px;
         border: none;
-        border-radius: 8px;
-        font-size: 18px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
         cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease;
-        align-self: flex-start;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
     }
 
     .add-class-button:hover {
@@ -38,283 +28,233 @@
         transform: translateY(-2px);
     }
 
-    .add-class-button:active {
-        background-color: #004085;
-        transform: translateY(0);
-    }
-
     .modal {
         display: none;
         position: fixed;
         z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.4);
         justify-content: center;
         align-items: center;
     }
 
     .modal-content {
-        background-color: #fefefe;
+        background-color: #fff;
         padding: 30px;
-        border-radius: 15px;
-        border: 1px solid #e0e0e0;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
         max-width: 600px;
         width: 90%;
         position: relative;
-        animation: animateshow 0.3s ease-out;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        animation: fadeIn 0.3s ease-out;
     }
 
-    @keyframes animateshow {
+    @keyframes fadeIn {
         from {
-            transform: translateY(-50px);
             opacity: 0;
+            transform: translateY(-20px);
         }
 
         to {
-            transform: translateY(0);
             opacity: 1;
+            transform: translateY(0);
         }
     }
 
     .close-button {
-        color: #aaa;
         position: absolute;
         top: 15px;
-        right: 25px;
-        font-size: 32px;
-        font-weight: bold;
+        right: 20px;
+        font-size: 28px;
+        color: #999;
         cursor: pointer;
-        transition: color 0.3s ease;
+        transition: color 0.3s;
     }
 
-    .close-button:hover,
-    .close-button:focus {
-        color: #333;
-        text-decoration: none;
+    .close-button:hover {
+        color: #000;
     }
 
     h2 {
-        text-align: center;
-        font-size: 28px;
-        color: #333;
+        font-size: 24px;
+        font-weight: 700;
         margin-bottom: 25px;
-        font-weight: 600;
+        text-align: center;
+        color: #222;
     }
 
     .add-class-form {
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 16px;
     }
 
     .add-class-form div {
         display: flex;
         align-items: center;
-        margin-bottom: 0;
     }
 
     .add-class-form label {
         width: 35%;
         min-width: 120px;
-        color: #555;
-        font-size: 16px;
         font-weight: 500;
-        margin-right: 15px;
-        text-align: right;
+        color: #555;
     }
 
     .add-class-form input[type="text"],
     .add-class-form input[type="number"],
     .add-class-form textarea,
     .add-class-form select {
-        flex-grow: 1;
-        padding: 12px 15px;
-        border: 1px solid #ccc;
+        flex: 1;
+        padding: 10px 14px;
+        border: 1px solid #ced4da;
         border-radius: 8px;
-        font-size: 16px;
-        color: #333;
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        resize: vertical;
+        font-size: 15px;
+        transition: 0.2s;
+        background-color: #fff;
     }
 
-    .add-class-form input[type="text"]:focus,
-    .add-class-form input[type="number"]:focus,
-    .add-class-form textarea:focus,
-    .add-class-form select:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    .add-class-form input:focus,
+    .add-class-form select:focus,
+    .add-class-form textarea:focus {
         outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
     }
 
     .add-class-submit-btn {
         background-color: #28a745;
-        color: white;
-        padding: 12px 25px;
+        color: #fff;
         border: none;
+        padding: 12px 25px;
+        font-size: 16px;
         border-radius: 8px;
-        font-size: 18px;
         cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease;
-        margin-top: 20px;
         align-self: flex-end;
-        min-width: 180px;
+        transition: all 0.3s ease;
         box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
     }
 
     .add-class-submit-btn:hover {
         background-color: #218838;
-        transform: translateY(-2px);
-    }
-
-    .add-class-submit-btn:active {
-        background-color: #1e7e34;
-        transform: translateY(0);
+        transform: translateY(-1px);
     }
 
     .class-list-section {
-        background-color: #fff;
+        background: #fff;
         padding: 30px;
-        border-radius: 15px;
-        border: 1px solid #e0e0e0;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        margin-top: 30px;
     }
 
     .class-list-section h2 {
         text-align: center;
-        margin-bottom: 25px;
+        font-size: 22px;
+        color: #333;
+        margin-bottom: 20px;
     }
 
     .class-list-table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 20px;
+        font-size: 15px;
     }
 
     .class-list-table th,
     .class-list-table td {
-        border: 1px solid #ddd;
-        padding: 12px;
+        padding: 14px 12px;
+        border: 1px solid #dee2e6;
         text-align: left;
     }
 
     .class-list-table th {
-        background-color: #f2f2f2;
+        background-color: #f1f3f5;
+        color: #495057;
         font-weight: 600;
-        color: #555;
     }
 
-    .class-list-table tr:nth-child(even) {
+    .class-list-table tbody tr:nth-child(even) {
         background-color: #f9f9f9;
     }
 
-    .class-list-table tr:hover {
-        background-color: #e9e9e9;
+    .class-list-table tbody tr:hover {
+        background-color: #eef4ff;
+        transition: 0.2s;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 8px 14px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background-color: #0069d9;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        margin-left: 10px;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
     }
 
     @media (max-width: 768px) {
-        .add-class-form label {
-            width: 100%;
-            text-align: left;
-            margin-right: 0;
-            margin-bottom: 5px;
-        }
-
         .add-class-form div {
             flex-direction: column;
             align-items: flex-start;
         }
 
-        .add-class-form input[type="text"],
-        .add-class-form input[type="number"],
-        .add-class-form textarea,
-        .add-class-form select {
+        .add-class-form label {
             width: 100%;
-        }
-
-        .add-class-submit-btn {
-            align-self: stretch;
-            min-width: unset;
-        }
-
-        .modal-content {
-            width: 95%;
-            margin: 20px;
-        }
-
-        .class-list-section {
-            padding: 15px;
+            margin-bottom: 5px;
         }
 
         .class-list-table,
         .class-list-table thead,
         .class-list-table tbody,
+        .class-list-table tr,
         .class-list-table th,
-        .class-list-table td,
-        .class-list-table tr {
+        .class-list-table td {
             display: block;
         }
 
-        .class-list-table thead tr {
-            position: absolute;
-            top: -9999px;
-            left: -9999px;
-        }
-
-        .class-list-table tr {
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        .class-list-table thead {
+            display: none;
         }
 
         .class-list-table td {
-            border: none;
-            border-bottom: 1px solid #eee;
-            position: relative;
             padding-left: 50%;
+            position: relative;
             text-align: right;
+            border: none;
+            border-bottom: 1px solid #e9ecef;
         }
 
-        .class-list-table td:before {
+        .class-list-table td::before {
+            content: attr(data-label);
             position: absolute;
-            left: 6px;
+            left: 15px;
             width: 45%;
-            padding-right: 10px;
             white-space: nowrap;
+            font-weight: bold;
+            color: #495057;
             text-align: left;
-            font-weight: 600;
-            color: #777;
-        }
-
-        .class-list-table td:nth-of-type(1):before {
-            content: "Mã Lớp:";
-        }
-
-        .class-list-table td:nth-of-type(2):before {
-            content: "Tên Lớp:";
-        }
-
-        .class-list-table td:nth-of-type(3):before {
-            content: "Ngành:";
-        }
-
-        .class-list-table td:nth-of-type(4):before {
-            content: "Năm Học:";
-        }
-
-        .class-list-table td:nth-of-type(5):before {
-            content: "Học Kỳ:";
-        }
-
-        .class-list-table td:nth-of-type(6):before {
-            content: "Mô Tả:";
         }
     }
 </style>
@@ -328,6 +268,7 @@
                 <h2>Thêm Lớp học Mới</h2>
                 <form action="{{ route('add_class_store') }}" method="POST" class="add-class-form" id="addClassForm">
                     @csrf
+                    <input type="hidden" name="edit_id" id="edit-id">
                     <div>
                         <label for="class_name">Tên Lớp</label>
                         <input type="text" id="class_name" name="ten_lop_hoc" required>
@@ -381,6 +322,12 @@
                                 <td>{{ $lopHoc->hoc_ky }}</td>
                                 <td>{{ $lopHoc->mo_ta }}</td>
                                 <td>
+                                    <a href="javascript:void(0);" class="btn btn-primary edit-class-btn"
+                                        data-id="{{ $lopHoc->ma_lop_hoc }}" data-ten="{{ $lopHoc->ten_lop_hoc }}"
+                                        data-nganh="{{ $lopHoc->nganh }}" data-nam="{{ $lopHoc->nam_hoc }}"
+                                        data-hocky="{{ $lopHoc->hoc_ky }}" data-mota="{{ $lopHoc->mo_ta }}">
+                                        <i class="fas fa-edit"></i> Sửa
+                                    </a>
                                     <form id="delete-form-{{ $lopHoc->ma_lop_hoc }}"
                                         action="{{ route('add_class_del', $lopHoc->ma_lop_hoc) }}" method="POST"
                                         style="display: none;">
@@ -397,6 +344,9 @@
             </table>
         </div>
     </div>
+@endsection
+@section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -419,14 +369,38 @@
                     }
                 };
             }
+            document.querySelectorAll('.edit-class-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const form = document.getElementById('addClassForm');
+                    const id = button.dataset.id;
+
+                    form.action = `/dean/add-class/update/${id}`;
+                    form.querySelector('input[name="ten_lop_hoc"]').value = button.dataset.ten;
+                    form.querySelector('input[name="nganh"]').value = button.dataset.nganh;
+                    form.querySelector('input[name="nam_hoc"]').value = button.dataset.nam;
+                    form.querySelector('input[name="hoc_ky"]').value = button.dataset.hocky;
+                    form.querySelector('textarea[name="mo_ta"]').value = button.dataset.mota;
+                    document.getElementById('edit-id').value = id;
+
+                    let methodInput = form.querySelector('input[name="_method"]');
+                    if (!methodInput) {
+                        methodInput = document.createElement('input');
+                        methodInput.setAttribute('type', 'hidden');
+                        methodInput.setAttribute('name', '_method');
+                        form.appendChild(methodInput);
+                    }
+                    methodInput.value = 'PUT';
+
+                    document.getElementById('addClassSubmitBtn').textContent = 'Cập nhật Lớp học';
+
+                    // Mở popup nếu đang ẩn
+                    const modal = document.getElementById('addClassModal');
+                    modal.style.display = 'flex';
+
+                    form.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
         });
-    </script>
-
-@endsection
-@section('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
         function confirmDelete(id) {
             Swal.fire({
                 title: 'Bạn có chắc chắn muốn xoá?',
@@ -462,6 +436,6 @@
                     showConfirmButton: true
                 });
             @endif
-                                });
+           });
     </script>
 @endsection

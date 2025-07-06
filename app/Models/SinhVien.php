@@ -18,6 +18,7 @@ class SinhVien extends Model
         'ma_nguoi_dung',
         'ma_lop_hoc',
         'mssv',
+        'trang_thai',
     ];
     public function nguoiDung()
     {

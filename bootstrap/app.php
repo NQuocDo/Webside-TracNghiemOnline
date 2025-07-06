@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Auth\Middleware\Authenticate;
 use App\Providers\ComposerServiceProvider;
+use Illuminate\Database\QueryException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,8 +22,15 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->renderable(function (QueryException $e, $request) {
+            \Log::error('Lỗi SQL: ' . $e->getMessage());
+            return response()->view('errors.503', [], 503);
+        });
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
         //
     })
-    ->withProviders([ 
-        ComposerServiceProvider::class, 
+    ->withProviders([
+        ComposerServiceProvider::class,
     ])->create();
+

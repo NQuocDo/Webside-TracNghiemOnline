@@ -16,6 +16,10 @@ Route::get('/', function () {
 Route::get('/login', function () {
     return view(view: 'login');
 })->name('login');
+//Trang lỗi
+Route::get('/error', function () {
+    return view('error');
+})->name('error');
 
 
 //Middleware chức năng đăng nhập
@@ -171,6 +175,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/dean/add-class', [DeanController::class, 'hienThiLopHoc'])->name('add_class');
         Route::post('/dean/add-class/store', [DeanController::class, 'themLopHoc'])->name('add_class_store');
+        Route::put('/dean/add-class/update/{id}', [DeanController::class, 'suaLopHoc'])->name('add_class_update');
         Route::delete('/dean/add-class/del/{id}', [DeanController::class, 'xoaLopHoc'])->name('add_class_del');
     });
 });
