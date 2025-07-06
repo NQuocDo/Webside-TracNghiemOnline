@@ -1,4 +1,7 @@
 @extends('layout.lecturer_layout')
+@section('title')
+Trang chủ Giảng viên
+@endsection  
 <style>
     .dashboard-header {
         width: 100%;
@@ -224,7 +227,7 @@
                 <div class="count-card">
                     <p class="card-title">Tổng lượt làm bài kiểm tra</p>
                     <i class="fas fa-tasks card-icon"></i>
-                    <p class="card-value">5600</p>
+                    <p class="card-value">{{ count($lichSuLamBai) > 0 ? count($lichSuLamBai) : 'Chưa có dữ liệu' }}</p>
                 </div>
             </div>
         </div>

@@ -103,7 +103,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/lecturer/info', [LecturerController::class, 'luuThongTinGiangVien'])->name('lecturer_info_update');
         Route::get('/lecturer/changepassword', function () {
             return view('lecturer.lecturer_changepassword');
-        });
+        })->name('lecturer_changepassword');
+        Route::post('/lecturer/changepassword', [LecturerController::class, 'doiMatKhauGiangVien'])->name('lecturer_changepassword_update');
 
         //{Quản lý sinh viên dang dạy
         Route::get('/lecturer/student-list', [LecturerController::class, 'hienThiDanhSachSinhVien'])->name('student_list');//hiển thị danh sách sinh viên

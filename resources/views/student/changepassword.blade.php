@@ -1,6 +1,6 @@
 @extends('layout.student_layout')
 @section('title')
-Trang Đổi mật khẩu
+    Trang Đổi mật khẩu
 @endsection
 <style>
     .student-account-content {
@@ -140,7 +140,7 @@ Trang Đổi mật khẩu
                             <label for="current-password">Mật khẩu hiện tại</label>
                             <div class="input-wrapper">
                                 <input type="password" name="mat_khau_cu" id="current-password"
-                                    placeholder="Nhập mật khẩu hiện tại">
+                                    placeholder="Nhập mật khẩu hiện tại" value="{{ old('mat_khau_cu') }}">
                                 <span class="eye-icon" onclick="togglePasswordVisibility('current-password', this)">
                                     <i class="fa-solid fa-eye"></i>
                                 </span>
@@ -172,7 +172,7 @@ Trang Đổi mật khẩu
                         <button type="submit" class="change-password-btn"
                             style="padding: 10px; border-radius: 5px; width: 300px;background-color: #59c0f7;margin-left:15px;">Thay
                             đổi Mật khẩu</button>
-                         @if ($errors->any())
+                        @if ($errors->any())
                             <div class="alert alert-danger">
                                 <ul style="list-style: none;">
                                     @foreach ($errors->all() as $error)
@@ -180,7 +180,7 @@ Trang Đổi mật khẩu
                                     @endforeach
                                 </ul>
                             </div>
-                        @endif   
+                        @endif
                     </form>
                 </div>
             </div>
@@ -195,13 +195,13 @@ Trang Đổi mật khẩu
             if (input.type === "password") {
                 input.type = "text";
                 iconElement.innerHTML = `
-               <i class="fa-solid fa-eye-slash"></i>
-                            `;
+                   <i class="fa-solid fa-eye-slash"></i>
+                                `;
             } else {
                 input.type = "password";
                 iconElement.innerHTML = `
-                                <i class="fa-solid fa-eye"></i>
-                            `;
+                                    <i class="fa-solid fa-eye"></i>
+                                `;
             }
         }
     </script>

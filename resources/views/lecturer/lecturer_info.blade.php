@@ -54,8 +54,8 @@
         <div class="lecturer-account-content">
             <div class="lecturer-account-item" style="height: 20vh;">
                 <div class="item-left">
-                    <div class="item"><a href="#">Thông tin tài khoản</a></div>
-                    <div class="item"><a href="#">Đổi mật khẩu</a></div>
+                    <div class="item"><a href="{{ route('lecturer_info') }}">Thông tin tài khoản</a></div>
+                    <div class="item"><a href="{{ route('lecturer_changepassword') }}">Đổi mật khẩu</a></div>
                 </div>
             </div>
             <form action="{{ route('lecturer_info_update') }}" method="POST" enctype="multipart/form-data">

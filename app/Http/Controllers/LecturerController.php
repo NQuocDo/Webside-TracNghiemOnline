@@ -23,6 +23,7 @@ use App\Models\LichSuLamBai;
 use App\Models\LopHoc;
 use Smalot\PdfParser\Parser;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 
 
 
@@ -39,6 +40,12 @@ class LecturerController extends Controller
             $cauHoi = $giangVien->cauHois;
             $baiKiemTra = DeThi::with('baiKiemTras')->where('ma_giang_vien', $giangVien->ma_giang_vien)->get();
             $sinhVien = collect();
+            $maBaiKiemTras = $baiKiemTra
+                ->pluck('baiKiemTras')
+                ->flatten()           
+                ->pluck('ma_bai_kiem_tra') 
+                ->unique();
+            $lichSuLamBai = LichSuLamBai::whereIn('ma_bai_kiem_tra', $maBaiKiemTras)->get()->unique('ma_lich_su_lam_bai');
             foreach ($giangVien->lopHocs as $lop) {
                 $sinhVien = $sinhVien->merge($lop->sinhViens);
             }
@@ -47,7 +54,8 @@ class LecturerController extends Controller
                 ->with('monHoc', $monHoc)
                 ->with('cauHoi', $cauHoi)
                 ->with('baiKiemTra', $baiKiemTra)
-                ->with('sinhVien', $sinhVien);
+                ->with('sinhVien', $sinhVien)
+                ->with('lichSuLamBai', $lichSuLamBai);
         }
         return redirect('/login');
     }
@@ -81,6 +89,29 @@ class LecturerController extends Controller
         $user->save();
 
         return redirect()->back()->with('success', 'Cập nhật thông tin thành công!');
+    }
+    public function doiMatKhauGiangVien(Request $request)
+    {
+        $validated = $request->validate([
+            'mat_khau_cu' => 'required',
+            'mat_khau_moi' => 'required|string|min:6',
+            'xac_nhan_mat_khau' => 'required|same:mat_khau_moi',
+        ], [
+            'mat_khau_cu.required' => 'Vui lòng nhập mật khẩu cũ.',
+            'mat_khau_moi.required' => 'Vui lòng nhập mật khẩu mới.',
+            'mat_khau_moi.min' => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
+            'xac_nhan_mat_khau.required' => 'Vui lòng xác nhận mật khẩu.',
+            'xac_nhan_mat_khau.same' => 'Xác nhận mật khẩu không trùng khớp.',
+        ]);
+
+        $user = Auth::user();
+        if (!Hash::check($validated['mat_khau_cu'], $user->mat_khau)) {
+            return back()->with('error', 'Mật khẩu cũ không đúng!');
+        }
+        $user->mat_khau = bcrypt($validated['mat_khau_moi']);
+        $user->save();
+
+        return redirect()->back()->with('success', 'Thay đổi mật khẩu thành công!');
     }
     //hiển thị các môn giảng viên dang dạy
     public function hienThiMonGiangVienDay()
