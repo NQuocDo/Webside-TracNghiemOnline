@@ -42,8 +42,8 @@ class LecturerController extends Controller
             $sinhVien = collect();
             $maBaiKiemTras = $baiKiemTra
                 ->pluck('baiKiemTras')
-                ->flatten()           
-                ->pluck('ma_bai_kiem_tra') 
+                ->flatten()
+                ->pluck('ma_bai_kiem_tra')
                 ->unique();
             $lichSuLamBai = LichSuLamBai::whereIn('ma_bai_kiem_tra', $maBaiKiemTras)->get()->unique('ma_lich_su_lam_bai');
             foreach ($giangVien->lopHocs as $lop) {
@@ -59,7 +59,9 @@ class LecturerController extends Controller
         }
         return redirect('/login');
     }
-    //hiển thị thông tin cá nhân giảng viên
+
+    
+    //Quản lý thông tin giảng viên
     public function hienThiThongTinGiangVien()
     {
         if (Auth::check()) {
@@ -113,7 +115,8 @@ class LecturerController extends Controller
 
         return redirect()->back()->with('success', 'Thay đổi mật khẩu thành công!');
     }
-    //hiển thị các môn giảng viên dang dạy
+
+    //Quản lý môn học
     public function hienThiMonGiangVienDay()
     {
         if (!Auth::check()) {
@@ -135,7 +138,10 @@ class LecturerController extends Controller
 
         return view('lecturer.subject_list')->with('danhSachMonHoc', $danhSachMonHoc);
     }
-    //hiển thi câu hỏi và đáp án giảng viên đã tạo
+
+
+
+    //Quản lý câu hỏi và đáp án
     public function hienThiCauHoiVaDapAn(Request $request)
     {
 
@@ -192,7 +198,6 @@ class LecturerController extends Controller
             'user' => $user,
         ]);
     }
-    //sửa phạm vi công khai hoặc riêng tư
     public function capNhatPhamVi(Request $request, $id)
     {
         $user = Auth::user();
@@ -224,7 +229,6 @@ class LecturerController extends Controller
         return response()->json(['success' => true, "message" => "Thay đổi phạm vi thành công"]);
 
     }
-    //xoá câu hỏi tạm thời
     public function capNhatTrangThaiCauHoi(Request $request, $id)
     {
         $user = Auth::user();
@@ -259,8 +263,6 @@ class LecturerController extends Controller
             'new_status' => $trangThaiMoi
         ]);
     }
-
-    //hiển thị câu hỏi ở trang sửa
     public function hienThiCauHoi(Request $request, $id)
     {
         $user = Auth::user();
@@ -288,7 +290,6 @@ class LecturerController extends Controller
             ->with('user', $user)
             ->with('cauHoi', $cauHoi);
     }
-    //sửa câu hỏi 
     public function capNhatCauHoi(Request $request, $id)
     {
         if (!Auth::check()) {
@@ -385,8 +386,6 @@ class LecturerController extends Controller
             return redirect()->back()->withInput()->with('error', 'Lỗi xảy ra khi cập nhật câu hỏi.');
         }
     }
-
-    // hiển thị trang thêm câu hỏi
     public function hienThiTrangThemCauHoi(Request $request)
     {
         if (!Auth::check()) {
@@ -415,7 +414,6 @@ class LecturerController extends Controller
 
         return view('lecturer.addquestion')->with('danhSachMonHoc', $danhSachMonHoc);
     }
-    //thêm câu hỏi
     private function parseQuestions($text)
     {
         $lines = explode("\n", $text);
@@ -567,8 +565,6 @@ class LecturerController extends Controller
 
         return redirect()->route('addquestion')->with('success', 'Thêm câu hỏi thành công!');
     }
-
-    //hiển thị câu hỏi đã bị xoá tạm thời
     public function hienThiCauHoiVaDapAnBiXoa(Request $request)
     {
         if (!Auth::check()) {
@@ -613,7 +609,6 @@ class LecturerController extends Controller
             ->with('tuKhoaTimKiem', $tuKhoaTimKiem)
             ->with('user', $user);
     }
-    //xoá câu hỏi vĩnh viễn 
     public function xoaCauHoi($id)
     {
         if (!Auth::check()) {
@@ -653,7 +648,6 @@ class LecturerController extends Controller
         DapAn::where('ma_cau_hoi', $cauHoi->ma_cau_hoi)->delete();
         return redirect()->route('question_del')->with('success', 'Xoá câu hỏi thành công.');
     }
-    //hiển thị câu hỏi có trạng thái công khai
     public function hienThiCauHoiVaDapAnTrangCongDong(Request $request)
     {
         if (!Auth::check()) {
@@ -696,7 +690,9 @@ class LecturerController extends Controller
             'user' => $user,
         ]);
     }
-    //hiển thị danh sách thông báo của giảng viên
+    
+
+    //Quản lý thông báo
     public function hienThiDanhSachThongBao(Request $request)
     {
 
@@ -718,15 +714,13 @@ class LecturerController extends Controller
 
         return view('lecturer.announce_list')->with('danhSachThongBao', $danhSachThongBao);
     }
-    //hiển thị danh sách lớp trên trang thông báo
     public function layDsLopHoc()
     {
         $nguoiDung = Auth::user();
         $giangVien = GiangVien::where('ma_nguoi_dung', $nguoiDung->ma_nguoi_dung)->first();
-        $danhSachLopHoc = $giangVien->lopHocs;
+        $danhSachLopHoc = $giangVien->lopHocs->unique('ma_lop_hoc');
         return view('lecturer.announce')->with('danhSachLopHoc', $danhSachLopHoc);
     }
-    //gửi thông báo đến sinh viên
     public function guiThongBao(Request $request)
     {
         if (!Auth::check()) {
@@ -755,7 +749,6 @@ class LecturerController extends Controller
         return redirect()->route('announce')->with('success', 'Gửi thông báo thành công');
 
     }
-    //xoá thông báo khỏi danh sách thông báo
     public function xoaThongbao($id)
     {
         if (!Auth::check()) {
@@ -783,7 +776,9 @@ class LecturerController extends Controller
 
         return redirect()->route('announce_list')->with('success', 'Xoá câu hỏi thành công');
     }
-    //hiển thị danh sách sinh viên mà giảng viên dạy
+   
+
+    //Quản lý sinh vien
     public function hienThiDanhSachSinhVien(Request $request)
     {
         $user = Auth::user();
@@ -809,7 +804,6 @@ class LecturerController extends Controller
 
         return view('lecturer.student_list')->with('danhSachSinhVien', $danhSachSinhVien)->with('keyword', $keyword);
     }
-    //đổi mật khẩu sinh viên
     public function doiMatKhauSinhVien(Request $request)
     {
         $request->validate([
@@ -832,36 +826,51 @@ class LecturerController extends Controller
 
         return redirect()->back()->with('success', 'Đổi mật khẩu thành công.');
     }
-    //tạo dề thi với 2 loại ngẫu nhiên và chọn đáp án
+
+
+    //Quản lý đề thi và bài kiểm tra
     public function taoDeThi(Request $request)
     {
+        $danhSachIdCauHoi = $request->input('ma_cau_hoi');
 
-        if ($request->filled('ma_mon_hoc') && $request->filled('so_luong')) {
+        if (is_array($danhSachIdCauHoi) && count($danhSachIdCauHoi) > 0) {
+            $cauHoiDaChon = CauHoi::with('dapAns')
+                ->whereIn('ma_cau_hoi', $danhSachIdCauHoi)
+                ->get();
+            if ($cauHoiDaChon->isEmpty()) {
+                return redirect()->back()->with('error', 'Vui lòng chọn câu hỏi trước khi tạo!');
+            }
+            $maMonHoc = optional($cauHoiDaChon->first())->ma_mon_hoc;
+        }
+
+        // Trường hợp 2: Tạo đề tự động
+        elseif ($request->filled('ma_mon_hoc') && $request->filled('so_luong')) {
             $maMonHoc = $request->input('ma_mon_hoc');
             $soLuong = (int) $request->input('so_luong');
 
-            // Lấy ngẫu nhiên các câu hỏi có trạng thái 'hien' và môn học đúng
+            $tongCauHoi = CauHoi::where('ma_mon_hoc', $maMonHoc)
+                ->where('trang_thai', 'hien')
+                ->count();
+
+            if ($soLuong > $tongCauHoi) {
+                return redirect()->back()->with('error', 'Số lượng câu hỏi tạo quá giới hạn số lượng có. Vui lòng kiểm tra và tạo lại đề thi mới!');
+            }
+
             $cauHoiDaChon = CauHoi::with('dapAns')
                 ->where('ma_mon_hoc', $maMonHoc)
                 ->where('trang_thai', 'hien')
                 ->inRandomOrder()
                 ->take($soLuong)
                 ->get();
-        } elseif ($request->has('ma_cau_hoi')) {
-            $danhSachIdCauHoi = $request->input('ma_cau_hoi');
-            $cauHoiDaChon = CauHoi::with('dapAns')
-                ->whereIn('ma_cau_hoi', $danhSachIdCauHoi)
-                ->get();
-
-            $maMonHoc = optional($cauHoiDaChon->first())->ma_mon_hoc;
         } else {
-            return redirect()->back()->with('error', 'Vui lòng chọn câu hỏi hoặc nhập số lượng và môn học.');
+            return redirect()->back()->with('error', 'Vui lòng chọn câu hỏi đã có hoặc nhập số lượng và môn học.');
         }
 
-        return view('lecturer.exam')->with('cauHoiDaChon', $cauHoiDaChon)
-            ->with('maMonHoc', $maMonHoc);
+        return view('lecturer.exam')->with([
+            'cauHoiDaChon' => $cauHoiDaChon,
+            'maMonHoc' => $maMonHoc,
+        ]);
     }
-    //lưu đề thi vào cở sở dữ liệu và lưu câu hỏi và dề thi vào bảng chi tiết đề thi và câu hoi
     public function luuDeThi(Request $request)
     {
         $exists = DeThi::where('ten_de_thi', $request->input('ten_de_thi'))
@@ -904,7 +913,6 @@ class LecturerController extends Controller
 
         return redirect()->route('question')->with('success', 'Tạo đề thi thành công!');
     }
-    //hiển thị danh sách đề thi
     public function hienThiDeThi(Request $request)
     {
         $giangVien = auth()->user()->giangVien;
@@ -926,7 +934,6 @@ class LecturerController extends Controller
             'maMonHocLoc' => $maMonHocLoc
         ]);
     }
-    //xoá đề thi
     public function xoaDeThi($id)
     {
         $deThi = DeThi::with('baiKiemTras.lichSuLamBais')->find($id);
@@ -943,9 +950,6 @@ class LecturerController extends Controller
 
         return redirect()->route('exam_list')->with('success', 'Xoá đề thi thành công.');
     }
-
-
-    //hiển thi câu hỏi đáp án ở trang review đề thi
     public function chiTietDeThi($id)
     {
 
@@ -956,8 +960,6 @@ class LecturerController extends Controller
 
         return view('lecturer.exam_detail')->with('deThi', $deThi);
     }
-
-    //tạo bài kiểm tra 
     public function taoBaiKiemTra(Request $request)
     {
         $request->validate([
@@ -975,7 +977,6 @@ class LecturerController extends Controller
 
         return redirect()->back()->with('success', 'Tạo bài kiểm tra thành công!');
     }
-    //xoá bài kiểm tra
     public function xoaBaiKiemTra($id)
     {
         $baiKiemTra = BaiKiemTra::find($id);
@@ -1000,7 +1001,6 @@ class LecturerController extends Controller
             return redirect()->back()->with('error', 'Đã có lỗi xảy ra khi xóa: ' . $e->getMessage());
         }
     }
-    //thay đôi trạng thái đóng mở của bài kiểm tra
     public function thayDoiTrangThaiBaiKiemTra($id)
     {
         $baiKiemTraId = BaiKiemTra::find($id);
@@ -1011,7 +1011,9 @@ class LecturerController extends Controller
 
         return redirect()->back()->with('success', 'Trạng thái bài kiểm tra đã được cập nhật.');
     }
-    //hiển thị liên hệ
+
+
+    //Quản lý liên hệ
     public function hienThiLienHe(Request $request)
     {
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
@@ -1043,7 +1045,6 @@ class LecturerController extends Controller
             ->with('keyword', $keyword)
             ->with('trangThai', $trangThai);
     }
-    //xoá liên hệ
     public function xoaLienHe($ma_lien_he)
     {
         $lienHe = LienHe::where('ma_lien_he', $ma_lien_he)->first();
@@ -1057,7 +1058,9 @@ class LecturerController extends Controller
 
         return back()->with('success', 'Đã ẩn liên hệ này.');
     }
-    //hiển thị bảng điểm
+
+
+    //Quản lý bảng điểm
     public function hienThiBangDiem(Request $request)
     {
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
@@ -1122,12 +1125,23 @@ class LecturerController extends Controller
             ->with('maLop', $maLop)
             ->with('maMon', $maMon);
     }
-    //xoá điểm sinh viên
     public function xoaDiemSinhVien($id)
     {
-        DB::table('bang_diems')->where('ma_bang_diem', $id)->delete();
+        $bangDiem = DB::table('bang_diems')->where('ma_bang_diem', $id)->first();
 
-        return redirect()->back()->with('success', 'Xóa điểm thành công!');
+        if ($bangDiem) {
+            // Xoá lịch sử làm bài theo mã bài kiểm tra (không cần ma_sinh_vien nếu không có cột đó)
+            DB::table('lich_su_lam_bais')
+                ->where('ma_bai_kiem_tra', $bangDiem->ma_bai_kiem_tra)
+                ->delete();
+
+            // Xoá điểm
+            DB::table('bang_diems')->where('ma_bang_diem', $id)->delete();
+
+            return redirect()->back()->with('success', 'Xóa điểm và lịch sử làm bài thành công!');
+        }
+
+        return redirect()->back()->with('error', 'Không tìm thấy bản ghi điểm để xoá.');
     }
 
 }

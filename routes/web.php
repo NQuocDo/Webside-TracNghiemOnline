@@ -54,7 +54,6 @@ Route::middleware(['auth'])->group(function () {
             return view('student.exam');
         })->name('exam');
         Route::post('/student/exam', [StudentController::class, 'tinhDiemKiemTra'])->name('nop_bai');
-
         Route::get('/student/exam-list', [StudentController::class, 'hienThiDanhSachBaiKiemTra'])->name('student_exam_list');
         Route::get('/student/exam-list/{id}', [StudentController::class, 'hienThiBaiKiemTraTheoId'])->name('hienThiBaiKiemTraTheoId');
 

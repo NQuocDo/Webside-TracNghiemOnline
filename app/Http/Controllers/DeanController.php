@@ -56,6 +56,8 @@ class DeanController extends Controller
         }
         return redirect('/login');
     }
+
+    //Quản lý sinh viên
     public function hienThiDanhSachSinhVien(Request $request)
     {
         $tuKhoaTimKiem = $request->input('tu_khoa_tim_kiem');
@@ -88,7 +90,6 @@ class DeanController extends Controller
             'tuKhoaTimKiem' => $tuKhoaTimKiem
         ]);
     }
-
     public function xoaSinhVien($id)
     {
         $sinhVien = SinhVien::
@@ -100,6 +101,20 @@ class DeanController extends Controller
         }
 
         return redirect()->route('student_management')->with('success', 'Xoá sinh viên thành công');
+    }
+    public function thayDoiTrangThaiSinhVien($id)
+    {
+
+        $sinhVien = SinhVien::with('nguoiDung')->where('ma_nguoi_dung', $id)->first();
+
+        $nguoiDung = $sinhVien->nguoiDung;
+        $nguoiDung->trang_thai_tai_khoan = $nguoiDung->trang_thai_tai_khoan === 'hoat_dong' ? 'khong_hoat_dong' : 'hoat_dong';
+        $nguoiDung->save();
+
+        return response()->json([
+            'success' => true,
+            'new_status' => $nguoiDung->trang_thai_tai_khoan
+        ]);
     }
 
     //Quản lý môn học
@@ -114,7 +129,7 @@ class DeanController extends Controller
         if ($user->vai_tro !== "truong_khoa") {
             return redirect()->back()->with("error", "Bạn không có quyền truy cập trang này.");
         }
-        $query = MonHoc::query();
+        $query = MonHoc::query()->where('trang_thai', 'hien');
         if ($request->filled('keyword')) {
             $keyword = $request->input('keyword');
             $query->where('ten_mon_hoc', 'like', "%{$keyword}%");
@@ -147,7 +162,6 @@ class DeanController extends Controller
 
         return redirect()->route('subject_management')->with('success', 'Thêm môn học thành công');
     }
-    //xoá môn hoc
     public function xoaMonHoc($id)
     {
         $monHoc = MonHoc::where('ma_mon_hoc', $id)->first();
@@ -160,11 +174,11 @@ class DeanController extends Controller
             return redirect()->back()->with('error', 'Không thể xoá môn học vì đã được phân quyền cho giảng viên.');
         }
 
-        $monHoc->delete();
+        $monHoc->trang_thai = 'an';
+        $monHoc->save();
 
         return redirect()->route('subject_management')->with('success', 'Xoá môn học thành công.');
     }
-    //sửa môn học
     public function suaMonHoc(Request $request, $id)
     {
         $validated = $request->validate([
@@ -234,8 +248,30 @@ class DeanController extends Controller
             'message' => 'Trạng thái tài khoản đã được cập nhật thành công.'
         ]);
     }
+    public function doiMatKhauGiangVien(Request $request)
+    {
+        $request->validate([
+            'ma_giang_vien' => 'required|exists:giangviens,ma_giang_vien',
+            'mat_khau_moi' => 'required|min:6',
+            'xac_nhan_mat_khau' => 'required|same:mat_khau_moi',
+        ]);
 
+        $giangVien = GiangVien::with('nguoiDung')
+            ->where('ma_giang_vien', $request->ma_giang_vien)
+            ->first();
 
+        if (!$giangVien || !$giangVien->nguoiDung) {
+            return redirect()->back()->with('error', 'Không tìm thấy tài khoản giảng viên.');
+        }
+
+        $nguoiDung = $giangVien->nguoiDung;
+        $nguoiDung->mat_khau = bcrypt($request->mat_khau_moi);
+        $nguoiDung->save();
+
+        return redirect()->back()->with('success', 'Đổi mật khẩu thành công.');
+    }
+
+    //Quản lý ngân hàng câu hỏi
     public function hienThiDanhSachCauHoiTheoBoLoc(Request $request)
     {
         $maGiangVien = $request->input('ma_giang_vien');
@@ -258,7 +294,7 @@ class DeanController extends Controller
 
         $danhSachCauHoi = $query->paginate(10);
         $danhSachGiangVien = NguoiDung::where('vai_tro', 'giang_vien')->get();
-        $danhSachMonHoc = MonHoc::all();
+        $danhSachMonHoc = MonHoc::where('trang_thai', 'hien')->get();
 
         return view('dean.question_bank', compact('danhSachCauHoi', 'danhSachGiangVien', 'danhSachMonHoc'));
     }
@@ -268,8 +304,8 @@ class DeanController extends Controller
     {
         $giangVienId = $request->input('giang_vien_id');
         $danhSachGiangVien = GiangVien::with('nguoiDung')->get();
-        $danhSachMonHoc = MonHoc::all();
-        $danhSachLopHoc = LopHoc::all();
+        $danhSachMonHoc = MonHoc::where('trang_thai', 'hien')->get();
+        $danhSachLopHoc = LopHoc::where('trang_thai', 'hien')->get();
 
         if ($giangVienId) {
             $danhSachPhanQuyen = PhanQuyenDay::where('ma_giang_vien', $giangVienId)->paginate(5);
@@ -334,11 +370,11 @@ class DeanController extends Controller
 
         return redirect()->back()->with('success', 'Cập nhật quyền giảng dạy thành công.');
     }
-    //}
 
+    //Quản lý thêm người dùng
     public function hienThiThongTinLopHoc()
     {
-        $danhSachLopHoc = LopHoc::all();
+        $danhSachLopHoc = LopHoc::where('trang_thai', 'hien')->get();
         return view('dean.add_user')->with('danhSachLopHoc', $danhSachLopHoc);
     }
     public function themNguoiDung(Request $request)
@@ -389,10 +425,10 @@ class DeanController extends Controller
         return redirect()->route('add_user')->with('success', 'Thêm người dùng thành công.');
     }
 
-
+    //Quản lý lớp học
     public function hienThiLopHoc()
     {
-        $danhSachLopHoc = LopHoc::orderBy('ten_lop_hoc', 'asc')->get();
+        $danhSachLopHoc = LopHoc::where('trang_thai', 'hien')->orderBy('ten_lop_hoc', 'asc')->get();
 
         return view('dean.add_class')->with('danhSachLopHoc', $danhSachLopHoc);
     }
@@ -428,28 +464,38 @@ class DeanController extends Controller
             return redirect()->route('add_class')->withInput()->with('error', 'Đã xảy ra lỗi khi thêm lớp học: ' . $e->getMessage());
         }
     }
-    public function doiMatKhauGiangVien(Request $request)
+    public function xoaLopHoc($id)
     {
-        $request->validate([
-            'ma_giang_vien' => 'required|exists:giangviens,ma_giang_vien',
-            'mat_khau_moi' => 'required|min:6',
-            'xac_nhan_mat_khau' => 'required|same:mat_khau_moi',
+        $lopHoc = LopHoc::find($id);
+        $sinhVien = SinhVien::where('ma_lop_hoc', $id)->exists();
+        if (!$lopHoc) {
+            return redirect()->back()->with('error', 'Không tìm thấy lớp học.');
+        }
+        if ($sinhVien) {
+            return redirect()->back()->with('error', 'Không thể xoá lớp học vì đang được sử dụng trong hệ thống.');
+        }
+        $lopHoc->trang_thai = 'an';
+        $lopHoc->save();
+
+        return redirect()->route('add_class')->with('success', 'Xoá lớp học thành công');
+    }
+    public function suaLopHoc(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'ten_lop_hoc' => 'required|string|max:255',
+            'nganh' => 'required|string|max:255',
+            'nam_hoc' => 'required|integer|min:1900|max:2100',
+            'hoc_ky' => 'required|integer|min:1|max:10',
+            'mo_ta' => 'nullable|string|max:1000',
         ]);
 
-        $giangVien = GiangVien::with('nguoiDung')
-            ->where('ma_giang_vien', $request->ma_giang_vien)
-            ->first();
+        $lopHoc = LopHoc::find($id);
+        $lopHoc->update($validated);
 
-        if (!$giangVien || !$giangVien->nguoiDung) {
-            return redirect()->back()->with('error', 'Không tìm thấy tài khoản giảng viên.');
-        }
-
-        $nguoiDung = $giangVien->nguoiDung;
-        $nguoiDung->mat_khau = bcrypt($request->mat_khau_moi);
-        $nguoiDung->save();
-
-        return redirect()->back()->with('success', 'Đổi mật khẩu thành công.');
+        return redirect()->back()->with('success', 'Cập nhật lớp học thành công!');
     }
+
+    //Quản lý thống kê
     public function hienThiThongKe()
     {
         $diemTrungBinhTheoMon = DB::table('bang_diems as d')
@@ -474,50 +520,5 @@ class DeanController extends Controller
             'thongKeCauHoi' => $thongKeCauHoi
         ]);
     }
-    public function xoaLopHoc($id)
-    {
-        $lopHoc = LopHoc::find($id);
-        $sinhVien = SinhVien::where('ma_lop_hoc', $id)->exists();
-        if (!$lopHoc) {
-            return redirect()->back()->with('error', 'Không tìm thấy lớp học.');
-        }
-        if ($sinhVien) {
-            return redirect()->back()->with('error', 'Không thể xoá lớp học vì đang được sử dụng trong hệ thống.');
-        }
-        $lopHoc->delete();
-
-        return redirect()->route('add_class')->with('success', 'Xoá lớp học thành công');
-    }
-    //khoá sinh viên
-    public function thayDoiTrangThaiSinhVien($id)
-    {
-
-        $sinhVien = SinhVien::with('nguoiDung')->where('ma_nguoi_dung', $id)->first();
-
-        $nguoiDung = $sinhVien->nguoiDung;
-        $nguoiDung->trang_thai_tai_khoan = $nguoiDung->trang_thai_tai_khoan === 'hoat_dong' ? 'khong_hoat_dong' : 'hoat_dong';
-        $nguoiDung->save();
-
-        return response()->json([
-            'success' => true,
-            'new_status' => $nguoiDung->trang_thai_tai_khoan
-        ]);
-    }
-    public function suaLopHoc(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'ten_lop_hoc' => 'required|string|max:255',
-            'nganh' => 'required|string|max:255',
-            'nam_hoc' => 'required|integer|min:1900|max:2100',
-            'hoc_ky' => 'required|integer|min:1|max:10',
-            'mo_ta' => 'nullable|string|max:1000',
-        ]);
-
-        $lopHoc = LopHoc::find($id);
-        $lopHoc->update($validated);
-
-        return redirect()->back()->with('success', 'Cập nhật lớp học thành công!');
-    }
-
 }
 

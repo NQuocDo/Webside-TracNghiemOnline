@@ -75,7 +75,7 @@
                     <div class="history-item">
                         <i class="fa-solid fa-clipboard-check"></i>
                         <a href="{{ route('history_exam_detail', ['ma_bai_kiem_tra' => $bangDiem->ma_bai_kiem_tra]) }}">
-                            {{ $bangDiem->baiKiemTra->deThi->ten_de_thi ?? 'Không rõ đề thi' }}
+                            {{ $bangDiem->baiKiemTra->ten_bai_kiem_tra ?? 'Không rõ đề thi' }}
                         </a>
 
                         <p>

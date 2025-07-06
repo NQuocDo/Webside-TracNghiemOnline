@@ -37,7 +37,7 @@
         color: white;
         text-decoration: none;
     }
-    
+
     .form-search-question {
         display: flex;
         align-items: center;
@@ -520,7 +520,6 @@
             font-size: 12px;
         }
     }
-
 </style>
 @section('content')
     <div class="question-content">
@@ -550,6 +549,7 @@
 
         <div class="main-question-body">
             <form action="{{ route('create_exam') }}" method="GET" class="form-create-exam" id="form-create-exam"> @csrf
+                <input type="hidden" id="ds-cau-hoi-input" name="ma_cau_hoi[]">
                 <table class="question-table">
                     <thead>
                         <tr>
@@ -629,10 +629,8 @@
                     </tbody>
                 </table>
                 <div class="create-exam">
-                    <button class="create-exam-btn" type="button" id="openPopupBtn">Tạo bài kiểm
-                        tra ngẫu nhiên</button>
-                    <button class="create-exam-btn" type="submit" id="create-exam-btn">Tạo bài kiểm
-                        tra</button>
+                    <button class="create-exam-btn" type="button" id="openPopupBtn">Tạo đề thi ngẫu nhiên</button>
+                    <button class="create-exam-btn" type="submit" id="create-exam-btn">Tạo đề thi</button>
                 </div>
             </form>
         </div>
@@ -685,11 +683,6 @@
         document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('create-exam-btn').addEventListener('click', function (e) {
                 let checkedBoxes = document.querySelectorAll('.question-checkbox:checked');
-                if (checkedBoxes.length === 0) {
-                    Swal.fire({ title: 'Vui lòng chọn câu hỏi!' });
-                    e.preventDefault();
-                    return;
-                }
 
                 let selectedIds = Array.from(checkedBoxes).map(cb => cb.dataset.id);
                 document.getElementById('ds-cau-hoi-input').value = selectedIds.join(',');
@@ -701,7 +694,6 @@
             //tạo bài kiểm tra ngẫu nhiên
             document.getElementById('openPopupBtn').addEventListener('click', () => {
                 document.getElementById('customPopup').style.display = 'block';
-                console.log('ầdf');
             });
             document.getElementById('closePopupBtn').addEventListener('click', () => {
                 document.getElementById('customPopup').style.display = 'none';

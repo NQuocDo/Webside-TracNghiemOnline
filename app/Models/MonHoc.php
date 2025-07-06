@@ -21,6 +21,7 @@ class MonHoc extends Model
         'mo_ta',
         'do_kho',
         'tieu_chi_ket_thuc_mon',
+        'trang_thai'
     ];
 
     // Quan hệ một-nhiều: Một môn học có nhiều câu hỏi

@@ -215,7 +215,7 @@ class StudentController extends Controller
         ]);
     }
     //trang info
-    public function hienThiThongTinSinhVien()
+        public function hienThiThongTinSinhVien()
     {
         if (Auth::check()) {
 
@@ -296,7 +296,12 @@ class StudentController extends Controller
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
         $sinhVien = SinhVien::where('ma_nguoi_dung', $maNguoiDung)->first();
 
-        $lichSu = LichSuLamBai::where('ma_bai_kiem_tra', $maBaiKiemTra)->get();
+        $lichSu = DB::table('lich_su_lam_bais')
+            ->join('bang_diems', 'lich_su_lam_bais.ma_bai_kiem_tra', '=', 'bang_diems.ma_bai_kiem_tra')
+            ->where('bang_diems.ma_sinh_vien', $sinhVien->ma_sinh_vien)
+            ->where('lich_su_lam_bais.ma_bai_kiem_tra', $maBaiKiemTra)
+            ->select('lich_su_lam_bais.*')
+            ->get();
 
         if ($lichSu->isEmpty()) {
             return back()->with('error', 'Không tìm thấy dữ liệu lịch sử.');

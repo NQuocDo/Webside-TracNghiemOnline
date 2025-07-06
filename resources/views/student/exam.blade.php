@@ -318,7 +318,7 @@
 
             <div class="exam-item-header">
                 <div class="item-header-left">
-                    <img src="https://via.placeholder.com/50x50/3498db/ffffff?text=NQD" alt="Avatar" class="src">
+                    <img src="{{ asset('images/studentboy.j') }}" alt="Avatar" class="src">
                     <span class="name">{{ $hoTenSinhVien }}</span>
                 </div>
                 <div class="item-header-middle">
@@ -345,37 +345,43 @@
 
             <div class="exam-item-main">
                 <div class="exam-question-body">
-                    @foreach ($cauHoiList as $index => $cauHoi)
-                        <div class="question-content">
-                            <strong class="question-count">Câu hỏi {{ $index + 1 }}:</strong>
-                            <div class="question-text">{{ $cauHoi->noi_dung }}</div>
-
-                            @if ($cauHoi->hinh_anh)
-                                <img src="{{ asset('storage/cauhoi/' . $cauHoi->hinh_anh) }}" alt="Question Image"
-                                    class="question-src">
-                            @endif
-
-                            @if ($cauHoi->ghi_chu)
-                                <div class="question-note"><i class="fas fa-info-circle"></i> {{ $cauHoi->ghi_chu }}</div>
-                            @endif
-
-                            <ul class="answer-list">
-                                @foreach ($cauHoi->dap_an as $indexDA => $dapAn)
-                                    <li>
-                                        <input type="checkbox" id="q{{ $index + 1 }}_answer{{ $indexDA + 1 }}"
-                                            name="answers[{{ $cauHoi->ma_cau_hoi }}][]" value="{{ $dapAn->ma_dap_an }}">
-                                        <label for="q{{ $index + 1 }}_answer{{ $indexDA + 1 }}">{{ $dapAn->noi_dung }}</label>
-                                    </li>
-                                @endforeach
-                            </ul>
+                    @if($baiKiemTra->trang_thai_hien_thi === 'an')
+                        <div class="text-center m-2">
+                            <h4>Bài kiểm tra đã đóng.</h4>
+                            <p>Vui lòng chọn nộp bài để kết thúc.</p>
+                            <strong>Xin cảm ơn!</strong>
                         </div>
-                    @endforeach
+                    @else
+                        @foreach ($cauHoiList as $index => $cauHoi)
+                            <div class="question-content">
+                                <strong class="question-count">Câu hỏi {{ $index + 1 }}:</strong>
+                                <div class="question-text">{{ $cauHoi->noi_dung }}</div>
+
+                                @if ($cauHoi->hinh_anh)
+                                    <img src="{{ asset('images/' . $cauHoi->hinh_anh) }}" alt="Question Image" class="question-src">
+                                @endif
+
+                                @if ($cauHoi->ghi_chu)
+                                    <div class="question-note"><i class="fas fa-info-circle"></i> {{ $cauHoi->ghi_chu }}</div>
+                                @endif
+
+                                <ul class="answer-list">
+                                    @foreach ($cauHoi->dap_an as $indexDA => $dapAn)
+                                        <li>
+                                            <input type="checkbox" id="q{{ $index + 1 }}_answer{{ $indexDA + 1 }}"
+                                                name="answers[{{ $cauHoi->ma_cau_hoi }}][]" value="{{ $dapAn->ma_dap_an }}">
+                                            <label for="q{{ $index + 1 }}_answer{{ $indexDA + 1 }}">{{ $dapAn->noi_dung }}</label>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endforeach
+                    @endif
                 </div>
             </div>
         </form>
     </div>
 
-    {{-- SweetAlert --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>

@@ -2,7 +2,6 @@
 <style>
     .announce-content {
         background-color: #ffffff;
-        /* Nền trắng cho phần nội dung chính */
         padding: 30px;
         /* Tăng padding để nội dung có không gian thở */
         margin: 40px auto;

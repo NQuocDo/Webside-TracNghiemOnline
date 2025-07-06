@@ -379,28 +379,30 @@
             <div class="search-container">
                 <form id="form-search-lecturer" action="{{ route('subject_management') }}" method="GET" class="search-form">
                     <input type="text" name="keyword" id="keyword" class="search-input"
-                        placeholder="Tìm kiếm tên lớp học..." value="{{ request('keyword') }}">
+                        placeholder="Tìm kiếm tên môn học..." value="{{ request('keyword') }}">
                 </form>
             </div>
 
             <div class="subject-manage-body">
-                @if ($danhSachMonHoc->isEmpty())
-                    <p>Không có môn học nào trong danh sách.</p>
-                @else
-                    <table class="subject-manage-table">
-                        <thead>
+                <table class="subject-manage-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên môn học</th>
+                            <th>Số tín chỉ</th>
+                            <th>Mô tả</th>
+                            <th>Học kỳ</th>
+                            <th>Tiêu chí kết thúc môn</th>
+                            <th>Độ khó</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if ($danhSachMonHoc->isEmpty())
                             <tr>
-                                <th>STT</th>
-                                <th>Tên môn học</th>
-                                <th>Số tín chỉ</th>
-                                <th>Mô tả</th>
-                                <th>Học kỳ</th>
-                                <th>Tiêu chí kết thúc môn</th>
-                                <th>Độ khó</th>
-                                <th>Thao tác</th>
+                                <td colspan="9" class="text-center">Không có môn học nào trong danh sách.</td>
                             </tr>
-                        </thead>
-                        <tbody>
+                        @else
                             @foreach ($danhSachMonHoc as $index => $monHoc)
                                 <tr>
                                     <td class="stt-cell">{{ $index + 1 }}</td>
@@ -431,9 +433,9 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                @endif
+                        @endif
+                    </tbody>
+                </table>
                 <button type="button" class="add-subject-btn-fake" id="add-subject-btn-fake">Thêm môn học</button>
             </div>
             <div class="subject-manage-footer">
@@ -458,7 +460,7 @@
 
                 deleteButtons.forEach(button => {
                     button.addEventListener('click', function (event) {
-                        event.preventDefault(); // 🚫 Ngăn form submit ngay lập tức
+                        event.preventDefault();
 
                         const subjectId = this.getAttribute('data-id');
 
@@ -566,16 +568,16 @@
                         icon: 'error',
                         title: 'Lỗi nhập liệu!',
                         html: `
-                                                       <ul>
-                                                           @foreach ($errors->all() as $error)
-                                                            <li>{{ $error }}</li>
-                                                           @endforeach
-                                                       </ul>
-                                                  `,
+                                                                       <ul>
+                                                                           @foreach ($errors->all() as $error)
+                                                                            <li>{{ $error }}</li>
+                                                                           @endforeach
+                                                                       </ul>
+                                                                  `,
                         showConfirmButton: true
                     });
                 @endif
-                              });
+                                      });
 
         </script>
     @endsection

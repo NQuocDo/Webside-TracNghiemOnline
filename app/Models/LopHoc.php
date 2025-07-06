@@ -46,6 +46,7 @@ class LopHoc extends Model
         'mo_ta',
         'nam_hoc',
         'hoc_ky',
+        'trang_thai'
     ];
 
     /**

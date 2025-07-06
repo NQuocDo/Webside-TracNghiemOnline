@@ -276,9 +276,9 @@
         </div>
     </div>
 @endsection
-
+@section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Enhanced gradient function with more sophisticated color combinations
     function getRandomGradientSophisticated() {
         const gradients = [
             'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -311,4 +311,27 @@
             });
         });
     });
+     @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                text: @json(session('success')),
+                confirmButtonText: 'OK'
+            });
+            localStorage.removeItem("selectedQuestions");
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Thất bại!',
+                text: @json(session('error')),
+                confirmButtonText: 'Đóng'
+            });
+        </script>
+    @endif
 </script>
+@endsection
