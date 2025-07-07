@@ -110,15 +110,26 @@ class StudentController extends Controller
     {
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
         $sinhVien = SinhVien::with('nguoiDung')->where('ma_nguoi_dung', $maNguoiDung)->first();
-        $maBaiKiemTra = BaiKiemTra::find($id);
-        $maDeThi = $maBaiKiemTra->ma_de_thi;
+
+        // Lấy bài kiểm tra
+        $baiKiemTra = BaiKiemTra::findOrFail($id);
+
+        // Kiểm tra sinh viên có học lớp này không
+        if ($baiKiemTra->ma_lop_hoc !== $sinhVien->ma_lop_hoc) {
+            abort(403, 'Bạn không có quyền truy cập bài kiểm tra này.');
+        }
+
+        $maDeThi = $baiKiemTra->ma_de_thi;
         $deThis = DeThi::where('ma_de_thi', $maDeThi)->first();
+
+        // Lấy danh sách câu hỏi
         $cauHoiList = DB::table('chi_tiet_de_thi_va_cau_hois as ct')
             ->join('cau_hois as ch', 'ct.ma_cau_hoi', '=', 'ch.ma_cau_hoi')
             ->where('ct.ma_de_thi', $maDeThi)
             ->select('ch.*')
             ->get();
 
+        // Lấy đáp án cho mỗi câu hỏi
         foreach ($cauHoiList as $cauHoi) {
             $cauHoi->dap_an = DB::table('dap_ans')
                 ->where('ma_cau_hoi', $cauHoi->ma_cau_hoi)
@@ -127,13 +138,14 @@ class StudentController extends Controller
         }
 
         return view('student.exam', [
-            'baiKiemTra' => $maBaiKiemTra,
+            'baiKiemTra' => $baiKiemTra,
             'cauHoiList' => $cauHoiList,
             'deThis' => $deThis,
             'hoTenSinhVien' => $sinhVien->nguoiDung->ho_ten,
             'ma_sinh_vien' => $sinhVien->ma_sinh_vien,
         ]);
     }
+
 
     //hàm tính điểm trang exam
     public function tinhDiemKiemTra(Request $request)
@@ -215,7 +227,7 @@ class StudentController extends Controller
         ]);
     }
     //trang info
-        public function hienThiThongTinSinhVien()
+    public function hienThiThongTinSinhVien()
     {
         if (Auth::check()) {
 

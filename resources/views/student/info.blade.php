@@ -126,6 +126,10 @@ Trang cá nhân
                             <input type="text" id="email" value="{{ $user->email }} " disabled>
                         </div>
                         <div class="form-account">
+                            <label for="email">Lớp<span class="required"></span></label>
+                            <input type="text" id="email" value="{{ $user->sinhVien->lopHoc->ten_lop_hoc }} " disabled>
+                        </div>
+                        <div class="form-account">
                             <label for="ho_ten">Họ tên<span class="required"></span></label>
                             <input type="text" name="ho_ten" id="ho_ten" value="{{ $user->ho_ten }}">
                         </div>
