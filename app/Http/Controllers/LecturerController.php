@@ -918,15 +918,17 @@ class LecturerController extends Controller
         $giangVien = auth()->user()->giangVien;
         $ma_giang_vien = $giangVien->ma_giang_vien;
         $maMonHocLoc = $request->input('ma_mon_hoc');
+
         $danhSachMonHoc = $giangVien->monHocs;
-        $query = DeThi::with(['baiKiemTras', 'monHoc'])
+        $query = DeThi::with(['baiKiemTras.lopHoc', 'monHoc'])
             ->where('ma_giang_vien', $ma_giang_vien)
             ->where('trang_thai', 'hien');
 
         if ($maMonHocLoc) {
             $query->where('ma_mon_hoc', $maMonHocLoc);
         }
-        
+
+        // Lấy danh sách lớp học mà giảng viên được phân dạy
         $lopHocs = DB::table('lop_hocs')
             ->select('ma_lop_hoc', 'ten_lop_hoc')
             ->whereIn('ma_lop_hoc', function ($query) use ($giangVien) {
@@ -935,6 +937,7 @@ class LecturerController extends Controller
                     ->where('ma_giang_vien', $giangVien->ma_giang_vien);
             })
             ->get();
+
         $danhSachDeThi = $query->get();
 
         return view('lecturer.exam_list', [
@@ -944,6 +947,7 @@ class LecturerController extends Controller
             'lopHocs' => $lopHocs
         ]);
     }
+
     public function xoaDeThi($id)
     {
         $deThi = DeThi::with('baiKiemTras.lichSuLamBais')->find($id);
@@ -972,23 +976,25 @@ class LecturerController extends Controller
     }
     public function taoBaiKiemTra(Request $request)
     {
+        
         $request->validate([
             'ma_de_thi' => 'required|exists:de_this,ma_de_thi',
             'ten_bai_kiem_tra' => 'required|string|max:255',
+            'ma_lop_hoc' => 'required|exists:lop_hocs,ma_lop_hoc',
         ]);
+
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
         $giangVien = GiangVien::where('ma_nguoi_dung', $maNguoiDung)->firstOrFail();
-        $deThi = DeThi::with('lopHoc')->findOrFail($request->ma_de_thi);
-
-        if ($deThi->lopHoc->ma_giang_vien !== $giangVien->ma_giang_vien) {
+        $deThi = DeThi::findOrFail($request->ma_de_thi);
+        if ($deThi->ma_giang_vien !== $giangVien->ma_giang_vien) {
             abort(403, 'Bạn không có quyền tạo bài kiểm tra cho lớp này.');
         }
         BaiKiemTra::create([
             'ma_de_thi' => $deThi->ma_de_thi,
             'ten_bai_kiem_tra' => $request->ten_bai_kiem_tra,
-            'ma_lop_hoc' => $deThi->ma_lop_hoc,
             'ma_giang_vien' => $giangVien->ma_giang_vien,
             'trang_thai' => 'khoa',
+            'ma_lop_hoc' => $request->ma_lop_hoc,
         ]);
 
         return redirect()->back()->with('success', 'Tạo bài kiểm tra thành công!');

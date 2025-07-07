@@ -21,6 +21,7 @@ class BaiKiemTra extends Model
         'trang_thai',
         'trang_thai_hien_thi',
         'thoi_gian_khoa',
+        'ma_lop_hoc'
     ];
 
     public function deThi()
@@ -40,6 +41,10 @@ class BaiKiemTra extends Model
     public function lichSuLamBais()
     {
         return $this->hasMany(LichSuLamBai::class, 'ma_bai_kiem_tra', 'ma_bai_kiem_tra');
+    }
+    public function lopHoc()
+    {
+        return $this->belongsTo(LopHoc::class, 'ma_lop_hoc');
     }
 }
 

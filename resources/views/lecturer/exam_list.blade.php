@@ -288,6 +288,9 @@
                                                 <div class="test-header">
                                                     <span class="test-index">#{{ $index + 1 }}</span>
                                                     <span class="test-id">Tên: <strong>{{ $bkt->ten_bai_kiem_tra }}</strong></span>
+                                                    <p class="test-id">Tên:
+                                                        <strong>{{ $bkt->lopHoc->ten_lop_hoc ?? 'Không rõ lớp' }}</strong>
+                                                    </p>
                                                 </div>
 
                                                 <div class="test-status">
@@ -364,12 +367,12 @@
                     Swal.fire({
                         title: 'Tạo bài kiểm tra',
                         html: `
-                    <input id="ten-bai-kiem-tra" class="swal2-input" placeholder="Nhập tên bài kiểm tra">
-                    <select id="chon-lop" class="swal2-input">
-                        <option value="" disabled selected>Chọn lớp học</option>
-                        ${options}
-                    </select>
-                `,
+                                    <input id="ten-bai-kiem-tra" class="swal2-input" placeholder="Nhập tên bài kiểm tra">
+                                    <select id="chon-lop" class="swal2-input">
+                                        <option value="" disabled selected>Chọn lớp học</option>
+                                        ${options}
+                                    </select>
+                                `,
                         showCancelButton: true,
                         confirmButtonText: 'Tạo',
                         cancelButtonText: 'Huỷ',
@@ -426,6 +429,6 @@
                     showConfirmButton: true
                 });
             @endif
-                      });
+                                      });
     </script>
 @endsection
