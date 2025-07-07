@@ -60,7 +60,7 @@ class LecturerController extends Controller
         return redirect('/login');
     }
 
-    
+
     //Quản lý thông tin giảng viên
     public function hienThiThongTinGiangVien()
     {
@@ -690,7 +690,7 @@ class LecturerController extends Controller
             'user' => $user,
         ]);
     }
-    
+
 
     //Quản lý thông báo
     public function hienThiDanhSachThongBao(Request $request)
@@ -776,7 +776,7 @@ class LecturerController extends Controller
 
         return redirect()->route('announce_list')->with('success', 'Xoá câu hỏi thành công');
     }
-   
+
 
     //Quản lý sinh vien
     public function hienThiDanhSachSinhVien(Request $request)
@@ -1068,6 +1068,7 @@ class LecturerController extends Controller
 
         $maLop = $request->input('lop');
         $maMon = $request->input('mon');
+        $maBaiKiemTra = $request->input('bai_kiem_tra');
 
         $bangDiemTruyVan = DB::table('sinhviens as sv')
             ->join('nguoidungs as nd', 'sv.ma_nguoi_dung', '=', 'nd.ma_nguoi_dung')
@@ -1102,6 +1103,10 @@ class LecturerController extends Controller
         if ($maMon) {
             $bangDiemTruyVan->where('mh.ma_mon_hoc', $maMon);
         }
+        if ($maBaiKiemTra) {
+            $bangDiemTruyVan->where('bkt.ma_bai_kiem_tra', $maBaiKiemTra);
+        }
+
         $bangDiem = $bangDiemTruyVan->paginate(10);
 
         $danhSachLop = DB::table('phan_quyen_days as pq')
@@ -1118,10 +1123,18 @@ class LecturerController extends Controller
             ->distinct()
             ->get();
 
+        $danhSachBaiKiemTra = DB::table('de_this as dt')
+            ->join('bai_kiem_tras as bkt', 'bkt.ma_de_thi', '=', 'dt.ma_de_thi')
+            ->where('dt.ma_giang_vien', $maGiangVien)
+            ->select('bkt.ma_bai_kiem_tra', 'bkt.ten_bai_kiem_tra')
+            ->distinct()
+            ->get();
+
         return view('lecturer.score_board')
             ->with('bangDiem', $bangDiem)
             ->with('danhSachLop', $danhSachLop)
             ->with('danhSachMon', $danhSachMon)
+            ->with('danhSachBaiKiemTra', $danhSachBaiKiemTra)
             ->with('maLop', $maLop)
             ->with('maMon', $maMon);
     }

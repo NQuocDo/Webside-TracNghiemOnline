@@ -145,6 +145,17 @@
         <form id="filter-form" method="GET" class="filter-form">
             <div class="filter-group">
                 <div class="filter-item">
+                    <label for="bai_kiem_tra">Lọc theo bài kiểm tra:</label>
+                    <select name="bai_kiem_tra" id="bai_kiem_tra" class="form-select">
+                        <option value="">-- Chọn bài kiểm tra --</option>
+                        @foreach($danhSachBaiKiemTra as $bkt)
+                            <option value="{{ $bkt->ma_bai_kiem_tra }}" {{ request('bai_kiem_tra') == $bkt->ma_bai_kiem_tra ? 'selected' : '' }}>
+                                {{ $bkt->ten_bai_kiem_tra }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="filter-item">
                     <label for="lop">Lọc theo lớp:</label>
                     <select name="lop" id="lop" class="form-select">
                         <option value="">-- Chọn lớp --</option>
