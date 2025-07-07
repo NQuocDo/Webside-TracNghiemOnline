@@ -353,39 +353,60 @@
             });
 
             const buttons = document.querySelectorAll('.create-btn');
+            const lopHocs = @json($lopHocs);
+            let options = lopHocs.map(lop => `<option value="${lop.ma_lop_hoc}">${lop.ten_lop_hoc}</option>`).join('');
+
             buttons.forEach(button => {
                 button.addEventListener('click', function (e) {
                     e.preventDefault();
                     const examCreateId = this.getAttribute('data-id');
 
                     Swal.fire({
-                        title: 'Nhập tên bài kiểm tra',
-                        input: 'text',
-                        inputLabel: 'Tên bài kiểm tra',
-                        inputPlaceholder: 'Nhập tên bài kiểm tra...',
+                        title: 'Tạo bài kiểm tra',
+                        html: `
+                    <input id="ten-bai-kiem-tra" class="swal2-input" placeholder="Nhập tên bài kiểm tra">
+                    <select id="chon-lop" class="swal2-input">
+                        <option value="" disabled selected>Chọn lớp học</option>
+                        ${options}
+                    </select>
+                `,
                         showCancelButton: true,
                         confirmButtonText: 'Tạo',
                         cancelButtonText: 'Huỷ',
-                        preConfirm: (tenBaiKiemTra) => {
-                            if (!tenBaiKiemTra) {
-                                Swal.showValidationMessage('Tên bài kiểm tra không được để trống!');
+                        focusConfirm: false,
+                        preConfirm: () => {
+                            const tenBKT = document.getElementById('ten-bai-kiem-tra').value;
+                            const maLop = document.getElementById('chon-lop').value;
+
+                            if (!tenBKT || !maLop) {
+                                Swal.showValidationMessage('Vui lòng nhập tên bài kiểm tra và chọn lớp học');
+                                return false;
                             }
-                            return tenBaiKiemTra;
+
+                            return { tenBKT, maLop };
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
                             const form = document.getElementById('create-form-' + examCreateId);
-                            const input = document.createElement('input');
-                            input.type = 'hidden';
-                            input.name = 'ten_bai_kiem_tra';
-                            input.value = result.value;
 
-                            form.appendChild(input);
+                            const inputTen = document.createElement('input');
+                            inputTen.type = 'hidden';
+                            inputTen.name = 'ten_bai_kiem_tra';
+                            inputTen.value = result.value.tenBKT;
+
+                            const inputLop = document.createElement('input');
+                            inputLop.type = 'hidden';
+                            inputLop.name = 'ma_lop_hoc';
+                            inputLop.value = result.value.maLop;
+
+                            form.appendChild(inputTen);
+                            form.appendChild(inputLop);
                             form.submit();
                         }
                     });
                 });
             });
+
 
             @if(session('success'))
                 Swal.fire({
@@ -405,6 +426,6 @@
                     showConfirmButton: true
                 });
             @endif
-              });
+                      });
     </script>
 @endsection

@@ -926,12 +926,22 @@ class LecturerController extends Controller
         if ($maMonHocLoc) {
             $query->where('ma_mon_hoc', $maMonHocLoc);
         }
+        
+        $lopHocs = DB::table('lop_hocs')
+            ->select('ma_lop_hoc', 'ten_lop_hoc')
+            ->whereIn('ma_lop_hoc', function ($query) use ($giangVien) {
+                $query->select('ma_lop_hoc')
+                    ->from('phan_quyen_days')
+                    ->where('ma_giang_vien', $giangVien->ma_giang_vien);
+            })
+            ->get();
         $danhSachDeThi = $query->get();
 
         return view('lecturer.exam_list', [
             'danhSachDeThi' => $danhSachDeThi,
             'danhSachMonHoc' => $danhSachMonHoc,
-            'maMonHocLoc' => $maMonHocLoc
+            'maMonHocLoc' => $maMonHocLoc,
+            'lopHocs' => $lopHocs
         ]);
     }
     public function xoaDeThi($id)
@@ -966,17 +976,24 @@ class LecturerController extends Controller
             'ma_de_thi' => 'required|exists:de_this,ma_de_thi',
             'ten_bai_kiem_tra' => 'required|string|max:255',
         ]);
+        $maNguoiDung = Auth::user()->ma_nguoi_dung;
+        $giangVien = GiangVien::where('ma_nguoi_dung', $maNguoiDung)->firstOrFail();
+        $deThi = DeThi::with('lopHoc')->findOrFail($request->ma_de_thi);
 
-        $deThi = DeThi::findOrFail($request->ma_de_thi);
-
+        if ($deThi->lopHoc->ma_giang_vien !== $giangVien->ma_giang_vien) {
+            abort(403, 'Bạn không có quyền tạo bài kiểm tra cho lớp này.');
+        }
         BaiKiemTra::create([
             'ma_de_thi' => $deThi->ma_de_thi,
             'ten_bai_kiem_tra' => $request->ten_bai_kiem_tra,
+            'ma_lop_hoc' => $deThi->ma_lop_hoc,
+            'ma_giang_vien' => $giangVien->ma_giang_vien,
             'trang_thai' => 'khoa',
         ]);
 
         return redirect()->back()->with('success', 'Tạo bài kiểm tra thành công!');
     }
+
     public function xoaBaiKiemTra($id)
     {
         $baiKiemTra = BaiKiemTra::find($id);
