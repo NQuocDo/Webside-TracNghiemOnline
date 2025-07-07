@@ -40,10 +40,7 @@ class LopHoc extends Model
     protected $fillable = [
         'ma_lop_hoc', // Có thể để trống nếu trigger tự tạo
         'ten_lop_hoc',
-        'ma_mon_hoc',
-        'ma_giang_vien',
-        'nganh', // Thêm cột 'nganh' từ hình ảnh bạn cung cấp
-        'mo_ta',
+        'nien_khoa',
         'nam_hoc',
         'hoc_ky',
         'trang_thai'

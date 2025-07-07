@@ -300,14 +300,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 JSON.stringify(selectedQuestions)
             );
         });
-    }
+    } 
 
     const formCreateQuetion = document.getElementById("form-create-exam");
     const createExamBtn = document.getElementById("create-exam-btn");
 
     if (formCreateQuetion && createExamBtn) {
         createExamBtn.addEventListener("click", function () {
-            // Xoá các hidden cũ nếu có
+
             const oldHidden = document.querySelectorAll(
                 ".dynamic-hidden-question"
             );

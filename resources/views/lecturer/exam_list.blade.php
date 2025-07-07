@@ -7,7 +7,7 @@
     }
 
     .exam-list-content {
-        max-width: 1100px;
+        max-width: 1200px;
         margin: 0 auto;
     }
 
@@ -81,52 +81,89 @@
         background: #f1f2f6;
     }
 
-    .exam-list-grid {
+    /* Main container với 2 cột dọc */
+    .exam-container {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        align-items: start;
+        height: calc(100vh - 200px);
+    }
+
+    /* Cột trái - Danh sách đề thi */
+    .exam-list-column {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e0e0e0;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    .column-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        text-align: center;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #0984e3;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+    }
+
+    .exam-list-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
     }
 
     .exam-card {
-        background: #ffffff;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e0e0e0;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 18px;
+        border: 1px solid #e9ecef;
         transition: 0.3s ease;
     }
 
     .exam-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        background: white;
     }
 
     .exam-title {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 700;
         color: #2d3436;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
         text-decoration: none;
+        display: block;
+    }
+
+    .exam-title:hover {
+        color: #0984e3;
     }
 
     .exam-subject {
         font-size: 0.9rem;
         color: #636e72;
         margin-bottom: 12px;
+        font-weight: 500;
     }
 
     .exam-info {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         margin-bottom: 6px;
         color: #2d3436;
     }
 
     .exam-info span.label {
-        color: #b2bec3;
-        font-weight: 500;
+        color: #6c757d;
+        font-weight: 600;
         margin-right: 6px;
     }
 
@@ -134,19 +171,25 @@
         font-size: 0.8rem;
         color: #8395a7;
         margin-top: 10px;
+        margin-bottom: 12px;
+    }
+
+    .exam-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
     }
 
     .delete-btn {
-        margin-top: 12px;
-        align-self: flex-end;
-        padding: 8px 12px;
+        padding: 6px 12px;
         background: #ff6b6b;
         border: none;
         border-radius: 6px;
         color: white;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         cursor: pointer;
         transition: 0.2s ease;
+        flex: 1;
     }
 
     .delete-btn:hover {
@@ -154,69 +197,178 @@
     }
 
     .create-btn {
-        margin-top: 12px;
-        align-self: flex-end;
         background-color: #0984e3;
-        padding: 8px 12px;
+        padding: 6px 12px;
         border: none;
         border-radius: 6px;
         color: white;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         cursor: pointer;
         transition: 0.2s ease;
+        flex: 1;
     }
 
     .create-btn:hover {
-        background-color: rgb(4, 139, 243);
+        background-color: #0770c4;
     }
 
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        background: #ffffff;
+    /* Cột phải - Danh sách bài kiểm tra */
+    .exam-tests-column {
+        background: white;
         border-radius: 16px;
-        border: 1px solid #dfe6e9;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        font-size: 1rem;
-        color: #636e72;
-    }
-
-    @media (max-width: 480px) {
-        .exam-title {
-            font-size: 1.05rem;
-        }
-
-        .delete-btn {
-            width: 100%;
-        }
-    }
-
-    .show-exam {
-        background: #ffffff;
-        border-radius: 16px;
-        padding: 20px;
+        padding: 24px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         border: 1px solid #e0e0e0;
-        margin: 5px;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    .exam-tests-column .column-title {
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+        margin-bottom: 20px;
+    }
+
+    .test-section {
+        margin-bottom: 20px;
+        padding: 16px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border-left: 4px solid #0984e3;
+    }
+
+    .test-section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 12px;
+    }
+
+    .no-test {
+        color: #6c757d;
+        font-style: italic;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .test-card-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .test-card {
+        background: white;
+        border-radius: 8px;
+        padding: 14px;
+        border: 1px solid #dee2e6;
+        transition: 0.2s ease;
+    }
+
+    .test-card:hover {
+        border-color: #0984e3;
+        box-shadow: 0 2px 8px rgba(9, 132, 227, 0.1);
+    }
+
+    .test-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+    }
+
+    .test-index {
+        background: #0984e3;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .test-id {
+        font-size: 0.85rem;
+        color: #495057;
+        margin: 0;
+    }
+
+    .test-status {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+
+    .test-actions {
+        display: flex;
+        gap: 6px;
     }
 
     .toggle-btn {
-        margin-top: 12px;
-        align-self: flex-end;
-        padding: 8px 12px;
-        background: rgb(191, 209, 31);
+        padding: 4px 8px;
+        background: #28a745;
         border: none;
-        border-radius: 6px;
+        border-radius: 4px;
         color: white;
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         cursor: pointer;
         transition: 0.2s ease;
     }
 
     .toggle-btn:hover {
-        background: rgb(220, 243, 18);
+        background: #218838;
+    }
+
+    .test-actions .delete-btn {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        flex: initial;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #636e72;
+        font-size: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .exam-container {
+            grid-template-columns: 1fr;
+            gap: 20px;
+            height: auto;
+        }
+
+        .exam-list-column,
+        .exam-tests-column {
+            height: auto;
+            max-height: 500px;
+        }
+
+        .exam-actions {
+            flex-direction: column;
+        }
+
+        .test-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .exam-title {
+            font-size: 1rem;
+        }
+
+        .column-title {
+            font-size: 1.2rem;
+        }
     }
 </style>
+
 @section('content')
     <div class="lecturer-exam-list">
         <div class="exam-list-content">
@@ -367,12 +519,12 @@
                     Swal.fire({
                         title: 'Tạo bài kiểm tra',
                         html: `
-                                    <input id="ten-bai-kiem-tra" class="swal2-input" placeholder="Nhập tên bài kiểm tra">
-                                    <select id="chon-lop" class="swal2-input">
-                                        <option value="" disabled selected>Chọn lớp học</option>
-                                        ${options}
-                                    </select>
-                                `,
+                                            <input id="ten-bai-kiem-tra" class="swal2-input" placeholder="Nhập tên bài kiểm tra">
+                                            <select id="chon-lop" class="swal2-input">
+                                                <option value="" disabled selected>Chọn lớp học</option>
+                                                ${options}
+                                            </select>
+                                        `,
                         showCancelButton: true,
                         confirmButtonText: 'Tạo',
                         cancelButtonText: 'Huỷ',
@@ -429,6 +581,6 @@
                     showConfirmButton: true
                 });
             @endif
-                                      });
+                                              });
     </script>
 @endsection

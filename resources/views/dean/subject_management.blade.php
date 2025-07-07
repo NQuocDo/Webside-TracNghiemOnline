@@ -71,6 +71,28 @@
         outline: none;
     }
 
+    .add-subject-form select {
+        flex-grow: 1;
+        padding: 12px 15px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+        color: #333;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        background-color: #fff;
+        appearance: none;
+        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M2%200L0%202h4zm0%205L0%203h4z%22%2F%3E%3C%2Fsvg%3E');
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 12px;
+    }
+
+    .add-subject-form select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+
     .option-difficulty section {
         flex-grow: 1;
     }
@@ -339,42 +361,73 @@
         <div class="subject-manage-header">
             <div class="add-subject" id="add-subject">
                 <h2>Thêm môn học</h2>
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        @foreach ($errors->all() as $loi)
+                            <div>{{ $loi }}</div>
+                        @endforeach
+                    </div>
+                @endif
                 <form action="{{ route('subject_management.store') }}" method="POST" class="add-subject-form"
                     id="add-subject-form">
                     @csrf
                     <input type="hidden" name="edit_id" id="edit-id">
                     <div>
-                        <label for="">Tên môn học</label>
-                        <input type="text" id="" name="name_subject">
+                        <label for="name_subject">Tên môn học</label>
+                        <input type="text" id="name_subject" name="name_subject" value="{{ old('name_subject') }}">
                     </div>
                     <div>
-                        <label for="">Số tín chỉ</label>
-                        <input type="text" id="" name="credit_subject">
+                        <label for="credit_subject">Số tín chỉ</label>
+                        <input type="number" id="credit_subject" name="credit_subject" value="{{ old('credit_subject') }}">
                     </div>
                     <div>
-                        <label for="">Học kỳ</label>
-                        <input type="text" id="" name="semester_subject">
+                        <label for="semester_subject">Học kỳ</label>
+                        <select id="semester_subject" name="semester_subject" required>
+                            <option value="" disabled {{ old('semester_subject') == null ? 'selected' : '' }}>-- Chọn học kỳ
+                                --</option>
+                            @for ($i = 1; $i <= 6; $i++)
+                                <option value="{{ $i }}" {{ old('semester_subject') == $i ? 'selected' : '' }}>
+                                    Học kỳ {{ $i }}
+                                </option>
+                            @endfor
+                        </select>
                     </div>
                     <div>
-                        <label for="">Mô tả</label>
-                        <input type="text" id="" name="description_subject">
+                        <label for="description_subject">Mô tả</label>
+                        <select id="description_subject" name="description_subject">
+                            <option value="" disabled {{ old('description_subject') == null ? 'selected' : '' }}>-- Chọn mô tả
+                                --</option>
+                            <option value="LT" {{ old('description_subject') == 'LT' ? 'selected' : '' }}>Lý thuyết (LT)
+                            </option>
+                            <option value="TH" {{ old('description_subject') == 'TH' ? 'selected' : '' }}>Thực hành (TH)
+                            </option>
+                        </select>
                     </div>
                     <div>
-                        <label for="">Tiêu chi kết thúc môn</label>
-                        <input type="text" id="" name="criteria_subject">
+                        <label for="criteria_subject">Tiêu chí kết thúc môn</label>
+                        <input type="text" id="criteria_subject" name="criteria_subject"
+                            value="{{ old('criteria_subject') }}">
                     </div>
                     <div class="option-difficulty">
-                        <label>Độ khó</label>
+                        <label for="difficulty_subject">Độ khó</label>
                         <section>
-                            <select name="difficulty_subject" id="">
-                                <option value="Khó">Khó</option>
-                                <option value="Trung bình">Trung bình</option>
-                                <option value="Dễ">Dễ</option>
+                            <select name="difficulty_subject" id="difficulty_subject" required>
+                                <option value="" disabled {{ old('difficulty_subject') == null ? 'selected' : '' }}>-- Chọn độ
+                                    khó --</option>
+                                <option value="Dễ" {{ old('difficulty_subject') == 'Dễ' ? 'selected' : '' }}>Dễ</option>
+                                <option value="Trung bình" {{ old('difficulty_subject') == 'Trung bình' ? 'selected' : '' }}>
+                                    Trung bình</option>
+                                <option value="Khó" {{ old('difficulty_subject') == 'Khó' ? 'selected' : '' }}>Khó</option>
                             </select>
                         </section>
+                        @error('difficulty_subject')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
                     </div>
+
                     <button type="submit" id="add-subject-btn">Thêm môn học</button>
                 </form>
+
             </div>
             <div class="search-container">
                 <form id="form-search-lecturer" action="{{ route('subject_management') }}" method="GET" class="search-form">
@@ -568,16 +621,16 @@
                         icon: 'error',
                         title: 'Lỗi nhập liệu!',
                         html: `
-                                                                       <ul>
-                                                                           @foreach ($errors->all() as $error)
-                                                                            <li>{{ $error }}</li>
-                                                                           @endforeach
-                                                                       </ul>
-                                                                  `,
+                                                                                                       <ul>
+                                                                                                           @foreach ($errors->all() as $error)
+                                                                                                            <li>{{ $error }}</li>
+                                                                                                           @endforeach
+                                                                                                       </ul>
+                                                                                                  `,
                         showConfirmButton: true
                     });
                 @endif
-                                      });
+                                                      });
 
         </script>
     @endsection

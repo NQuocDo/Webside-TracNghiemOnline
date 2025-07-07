@@ -188,7 +188,11 @@ class LecturerController extends Controller
             $thongTinCauHoi->where('ma_mon_hoc', $locTheoMocHoc);
         }
 
-        $danhSachCauHoi = $thongTinCauHoi->paginate(10);
+        $danhSachCauHoi = $thongTinCauHoi->paginate(10)
+            ->appends([
+                'mon_hoc_id' => $locTheoMocHoc,
+                'tu_khoa_tim_kiem' => $tuKhoaTimKiem
+            ]);
 
         return view('lecturer.question', [
             'danhSachCauHoi' => $danhSachCauHoi,
@@ -976,7 +980,7 @@ class LecturerController extends Controller
     }
     public function taoBaiKiemTra(Request $request)
     {
-        
+
         $request->validate([
             'ma_de_thi' => 'required|exists:de_this,ma_de_thi',
             'ten_bai_kiem_tra' => 'required|string|max:255',

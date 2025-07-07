@@ -105,7 +105,9 @@ body {
     text-align: center;
 }
 
-/* Dropdown menu styles */
+/* ----- Dropdown Menu Styles ----- */
+
+/* Giao diện nút dropdown (label) */
 .dropdown-btn {
     width: 100%;
     text-align: left;
@@ -126,28 +128,45 @@ body {
     color: #2563eb;
 }
 
+/* Submenu mặc định ẩn */
 .sub-menu {
     max-height: 0;
-    opacity: 0;
     overflow: hidden;
+    opacity: 0;
     transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
     background-color: #f8f9fa;
     border-radius: 8px;
     margin-top: 5px;
+    padding-left: 0;
+    list-style: none;
 }
 
-#dropdown-btn:checked ~ .sub-menu {
-    max-height: 250px;
+/* Khi checkbox được chọn → hiển thị submenu */
+#subject-dropdown:checked ~ label[for="subject-dropdown"] + #subject-submenu,
+#lecturer-dropdown:checked
+    ~ label[for="lecturer-dropdown"]
+    + #lecturer-submenu {
+    max-height: 300px;
     opacity: 1;
 }
 
 .sub-menu li {
-    margin: 5px 0;
+    margin: 4px 0;
 }
 
 .sub-menu li a {
-    padding-left: 50px;
+    display: block;
+    padding: 10px 20px 10px 50px;
     font-size: 14px;
+    color: #333;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sub-menu li a:hover {
+    background-color: #e3f1ff;
+    color: #007bff;
 }
 
 /* Header Styles */
@@ -493,7 +512,6 @@ body {
 .sidebar::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
 }
-
 
 .sidebar_middle a:focus,
 .dropdown-btn:focus,

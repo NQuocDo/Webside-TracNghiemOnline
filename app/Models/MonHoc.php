@@ -47,4 +47,8 @@ class MonHoc extends Model
     {
         return $this->hasMany(BaiKiemTra::class, 'ma_mon_hoc', 'ma_mon_hoc');
     }
+     public function chuongs()
+    {
+        return $this->hasMany(ChuongMonHoc::class, 'ma_mon_hoc', 'ma_mon_hoc');
+    }
 }

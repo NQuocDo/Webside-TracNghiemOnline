@@ -266,31 +266,37 @@
             <div class="modal-content">
                 <span class="close-button">&times;</span>
                 <h2>Thêm Lớp học Mới</h2>
+
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        @foreach ($errors->all() as $loi)
+                            <div>{{ $loi }}</div>
+                        @endforeach
+                    </div>
+                @endif
                 <form action="{{ route('add_class_store') }}" method="POST" class="add-class-form" id="addClassForm">
                     @csrf
                     <input type="hidden" name="edit_id" id="edit-id">
                     <div>
                         <label for="class_name">Tên Lớp</label>
-                        <input type="text" id="class_name" name="ten_lop_hoc" required>
-                    </div>
-                    <div>
-                        <label for="major">Ngành</label>
-                        <input type="text" id="major" name="nganh" value="Công nghệ thông tin" required>
+                        <input type="text" id="class_name" name="ten_lop_hoc" value="{{ old('ten_lop_hoc') }}" required
+                            maxlength="255">
                     </div>
                     <div>
                         <label for="academic_year">Năm Học</label>
-                        <input type="number" id="academic_year" name="nam_hoc" min="1900" max="2100" required>
-                    </div>
-                    <div>
-                        <label for="semester">Học Kỳ</label>
-                        <input type="number" id="semester" name="hoc_ky" min="1" max="10" required>
-                    </div>
-                    <div>
-                        <label for="description">Mô Tả</label>
-                        <textarea id="description" name="mo_ta" rows="4"></textarea>
+                        @php
+                            $now = now()->year;
+                            $min = $now - 2;
+                            $max = $now + 3;
+                        @endphp
+                        <input type="number" id="academic_year" name="nam_hoc" min="{{ $min }}" max="{{ $max }}" required
+                            value="{{ old('nam_hoc') }}">
+                        <small>(Chỉ cho phép từ {{ $min }} đến {{ $max }})</small>
                     </div>
 
-                    <button type="submit" id="addClassSubmitBtn" class="add-class-submit-btn">Thêm Lớp Học</button>
+                    <button type="submit" id="addClassSubmitBtn" class="add-class-submit-btn">
+                        Thêm Lớp Học
+                    </button>
                 </form>
             </div>
         </div>
@@ -302,10 +308,8 @@
                     <tr>
                         <th>Mã Lớp</th>
                         <th>Tên Lớp</th>
-                        <th>Ngành</th>
                         <th>Năm Học</th>
                         <th>Học Kỳ</th>
-                        <th>Mô Tả</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
@@ -317,15 +321,12 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $lopHoc->ten_lop_hoc }}</td>
-                                <td>{{ $lopHoc->nganh }}</td>
                                 <td>{{ $lopHoc->nam_hoc }}</td>
                                 <td>{{ $lopHoc->hoc_ky }}</td>
-                                <td>{{ $lopHoc->mo_ta }}</td>
                                 <td>
                                     <a href="javascript:void(0);" class="btn btn-primary edit-class-btn"
                                         data-id="{{ $lopHoc->ma_lop_hoc }}" data-ten="{{ $lopHoc->ten_lop_hoc }}"
-                                        data-nganh="{{ $lopHoc->nganh }}" data-nam="{{ $lopHoc->nam_hoc }}"
-                                        data-hocky="{{ $lopHoc->hoc_ky }}" data-mota="{{ $lopHoc->mo_ta }}">
+                                        data-nam="{{ $lopHoc->nam_hoc }}">
                                         <i class="fas fa-edit"></i> Sửa
                                     </a>
                                     <form id="delete-form-{{ $lopHoc->ma_lop_hoc }}"
@@ -376,10 +377,7 @@
 
                     form.action = `/dean/add-class/update/${id}`;
                     form.querySelector('input[name="ten_lop_hoc"]').value = button.dataset.ten;
-                    form.querySelector('input[name="nganh"]').value = button.dataset.nganh;
                     form.querySelector('input[name="nam_hoc"]').value = button.dataset.nam;
-                    form.querySelector('input[name="hoc_ky"]').value = button.dataset.hocky;
-                    form.querySelector('textarea[name="mo_ta"]').value = button.dataset.mota;
                     document.getElementById('edit-id').value = id;
 
                     let methodInput = form.querySelector('input[name="_method"]');
@@ -436,6 +434,6 @@
                     showConfirmButton: true
                 });
             @endif
-           });
+                           });
     </script>
 @endsection

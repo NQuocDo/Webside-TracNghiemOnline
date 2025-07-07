@@ -35,16 +35,32 @@
                     <li><a href="{{ route('student_management') }}"><i class="fa-solid fa-users"></i><span>Quản lý
                                 Sinh viên</span></a>
                     </li>
-                    <li><a href="{{ route('subject_management') }}"><i
-                                class="fa-solid fa-graduation-cap"></i><span>Quản lý Môn học</span></a>
+                    <li>
+                        <input type="checkbox" id="subject-dropdown" hidden>
+                        <label for="subject-dropdown" class="dropdown-btn">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                            <span>Quản lý Môn học</span>
+                        </label>
+                        <ul class="sub-menu" id="subject-submenu">
+                            <li>
+                                <a href="{{ route('subject_management') }}">
+                                    <i class="fas fa-list-ul"></i>Danh sách Môn học
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('chapter_management') }}">
+                                    <i class="fas fa-bookmark"></i>Quản lý Chương môn học
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li>
-                        <input type="checkbox" name="" id="dropdown-btn" hidden>
-                        <label for="dropdown-btn" class="dropdown-btn">
+                        <input type="checkbox" id="lecturer-dropdown" hidden>
+                        <label for="lecturer-dropdown" class="dropdown-btn">
                             <i class="fa-solid fa-bars-progress"></i>
                             <span>Quản lý Giảng viên</span>
                         </label>
-                        <ul class="sub-menu">
+                        <ul class="sub-menu" id="lecturer-submenu">
                             <li><a href="{{ route('lecturer_list') }}">
                                     <i class="fas fa-user"></i><i class="fas fa-list"></i>Danh sách Giảng viên
                                 </a>
@@ -59,11 +75,12 @@
                             </li>
                         </ul>
                     </li>
-                    <li><a href="{{ route('department_statis') }}"><i
-                                class="fa-solid fa-chart-simple"></i><span>Thống kê kết quả</span></a></li>
+                    <li><a href="{{ route('department_statis') }}"><i class="fa-solid fa-chart-simple"></i><span>Thống
+                                kê kết quả</span></a></li>
                     <li><a href="{{ route('add_user')}}"><i class="fa-solid fa-plus"></i><span>Thêm người
                                 dùng</span></a></li>
-                    <li><a href="{{ route('add_class')}}"><i class="fa-solid fa-graduation-cap"></i><span>Thêm lớp học</span></a>
+                    <li><a href="{{ route('add_class')}}"><i class="fa-solid fa-graduation-cap"></i><span>Thêm lớp
+                                học</span></a>
                     </li>
                 </ul>
             </div>

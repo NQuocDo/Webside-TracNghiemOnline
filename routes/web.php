@@ -145,7 +145,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dean/subject-management', [DeanController::class, 'hienThiMonHoc'])->name('subject_management');//hiển thị danh sách môn học
         Route::post('/dean/subject-management/store', [DeanController::class, 'themMonHoc'])->name('subject_management.store');//thêm môn học
         Route::put('/dean/subject_management/{id}', [DeanController::class, 'suaMonHoc'])->name('subject_management.update');//sửa môn học
-        Route::delete('/dean/subject-management/del/{id}', [DeanController::class, 'xoaMonHoc'])->name('subject_management_del');//xoá môn học vĩnh viễn
+        Route::delete('/dean/subject-management/del/{id}', [DeanController::class, 'xoaMonHoc'])->name('subject_management_del');
+        Route::get('/dean/chapter-management', [DeanController::class, 'hienThiDanhSachChuong'])->name('chapter_management');
+        Route::post('/dean/chapter-management/store', [DeanController::class, 'themChuong'])->name('chapter_management_store');
+        Route::put('/dean/chapter-management', [DeanController::class, 'suaChuong'])->name('chapter_management_update');
+        Route::delete('/dean/chapter-management/del/{id}', [DeanController::class, 'xoaChuong'])->name('chapter_management_del');
         //}
 
         //Quản lý giảng viên{
@@ -160,7 +164,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/dean/decentralization/store', [DeanController::class, 'themQuyenDayHoc'])->name('decentralization.store');
         Route::put('/dean/decentralization/update/{id}', [DeanController::class, 'suaPhanQuyen'])->name('decentralization.update');//thêm quyền dạy học
         Route::delete('/dean/decentralization/del/{id}', [DeanController::class, 'xoaQuyenDayHoc'])->name('decentralization_del');
-        //}
+        Route::get('/data-decentralization', [DeanController::class, 'duLieuPhanQuyen']);
 
         //Quản lý ngân hàng câu hỏi{
         Route::get('/dean/question-bank', [DeanController::class, 'hienThiDanhSachCauHoiTheoBoLoc'])->name('question_bank');//xem danh sách câu hỏi giảng viên

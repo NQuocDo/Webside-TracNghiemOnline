@@ -508,51 +508,80 @@
     </div>
 
     <div class="modal-overlay" id="decentralizationModalOverlay"></div>
+
     <div class="decentralization-modal" id="decentralizationModal">
-        <span class="close-modal">&times;</span>
+        <span class="close-modal" id="closeModal">&times;</span>
+
         <div class="decentralization-header">
             <div class="header-title">
                 <h3 id="modal-title">Thêm quyền giảng dạy</h3>
             </div>
+
             <div class="header-content">
                 <form action="{{ route('decentralization.store') }}" method="POST" class="add-decentralization-form"
                     id="decentralization-form">
+                    @csrf
                     <input type="hidden" name="_method" id="form-method" value="POST">
                     <input type="hidden" name="phan_quyen_id" id="phanQuyenId">
-                    @csrf
                     <div>
-                        <label for="">Giảng viên:</label>
+                        <label for="year_select">Khóa học:</label>
                         <section>
-                            <select name="lecturer" id="lecturer_select" required>
-                                @foreach($danhSachGiangVien as $giangVien)
-                                    <option value="{{ $giangVien->ma_giang_vien }}">
-                                        {{ $giangVien->nguoiDung->ho_ten ?? $giangVien->ma_giang_vien }}
-                                    </option>
+                            <select name="nam_hoc" id="year_select" required>
+                                <option value="" disabled selected>-- Chọn khóa học --</option>
+                                @foreach($danhSachLopHoc->pluck('nam_hoc')->unique() as $namHoc)
+                                    <option value="{{ $namHoc }}">{{ $namHoc }}</option>
                                 @endforeach
                             </select>
                         </section>
                     </div>
-                    <div><label for="subject_select">Môn học:</label>
+
+                    {{-- Học kỳ --}}
+                    <div>
+                        <label for="hoc_ky_select">Học kỳ:</label>
                         <section>
-                            <select name="subject" id="subject_select" required>
-                                <option value="" disabled selected>-- Chọn môn học --</option>
-                                @foreach($danhSachMonHoc as $monHoc)
-                                    <option value="{{ $monHoc->ma_mon_hoc }}">{{ $monHoc->ten_mon_hoc }}</option>
-                                @endforeach
+                            <select name="hoc_ky" id="hoc_ky_select" required disabled>
+                                <option value="" disabled selected>-- Chọn học kỳ --</option>
                             </select>
                         </section>
                     </div>
-                    <div><label for="class_select">Lớp học:</label>
+
+                    {{-- Lớp học --}}
+                    <div>
+                        <label for="class_select">Lớp học:</label>
                         <section>
-                            <select name="class" id="class_select" required>
+                            <select name="ma_lop_hoc" id="class_select" required disabled>
                                 <option value="" disabled selected>-- Chọn lớp học --</option>
-                                @foreach($danhSachLopHoc as $lopHoc)
-                                    <option value="{{ $lopHoc->ma_lop_hoc }}">{{ $lopHoc->ten_lop_hoc }}</option>
-                                @endforeach
+                                {{-- Sẽ được load bằng JS --}}
                             </select>
                         </section>
                     </div>
-                    <button type="submit" class="add-decentralization-btn" id="submitBtn">Thêm quyền dạy học</button>
+
+                    {{-- Môn học --}}
+                    <div>
+                        <label for="subject_select">Môn học:</label>
+                        <section>
+                            <select name="ma_mon_hoc" id="subject_select" required disabled>
+                                <option value="" disabled selected>-- Chọn môn học --</option>
+                                {{-- Load bằng JS --}}
+                            </select>
+                        </section>
+                    </div>
+
+                    {{-- Giảng viên --}}
+                    <div>
+                        <label for="lecturer_select">Giảng viên:</label>
+                        <section>
+                            <select name="ma_giang_vien" id="lecturer_select" required disabled>
+                                <option value="" disabled selected>-- Chọn giảng viên --</option>
+                                {{-- Load bằng JS --}}
+                            </select>
+                        </section>
+                    </div>
+
+                    {{-- Nút submit --}}
+                    <button type="submit" class="add-decentralization-btn" id="submitBtn" disabled>
+                        Thêm quyền dạy học
+                    </button>
                 </form>
             </div>
         </div>
@@ -561,6 +590,7 @@
 
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const openModalBtn = document.getElementById('add-decentralization-btn-fake');
@@ -651,6 +681,35 @@
                     });
                 });
             });
+            $('#year_select').on('change', function () {
+                let namHoc = $(this).val();
+
+                $.get('/data-decentralization', { nam_hoc: namHoc }, function (data) {
+                    $('#class_select').prop('disabled', false).html('<option disabled selected>-- Chọn lớp học --</option>');
+                    data.lop_hocs.forEach(function (lop) {
+                        $('#class_select').append(`<option value="${lop.ma_lop_hoc}">${lop.ten_lop_hoc}</option>`);
+                    });
+                    $('#hoc_ky_select').prop('disabled', false).html('<option disabled selected>-- Chọn học kỳ --</option>');
+                    data.lop_hocs.forEach(function (hk) {
+                        $('#hoc_ky_select').append(`<option value="${hk.hoc_ky}">Học kỳ ${hk.hoc_ky}</option>`);
+                    });
+                    $('#subject_select').prop('disabled', false).html('<option disabled selected>-- Chọn môn học --</option>');
+                    data.mon_hocs.forEach(function (mon) {
+                        $('#subject_select').append(`<option value="${mon.ma_mon_hoc}">${mon.ten_mon_hoc}</option>`);
+                    });
+                    $('#lecturer_select').prop('disabled', false).html('<option disabled selected>-- Chọn giảng viên --</option>');
+                    data.giang_viens.forEach(function (gv) {
+                        $('#lecturer_select').append(`<option value="${gv.ma_giang_vien}">${gv.ho_ten}</option>`);
+                    });
+
+                    $('#submitBtn').prop('disabled', true);
+                });
+            });
+
+            // Bật nút submit sau khi chọn đủ
+            $('#lecturer_select').on('change', function () {
+                $('#submitBtn').prop('disabled', false);
+            });
 
             @if(session('success'))
                 Swal.fire({
@@ -670,6 +729,6 @@
                     showConfirmButton: true
                 });
             @endif
-                });
+                                            });
     </script>
 @endsection
