@@ -20,6 +20,7 @@ use App\Models\GiangVien;
 use App\Models\MonHoc;
 use App\Models\BangDiem;
 use App\Models\LichSuLamBai;
+use App\Models\ChuongMonHoc;
 use App\Models\LopHoc;
 use Smalot\PdfParser\Parser;
 use Illuminate\Support\Str;
@@ -174,7 +175,7 @@ class LecturerController extends Controller
 
         $maMonHocs = $danhSachMonHoc->pluck('ma_mon_hoc')->toArray();
 
-        $thongTinCauHoi = CauHoi::with(['dapAns', 'monHoc'])
+        $thongTinCauHoi = CauHoi::with(['dapAns', 'monHoc', 'chuongMonHoc'])
             ->whereIn('ma_mon_hoc', $maMonHocs)
             ->where('trang_thai', 'hien');
         $tuKhoaTimKiem = $request->input('tu_khoa_tim_kiem');
@@ -415,6 +416,7 @@ class LecturerController extends Controller
             ->where("phan_quyen_days.ma_giang_vien", $giangVienId)
             ->select('mon_hocs.*')
             ->get();
+            
 
         return view('lecturer.addquestion')->with('danhSachMonHoc', $danhSachMonHoc);
     }
@@ -442,6 +444,14 @@ class LecturerController extends Controller
             $questions[] = $current;
         }
         return $questions;
+    }
+    public function layChuongTheoMon(Request $request)
+    {
+        $maMonHoc = $request->query('ma_mon_hoc');
+
+        $chuongList = ChuongMonHoc::where('ma_mon_hoc', $maMonHoc)->get();
+
+        return response()->json($chuongList);
     }
     public function themCauHoi(Request $request)
     {
@@ -483,6 +493,7 @@ class LecturerController extends Controller
                         'noi_dung' => $q['question'],
                         'do_kho' => $request->input('difficulty_pdf'),
                         'ma_mon_hoc' => $request->input('subject_pdf'),
+                        'ma_chuong' => $request->input('chapter_pdf'),
                         'ma_giang_vien' => $giangVienId
                     ]);
                     if (!$cauHoi->save()) {
@@ -528,6 +539,7 @@ class LecturerController extends Controller
                     'ghi_chu' => $request->input("note_$i") ?? null,
                     'do_kho' => $request->input("difficulty_$i"),
                     'ma_mon_hoc' => $request->input("subject_$i"),
+                    'ma_chuong' => $request->input("chapter_$i"),
                     'ma_giang_vien' => $giangVienId
                 ]);
 

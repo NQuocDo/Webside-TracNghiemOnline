@@ -23,6 +23,7 @@ class CauHoi extends Model
         'ghi_chu',
         'do_kho',
         'ma_mon_hoc',
+        'ma_chuong',
         'pham_vi',
         'trang_thai',
         'ma_giang_vien'
@@ -50,14 +51,18 @@ class CauHoi extends Model
         return $this->belongsTo(NguoiDung::class, 'ma_nguoi_dung', 'ma_nguoi_dung');
     }
     public function deThi()
-{
-    return $this->belongsToMany(
-        DeThi::class,
-        'chi_tiet_de_thi_va_cau_hois',
-        'ma_cau_hoi', 
-        'ma_de_thi',   
-        'ma_cau_hoi', 
-        'ma_de_thi'   
-    )->withTimestamps();
-}
+    {
+        return $this->belongsToMany(
+            DeThi::class,
+            'chi_tiet_de_thi_va_cau_hois',
+            'ma_cau_hoi',
+            'ma_de_thi',
+            'ma_cau_hoi',
+            'ma_de_thi'
+        )->withTimestamps();
+    }
+    public function chuongMonHoc()
+    {
+        return $this->belongsTo(ChuongMonHoc::class, 'ma_chuong', 'ma_chuong');
+    }
 }

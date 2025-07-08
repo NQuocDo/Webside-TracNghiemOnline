@@ -86,6 +86,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/lecturer/question/del/{id}', [LecturerController::class, 'xoaCauHoi'])->name('question_del_id');//xoá câu hỏi vĩnh viễn
         Route::put('/lecturer/question_del/{id}/update-status', [LecturerController::class, 'capNhatTrangThaiCauHoi'])->name('capNhatTrangThaiCauHoi');//khôi phục câu hỏi đã xoá
         Route::get('/lecturer/global', [LecturerController::class, 'hienThiCauHoiVaDapAnTrangCongDong'])->name('question_global');//hiển thị câu hỏi lên trang cộng đồng
+        Route::get('/lecturer/get-chapter-by-subject', [LecturerController::class, 'layChuongTheoMon']);
 
         //Quản lý đề thi{
         Route::get('/lecturer/exam', [LecturerController::class, 'taoDeThi'])->name('create_exam');
@@ -175,6 +176,7 @@ Route::middleware(['auth'])->group(function () {
         //Quản lý thêm người dùng
         Route::get('/dean/add-user', [DeanController::class, 'hienThiThongTinLopHoc'])->name('add_user');
         Route::post('/dean/add-user/store', [DeanController::class, 'themNguoiDung'])->name('add_user.store');
+        Route::post('/dean/add-user/import-excel', [DeanController::class, 'themNguoiDungExcel'])->name('add_user_import_excel');
         //}
 
         Route::get('/dean/add-class', [DeanController::class, 'hienThiLopHoc'])->name('add_class');

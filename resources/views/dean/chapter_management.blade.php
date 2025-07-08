@@ -364,18 +364,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if($danhSachChuong->isEmpty())
+                    @if($danhSachChuong->count() === 0)
                         <tr>
-                            <td colspan="5" class="no-data-message">
-                                <i class="fa-solid fa-folder-open" style="font-size: 24px; margin-bottom: 10px;"></i>
-                                <br>
+                            <td colspan="5" class="no-data-message text-center">
+                                <i class="fa-solid fa-folder-open" style="font-size: 24px; margin-bottom: 10px;"></i><br>
                                 Không có chương nào được tìm thấy
                             </td>
                         </tr>
                     @else
                         @foreach($danhSachChuong as $index => $chuong)
                             <tr>
-                                <td class="chapter-number-cell">{{ $index + 1 }}</td>
+                                <td class="chapter-number-cell">{{ $loop->iteration + ($danhSachChuong->firstItem() - 1) }}</td>
                                 <td class="subject-name-cell">{{ $chuong->monHoc->ten_mon_hoc ?? 'N/A' }}</td>
                                 <td class="chapter-name-cell">{{ $chuong->ten_chuong }}</td>
                                 <td class="chapter-stt-cell">{{ $chuong->so_thu_tu }}</td>
@@ -384,14 +383,22 @@
                                         onclick="editChapter('{{ $chuong->ma_chuong }}', '{{ $chuong->ten_chuong }}', '{{ $chuong->ma_mon_hoc }}')">
                                         <i class="fa-solid fa-edit"></i> Sửa
                                     </button>
-                                    <button class="delete-btn" onclick="deleteChapter('{{ $chuong->ma_chuong }}')">
-                                        <i class="fa-solid fa-trash"></i> Xóa
-                                    </button>
+                                    <form id="delete-form-{{ $chuong->ma_chuong }}"
+                                        action="{{ route('chapter_management_del', ['id' => $chuong->ma_chuong]) }}" method="POST"
+                                        style="display: inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                            onclick="confirmDelete('{{ $chuong->ma_chuong }}')">
+                                            <i class="fa-solid fa-trash"></i> Xóa
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         @endforeach
                     @endif
                 </tbody>
+
             </table>
         </div>
     </div>
@@ -455,7 +462,6 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                     </div>
                     <div class="modal-body">
-                        <input type="hidden" name="ma_chuong" id="ma_chuong_edit">
                         <div class="mb-3">
                             <label for="ma_mon_hoc_edit" class="form-label">Môn học <span
                                     class="text-danger">*</span></label>
@@ -472,9 +478,9 @@
                             <input type="text" class="form-control" name="ten_chuong" id="ten_chuong_edit"
                                 placeholder="Nhập tên chương" required>
                         </div>
-                       <div class="mb-3">
-                            <label for="so_thu_tu_add" class="form-label">Chương số</label>
-                            <select name="so_thu_tu" id="so_thu_tu_add" class="form-select" required>
+                        <div class="mb-3">
+                            <label for="so_thu_tu_edit" class="form-label">Chương số</label>
+                            <select name="so_thu_tu" id="so_thu_tu_edit" class="form-select" required>
                                 <option value="" disabled selected>-- Chọn chương --</option>
                                 @for ($i = 1; $i <= 10; $i++)
                                     <option value="{{ $i }}">Chương {{ $i }}</option>
@@ -496,13 +502,14 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        function editChapter(maChuong, tenChuong, maMonHoc) {
+        function editChapter(maChuong, tenChuong, maMonHoc, soChuong) {
             document.getElementById('ma_chuong_edit').value = maChuong;
             document.getElementById('ten_chuong_edit').value = tenChuong;
             document.getElementById('ma_mon_hoc_edit').value = maMonHoc;
+            document.getElementById('so_thu_tu_edit').value = soChuong;
         }
 
-        function deleteChapter(maChuong) {
+        function confirmDelete(maChuong) {
             Swal.fire({
                 title: 'Bạn có chắc chắn?',
                 text: "Chương này sẽ bị xóa vĩnh viễn và không thể khôi phục!",
@@ -514,39 +521,8 @@
                 cancelButtonText: 'Hủy'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/dean/chapter-management/del/${maChuong}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Content-Type': 'application/json',
-                        },
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Xóa thành công!',
-                                    text: data.message,
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                });
-                                setTimeout(() => location.reload(), 1500);
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Lỗi',
-                                    text: data.message
-                                });
-                            }
-                        })
-                        .catch(() => {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Lỗi kết nối',
-                                text: 'Không thể gửi yêu cầu đến máy chủ.'
-                            });
-                        });
+                    // Submit form Laravel
+                    document.getElementById(`delete-form-${maChuong}`).submit();
                 }
             });
         }

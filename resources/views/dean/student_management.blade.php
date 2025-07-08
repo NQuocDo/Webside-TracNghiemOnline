@@ -232,10 +232,23 @@
 @section('content')
     <div class="student-manage-content">
         <form action="{{ route('student_management') }}" method="GET" id="form-search-student-list"
-            class="form-search-student" style="justify-content: end;">
-            <div class="mb-2 me-3">
+            class="form-search-student d-flex flex-wrap justify-content-end gap-2">
+
+            <div class="mb-2">
                 <input type="text" class="form-control" id="keyword" name="tu_khoa_tim_kiem"
                     placeholder="Tìm theo tên sinh viên" value="{{ $tuKhoaTimKiem }}">
+            </div>
+
+            <div class="mb-2">
+                <select class="form-select" name="ma_lop_hoc"
+                    onchange="document.getElementById('form-search-student-list').submit();">
+                    <option value="">-- Tất cả lớp học --</option>
+                    @foreach ($danhSachLopHoc as $lop)
+                        <option value="{{ $lop->ma_lop_hoc }}" {{ $maLopHoc == $lop->ma_lop_hoc ? 'selected' : '' }}>
+                            {{ $lop->ten_lop_hoc }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
         </form>
         <div class="student-manage-body">
@@ -254,7 +267,7 @@
                 <tbody>
                     @if($danhSachSinhVien->isEmpty())
                         <tr>
-                            <td colspan="5" class="text-center text-muted">Không có sinh viên</td>
+                            <td colspan="7" class="text-center text-muted">Không có sinh viên</td>
                         </tr>
                     @else
                         @foreach($danhSachSinhVien as $index => $sinhVien)

@@ -8,7 +8,6 @@
         margin: 20px;
     }
 
-    /* Container chính của form Thêm Người Dùng */
     .add-user {
         padding: 30px;
         border-radius: 15px;
@@ -28,7 +27,6 @@
         font-weight: 600;
     }
 
-    /* Form bên trong container .add-user */
     .add-user-form {
         display: flex;
         flex-direction: column;
@@ -39,7 +37,6 @@
         display: flex;
         align-items: center;
         margin-bottom: 0;
-        /* Ensures consistent spacing when gap is used on parent */
     }
 
     .add-user-form label {
@@ -57,7 +54,6 @@
     .add-user-form input[type="date"],
     .add-user-form input[type="file"],
     .add-user-form select {
-        /* ADDED 'select' here for unified styling */
         flex-grow: 1;
         padding: 12px 15px;
         border: 1px solid #ccc;
@@ -72,15 +68,12 @@
     .add-user-form input[type="date"]:focus,
     .add-user-form input[type="file"]:focus,
     .add-user-form select:focus {
-        /* ADDED 'select' here for unified focus styling */
         border-color: #007bff;
         box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
         outline: none;
     }
 
     .option-difficulty {
-        /* This class is used for divs containing a label and a select,
-           to ensure they use flex layout for proper alignment. */
         display: flex;
         align-items: center;
         margin-bottom: 0;
@@ -88,24 +81,27 @@
 
     .option-difficulty section {
         flex-grow: 1;
-        /* Ensures the section (containing the select) takes available space */
     }
 
-    /* Specific styling for selects within .option-difficulty if needed,
-       though the .add-user-form select rule above usually covers it well. */
     .option-difficulty select {
         width: 100%;
-        /* Make select fill its parent section */
-        /* The rest of the styling is already well-defined above */
         background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M2%200L0%202h4zm0%205L0%203h4z%22%2F%3E%3C%2Fsvg%3E');
         background-repeat: no-repeat;
         background-position: right 10px center;
         background-size: 12px;
         padding-right: 30px;
-        /* Add space for the custom arrow */
     }
 
-    .add-user-submit-btn {
+    .button-group {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .add-user-submit-btn,
+    .add-user-submit-btn-import-excel {
         background-color: #28a745;
         color: white;
         padding: 12px 25px;
@@ -114,18 +110,17 @@
         font-size: 18px;
         cursor: pointer;
         transition: background-color 0.3s ease, transform 0.2s ease;
-        margin-top: 20px;
-        align-self: flex-end;
-        /* Aligns button to the right/end of the flex container */
         min-width: 180px;
     }
 
-    .add-user-submit-btn:hover {
+    .add-user-submit-btn:hover,
+    .add-user-submit-btn-import-excel:hover {
         background-color: #218838;
         transform: translateY(-2px);
     }
 
-    .add-user-submit-btn:active {
+    .add-user-submit-btn:active,
+    .add-user-submit-btn-import-excel:active {
         background-color: #1e7e34;
         transform: translateY(0);
     }
@@ -208,12 +203,54 @@
                     </section>
                 </div>
 
-                <button type="submit" id="add-user-submit-btn" class="add-user-submit-btn">Thêm Người Dùng</button>
+                <div class="button-group">
+                    <button type="submit" id="add-user-submit-btn" class="add-user-submit-btn">Thêm Người Dùng</button>
+                    <button type="button" id="add-user-submit-btn-import-excel"
+                        class="add-user-submit-btn-import-excel">Thêm Người Dùng Excel</button>
+                </div>
             </form>
+        </div>
+        <div class="modal fade" id="importExcelModal" tabindex="-1" aria-labelledby="importExcelLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content p-3">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="importExcelLabel">Import Người Dùng bằng Excel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ route('add_user_import_excel') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="vai_tro" class="form-label">Loại người dùng:</label>
+                                <select class="form-select" id="vai_tro" name="vai_tro" required>
+                                    <option value="" disabled selected>-- Chọn loại người dùng --</option>
+                                    <option value="sinh_vien">Sinh viên</option>
+                                    <option value="giang_vien">Giảng viên</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="excelFile" class="form-label">Chọn file Excel:</label>
+                                <input type="file" class="form-control" id="excelFile" name="file" accept=".xlsx,.xls,.csv"
+                                    required>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-success">Import</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            const importBtn = document.getElementById("add-user-submit-btn-import-excel");
+            if (importBtn) {
+                importBtn.addEventListener("click", function () {
+                    const modal = new bootstrap.Modal(document.getElementById('importExcelModal'));
+                    modal.show();
+                });
+            }
             // Kiểm tra thông báo thành công từ session flash
             @if(session('success'))
                 Swal.fire({
@@ -234,24 +271,22 @@
                     showConfirmButton: true // Giữ thông báo lỗi cho người dùng đọc
                 });
             @endif
-
-            // Xử lý lỗi validation từ $errors bag (nếu bạn dùng $request->validate() trong controller)
             @if ($errors->any())
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi nhập liệu!',
                     html: `
-                                        <ul>
-                                            @foreach ($errors->all() as $error)
-                                                <li>{{ $error }}</li>
-                                            @endforeach
-                                        </ul>
-                                    `,
+                                            <ul>
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                            `,
                     showConfirmButton: true
                 });
             @endif
 
-                    const vaiTroSelect = document.getElementById('user_role');
+                                                    const vaiTroSelect = document.getElementById('user_role');
             const hocViGroup = document.getElementById('hocViGroup');
             const lopHocGroup = document.getElementById('lopHocGroup');
             const mssvGroup = document.getElementById('mssvGroup');

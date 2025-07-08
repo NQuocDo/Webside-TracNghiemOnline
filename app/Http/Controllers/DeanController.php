@@ -21,6 +21,9 @@ use App\Models\PhanQuyenDay;
 use App\Models\LichSuLamBai;
 use App\Models\ChuongMonHoc;
 use Carbon\Carbon;
+use Spatie\SimpleExcel\SimpleExcelReader;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DeanController extends Controller
 {
@@ -62,11 +65,13 @@ class DeanController extends Controller
     public function hienThiDanhSachSinhVien(Request $request)
     {
         $tuKhoaTimKiem = $request->input('tu_khoa_tim_kiem');
+        $maLopHoc = $request->input('ma_lop_hoc');
 
-        $danhSachSinhVien = SinhVien::with([
+        $query = SinhVien::with([
             'nguoiDung' => function ($query) {
                 $query->where('vai_tro', 'sinh_vien');
-            }
+            },
+            'lopHoc'
         ])
             ->where('trang_thai', '!=', 'an')
             ->whereHas('nguoiDung', function ($query) use ($tuKhoaTimKiem) {
@@ -75,6 +80,7 @@ class DeanController extends Controller
                 if (!empty($tuKhoaTimKiem)) {
                     $query->where('ho_ten', 'like', '%' . $tuKhoaTimKiem . '%');
                 }
+
                 $query->where(function ($q) {
                     $q->where('trang_thai_tai_khoan', 'hoat_dong')
                         ->orWhere(function ($q2) {
@@ -82,15 +88,25 @@ class DeanController extends Controller
                                 ->where('updated_at', '>=', Carbon::now()->subMonths(6));
                         });
                 });
-            })
-            ->latest()
-            ->paginate(10);
+            });
+
+        if (!empty($maLopHoc)) {
+            $query->where('ma_lop_hoc', $maLopHoc);
+        }
+
+        $danhSachSinhVien = $query->latest()->paginate(10);
+
+        // Lấy danh sách lớp học để đổ dropdown
+        $danhSachLopHoc = LopHoc::where('trang_thai', 'hien')->get();
 
         return view('dean.student_management', [
             'danhSachSinhVien' => $danhSachSinhVien,
-            'tuKhoaTimKiem' => $tuKhoaTimKiem
+            'tuKhoaTimKiem' => $tuKhoaTimKiem,
+            'maLopHoc' => $maLopHoc,
+            'danhSachLopHoc' => $danhSachLopHoc
         ]);
     }
+
     public function xoaSinhVien($id)
     {
         $sinhVien = SinhVien::
@@ -210,7 +226,8 @@ class DeanController extends Controller
 
     public function hienThiDanhSachChuong(Request $request)
     {
-        $monHocId = $request->input('ma_mon_hoc'); // Tùy chọn lọc theo môn
+        $monHocId = $request->input('ma_mon_hoc');
+        $keyword = $request->input('keyword');
 
         $danhSachMonHoc = MonHoc::where('trang_thai', 'hien')->get();
 
@@ -226,6 +243,7 @@ class DeanController extends Controller
             'danhSachChuong' => $danhSachChuong,
             'danhSachMonHoc' => $danhSachMonHoc,
             'monHocDaChon' => $monHocId,
+            'keyword' => $keyword,
         ]);
     }
     public function themChuong(Request $request)
@@ -529,6 +547,7 @@ class DeanController extends Controller
             'gioi_tinh' => 'required',
             'ngay_sinh' => 'required',
             'vai_tro' => 'required',
+            'so_dien_thoai' => 'required',
         ]);
 
         // Tạo mã người dùng
@@ -565,6 +584,75 @@ class DeanController extends Controller
         }
 
         return redirect()->route('add_user')->with('success', 'Thêm người dùng thành công.');
+    }
+    public function themNguoiDungExcel(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv',
+            'vai_tro' => 'required|in:sinh_vien,giang_vien',
+        ]);
+        $path = $request->file('file')->store('temp');
+
+        $absolutePath = Storage::path($path);
+
+        if (!file_exists($absolutePath)) {
+            dd("File không tồn tại: " . $absolutePath);
+        }
+
+        $rows = SimpleExcelReader::create($absolutePath)->getRows();
+
+        foreach ($rows as $row) {
+            $data = [];
+
+            foreach ($row as $key => $value) {
+                $newKey = Str::of($key)
+                    ->ascii()
+                    ->lower()
+                    ->replace([' ', '-'], '_')
+                    ->__toString();
+                $newKey = rtrim($newKey, '_');
+                $data[$newKey] = $value;
+            }
+
+            if (NguoiDung::where('email', $data['email'])->exists()) {
+                return redirect()->back()->with('error', 'Email đã bị trùng hoặc đã tồn tại. Vui lòng kiểm tra lại!');
+            }
+            if ($request->vai_tro === 'sinh_vien' && !empty($data['lop'])) {
+                if (!LopHoc::where('ten_lop_hoc', $data['lop'])->exists()) {
+                    return redirect()->back()->with('error', 'Lớp đã bị không tồn tại. Vui lòng kiểm tra lại!');
+                }
+            }
+
+            $user = NguoiDung::create([
+                'ma_nguoi_dung' => 'ND' . strtoupper(substr(uniqid(), -4)) . rand(10, 99),
+                'ho_ten' => $data['ho_ten'],
+                'email' => $data['email'],
+                'mat_khau' => Hash::make($data['mat_khau']),
+                'gioi_tinh' => $data['gioi_tinh'],
+                'ngay_sinh' => $data['ngay_sinh'],
+                'dia_chi' => $data['dia_chi'],
+                'so_dien_thoai' => $data['so_dien_thoai'],
+                'vai_tro' => $request->vai_tro,
+            ]);
+
+            if ($request->vai_tro === 'sinh_vien') {
+                $maLop = LopHoc::where('ten_lop_hoc', $data['lop'])->first();
+                SinhVien::create([
+                    'ma_sinh_vien' => 'SV' . strtoupper(substr(uniqid(), -4)) . rand(10, 99),
+                    'ma_nguoi_dung' => $user->ma_nguoi_dung,
+                    'lop' => $maLop->ma_lop_hoc,
+                    'mssv' => $data['ma_so_sinh_vien'] ?? null
+                ]);
+            } else {
+                GiangVien::create([
+                    'ma_giang_vien' => 'GV' . strtoupper(substr(uniqid(), -4)) . rand(10, 99),
+                    'ma_nguoi_dung' => $user->ma_nguoi_dung,
+                    'hoc_vi' => $data['hoc_vi'] ?? null,
+                ]);
+            }
+        }
+
+        return back()->with('success', 'Import thành công!');
     }
 
     //Quản lý lớp học

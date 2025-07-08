@@ -558,9 +558,9 @@
                                 STT
                             </th>
                             <th>Nội dung Câu hỏi</th>
-                            <th>Độ khó</th>
                             <th>Hình ảnh</th>
                             <th>Môn</th>
+                            <th>Tên chương</th>
                             <th class="actions-column">Phạm vi</th>
                             <th class="actions-column">Thao tác</th>
                         </tr>
@@ -593,7 +593,6 @@
                                             </div>
                                         @endforeach
                                     </td>
-                                    <td>{{ $cauHoi->do_kho }}</td>
                                     <td data-label="Hình ảnh" style="text-align: center">
                                         @if($cauHoi->hinh_anh)
                                             <img src="{{ asset('images/' . $cauHoi->hinh_anh) }}" width="70px" height="70px"
@@ -606,6 +605,7 @@
                                     <td class="subject-cell" data-label="Môn học">
                                         {{ $cauHoi->monHoc->ten_mon_hoc ?? 'N/A' }}
                                     </td>
+                                    <td >{{ $cauHoi->chuongMonHoc?->ten_chuong }}</td>
                                     <td data-label="Phạm vi" class="scope-cell" style="width:150px;">
                                         <select class="scope-dropdown" data-id="{{ $cauHoi->ma_cau_hoi }}">
                                             <option value="cong_khai" {{ $cauHoi->pham_vi == 'cong_khai' ? 'selected' : '' }}>Công

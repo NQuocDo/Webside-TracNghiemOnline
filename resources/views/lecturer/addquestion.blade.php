@@ -606,6 +606,12 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label>Chương:</label>
+                            <select name="chapter_1" id="chapter_select_1" required>
+                                <option value="">Chọn chương</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="answer-inputs-container">
@@ -640,8 +646,9 @@
                         </div>
                     @endif
                     <div class="form-group">
-                        <label for="monHoc">Chọn Môn Học:</label>
-                        <select id="monHoc" name="subject_pdf" required>
+                        <label for="subject_pdf">Chọn môn học:</label>
+                        <select id="subject_pdf" name="subject_pdf" class="subject-select" data-target="#chapter_pdf"
+                            required>
                             <option value="">-- Chọn môn học --</option>
                             @foreach($danhSachMonHoc as $monHoc)
                                 <option value="{{ $monHoc->ma_mon_hoc }}">{{ $monHoc->ten_mon_hoc }}</option>
@@ -661,6 +668,14 @@
                     <div class="form-group">
                         <label for="pdf_file">Chọn File PDF:</label>
                         <input type="file" name="pdf_file" id="pdf_file" accept="application/pdf" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="chapter_pdf">Chọn chương:</label>
+                        <select id="chapter_pdf" name="chapter_pdf" required>
+                            <option value="">-- Chọn chương --</option>
+                            {{-- Sẽ được load bằng jQuery --}}
+                        </select>
                     </div>
 
                     <div class="form-group" style="margin-top: 20px;">
@@ -684,7 +699,34 @@
 
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $(document).on('change', '.subject-select', function () {
+                var maMonHoc = $(this).val();
+                var targetSelect = $($(this).data('target'));
 
+                if (maMonHoc) {
+                    $.ajax({
+                        url: '/lecturer/get-chapter-by-subject',
+                        type: 'GET',
+                        data: { ma_mon_hoc: maMonHoc },
+                        success: function (data) {
+                            targetSelect.empty().append('<option value="">Chọn chương</option>');
+                            data.forEach(function (chuong) {
+                                targetSelect.append(`<option value="${chuong.ma_chuong}">Chương ${chuong.so_thu_tu} - ${chuong.ten_chuong}</option>`);
+                            });
+                        },
+                        error: function () {
+                            alert('Lỗi khi tải danh sách chương.');
+                        }
+                    });
+                } else {
+                    targetSelect.empty().append('<option value="">Chọn chương</option>');
+                }
+            });
+        });
+    </script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             @if (session('success'))
@@ -732,62 +774,69 @@
                 for (let i = 0; i < count; i++) {
                     const index = currentIndex++;
                     const formHTML = `
-                                                        <div class="form-addquestion new-form">
-                                                            <div class="question-header">
-                                                                <span class="question-number">Câu ${index}</span>
-                                                                <h3>Thông tin câu hỏi</h3>
-                                                            </div>
+                                 <div class="form-addquestion new-form">
+                                     <div class="question-header">
+                                         <span class="question-number">Câu ${index}</span>
+                                         <h3>Thông tin câu hỏi</h3>
+                                     </div>
 
-                                                            <div class="form-group">
-                                                                <label>Nội dung câu hỏi:</label>
-                                                                <input type="text" name="question_content_${index}" placeholder="Nhập nội dung câu hỏi...">
-                                                            </div>
+                                     <div class="form-group">
+                                         <label>Nội dung câu hỏi:</label>
+                                         <input type="text" name="question_content_${index}" placeholder="Nhập nội dung câu hỏi...">
+                                     </div>
 
-                                                            <div class="form-group">
-                                                                <label>Hình ảnh (tùy chọn):</label>
-                                                                <input type="file" name="question_image_${index}" accept="image/*" class="input-hinh-anh" data-index="${index}">
-                                                                <img id="xemTruocHinhAnh_${index}" class="xem-truoc-hinh-anh" src="#" alt="Xem trước"
-                                                                    style="display: none; max-width: 200px; margin-top: 10px;">
-                                                            </div>
+                                     <div class="form-group">
+                                         <label>Hình ảnh (tùy chọn):</label>
+                                         <input type="file" name="question_image_${index}" accept="image/*" class="input-hinh-anh" data-index="${index}">
+                                         <img id="xemTruocHinhAnh_${index}" class="xem-truoc-hinh-anh" src="#" alt="Xem trước"
+                                             style="display: none; max-width: 200px; margin-top: 10px;">
+                                     </div>
 
-                                                            <div class="form-group">
-                                                                <label>Ghi chú (tùy chọn):</label>
-                                                                <input type="text" name="note_${index}" placeholder="Thêm ghi chú cho câu hỏi...">
-                                                            </div>
+                                     <div class="form-group">
+                                         <label>Ghi chú (tùy chọn):</label>
+                                         <input type="text" name="note_${index}" placeholder="Thêm ghi chú cho câu hỏi...">
+                                     </div>
 
-                                                            <div class="form-row">
-                                                                <div class="form-group">
-                                                                    <label>Độ khó:</label>
-                                                                    <select name="difficulty_${index}">
-                                                                        <option value="">Chọn độ khó</option>
-                                                                        <option value="Dễ">Dễ</option>
-                                                                        <option value="Trung bình">Trung bình</option>
-                                                                        <option value="Khó">Khó</option>
-                                                                    </select>
-                                                                </div>
+                                     <div class="form-row">
+                                         <div class="form-group">
+                                             <label>Độ khó:</label>
+                                             <select name="difficulty_${index}">
+                                                 <option value="">Chọn độ khó</option>
+                                                 <option value="Dễ">Dễ</option>
+                                                 <option value="Trung bình">Trung bình</option>
+                                                 <option value="Khó">Khó</option>
+                                             </select>
+                                         </div>
 
-                                                                <div class="form-group">
-                                                                    <label>Môn học:</label>
-                                                                    <select name="subject_${index}">
-                                                                        <option value="">Chọn môn học</option>
-                                                                        ${options}
-                                                                    </select>
-                                                                </div>
-                                                            </div>
+                                         <div class="form-group">
+                                             <label>Môn học:</label>
+                                             <select name="subject_${index}">
+                                                 <option value="">Chọn môn học</option>
+                                                 ${options}
+                                             </select>
+                                         </div>
+                                         <div class="form-group">
+                                             <label>Chương:</label>
+                                             <select name="chapter_${index}" class="chapter-select" data-index="${index}">
+                                                 <option value="">Chọn chương</option>
+                                                 <!-- Các chương sẽ được thêm động sau bằng JavaScript -->
+                                             </select>
+                                         </div>
+                                     </div>
 
-                                                            <div class="answer-inputs-container">
-                                                                <h4>Các đáp án (chọn đáp án đúng)</h4>
-                                                                ${[0, 1, 2, 3].map(j => `
-                                                                    <div class="answer-option-group">
-                                                                        <input type="text" name="answers_${index}[${j}][text]" 
-                                                                               placeholder="Đáp án ${String.fromCharCode(65 + j)}">
-                                                                        <input type="checkbox" name="answers_${index}[${j}][is_correct]" 
-                                                                               value="1" id="answer_${index}_${j}">
-                                                                        <label for="answer_${index}_${j}" class="checkbox-label">Đúng</label>
-                                                                    </div>
-                                                                `).join('')}
-                                                            </div>
-                                                        </div>`;
+                                     <div class="answer-inputs-container">
+                                         <h4>Các đáp án (chọn đáp án đúng)</h4>
+                                         ${[0, 1, 2, 3].map(j => `
+                                             <div class="answer-option-group">
+                                                 <input type="text" name="answers_${index}[${j}][text]" 
+                                                        placeholder="Đáp án ${String.fromCharCode(65 + j)}">
+                                                 <input type="checkbox" name="answers_${index}[${j}][is_correct]" 
+                                                        value="1" id="answer_${index}_${j}">
+                                                 <label for="answer_${index}_${j}" class="checkbox-label">Đúng</label>
+                                             </div>
+                                         `).join('')}
+                                     </div>
+                                </div>`;
                     container.insertAdjacentHTML("beforeend", formHTML);
                 }
 
