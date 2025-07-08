@@ -1,8 +1,11 @@
 @extends('layout.lecturer_layout')
+@section('title')
+    Trang Danh sách đề thi
+@endsection
 <style>
     .lecturer-exam-list {
         padding: 40px 20px;
-        background: #f5f7fa;
+        background: #f8f9fa;
         min-height: 100vh;
     }
 
@@ -24,7 +27,7 @@
     }
 
     .page-subtitle {
-        color: #636e72;
+        color: #6c757d;
         font-size: 1rem;
     }
 
@@ -36,17 +39,18 @@
 
     .subject-button {
         padding: 10px 20px;
-        border: none;
-        border-radius: 25px;
-        background: #0984e3;
-        color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        background: white;
+        color: #495057;
         font-weight: 600;
         cursor: pointer;
-        transition: background 0.3s ease;
+        transition: all 0.3s ease;
     }
 
     .subject-button:hover {
-        background: #74b9ff;
+        background: #f8f9fa;
+        border-color: #adb5bd;
     }
 
     .subject-list {
@@ -54,7 +58,8 @@
         top: 110%;
         left: 0;
         background: white;
-        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         display: none;
         z-index: 999;
@@ -72,185 +77,200 @@
     .subject-list a {
         display: block;
         padding: 12px 16px;
-        color: #2d3436;
+        color: #495057;
         text-decoration: none;
         transition: 0.2s;
     }
 
     .subject-list a:hover {
-        background: #f1f2f6;
+        background: #f8f9fa;
     }
 
-    /* Main container với 2 cột dọc */
-    .exam-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 30px;
-        align-items: start;
-        height: calc(100vh - 200px);
-    }
-
-    /* Cột trái - Danh sách đề thi */
-    .exam-list-column {
-        background: white;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e0e0e0;
-        height: 100%;
-        overflow-y: auto;
-    }
-
-    .column-title {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #2c3e50;
-        margin-bottom: 20px;
+    .empty-state {
         text-align: center;
-        padding-bottom: 12px;
-        border-bottom: 2px solid #0984e3;
-        position: sticky;
-        top: 0;
-        background: white;
-        z-index: 10;
+        padding: 60px 20px;
+        color: #6c757d;
+        font-size: 1rem;
     }
 
     .exam-list-grid {
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 24px;
     }
 
     .exam-card {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 18px;
-        border: 1px solid #e9ecef;
-        transition: 0.3s ease;
-    }
-
-    .exam-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
         background: white;
+        border-radius: 12px;
+        padding: 24px;
+        border: 2px solid #e9ecef;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     }
 
     .exam-title {
-        font-size: 1.1rem;
+        font-size: 1.3rem;
         font-weight: 700;
-        color: #2d3436;
+        color: #2c3e50;
         margin-bottom: 8px;
         text-decoration: none;
         display: block;
+        padding-right: 80px;
+        /* Để tránh đè lên label */
     }
 
     .exam-title:hover {
-        color: #0984e3;
+        color: #495057;
     }
 
     .exam-subject {
         font-size: 0.9rem;
-        color: #636e72;
-        margin-bottom: 12px;
+        color: #6c757d;
+        margin-bottom: 16px;
         font-weight: 500;
+        background: #f8f9fa;
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        border: 1px solid #e9ecef;
     }
 
     .exam-info {
         font-size: 0.85rem;
-        margin-bottom: 6px;
-        color: #2d3436;
+        margin-bottom: 8px;
+        color: #495057;
+        background: #f8f9fa;
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-right: 8px;
+        border: 1px solid #e9ecef;
     }
 
     .exam-info span.label {
         color: #6c757d;
         font-weight: 600;
-        margin-right: 6px;
+        margin-right: 4px;
     }
 
     .exam-meta {
         font-size: 0.8rem;
-        color: #8395a7;
-        margin-top: 10px;
-        margin-bottom: 12px;
+        color: #6c757d;
+        margin-top: 12px;
+        margin-bottom: 16px;
+        font-style: italic;
     }
 
     .exam-actions {
         display: flex;
         gap: 8px;
-        margin-top: 12px;
+        margin-top: 16px;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        align-items: center;
     }
 
     .delete-btn {
-        padding: 6px 12px;
-        background: #ff6b6b;
-        border: none;
+        padding: 8px 16px;
+        background: white;
+        border: 1px solid #dc3545;
         border-radius: 6px;
-        color: white;
+        color: #dc3545;
         font-size: 0.8rem;
+        font-weight: 500;
         cursor: pointer;
         transition: 0.2s ease;
         flex: 1;
+        min-width: 120px;
     }
 
     .delete-btn:hover {
-        background: #ff4757;
+        background: #dc3545;
+        color: white;
     }
 
     .create-btn {
-        background-color: #0984e3;
-        padding: 6px 12px;
-        border: none;
+        background: white;
+        border: 1px solid #28a745;
+        color: #28a745;
+        padding: 8px 16px;
         border-radius: 6px;
-        color: white;
         font-size: 0.8rem;
+        font-weight: 500;
         cursor: pointer;
         transition: 0.2s ease;
         flex: 1;
+        min-width: 120px;
     }
 
     .create-btn:hover {
-        background-color: #0770c4;
+        background: #28a745;
+        color: white;
     }
 
-    /* Cột phải - Danh sách bài kiểm tra */
-    .exam-tests-column {
+    .create-dethi-pdf-btn {
         background: white;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e0e0e0;
-        height: 100%;
-        overflow-y: auto;
+        border: 1px solid #fd7e14;
+        color: #fd7e14;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.2s ease;
+        flex: 1;
+        min-width: 120px;
     }
 
-    .exam-tests-column .column-title {
-        position: sticky;
-        top: 0;
-        background: white;
-        z-index: 10;
-        margin-bottom: 20px;
+    .create-dethi-pdf-btn:hover {
+        background: #fd7e14;
+        color: white;
     }
 
-    .test-section {
-        margin-bottom: 20px;
-        padding: 16px;
+    /* ===== BÀI KIỂM TRA SECTION ===== */
+    .show-exam {
+        margin-top: 24px;
+        padding: 20px;
         background: #f8f9fa;
-        border-radius: 10px;
-        border-left: 4px solid #0984e3;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        position: relative;
     }
 
-    .test-section-title {
-        font-size: 1rem;
-        font-weight: 600;
+    .show-exam::before {
+        content: "BÀI KIỂM TRA";
+        position: absolute;
+        top: -8px;
+        left: 20px;
+        background: #6c757d;
+        color: white;
+        padding: 4px 12px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        border-radius: 4px;
+        letter-spacing: 0.5px;
+    }
+
+    .exam-tests strong {
         color: #2c3e50;
-        margin-bottom: 12px;
+        font-size: 1rem;
+        display: block;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #dee2e6;
     }
 
     .no-test {
         color: #6c757d;
         font-style: italic;
         text-align: center;
-        padding: 20px;
+        padding: 30px;
+        font-size: 0.9rem;
+        background: white;
+        border-radius: 6px;
+        border: 1px dashed #dee2e6;
     }
 
     .test-card-container {
@@ -262,92 +282,126 @@
     .test-card {
         background: white;
         border-radius: 8px;
-        padding: 14px;
+        padding: 16px;
         border: 1px solid #dee2e6;
-        transition: 0.2s ease;
+        transition: all 0.3s ease;
+        position: relative;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .test-card:hover {
-        border-color: #0984e3;
-        box-shadow: 0 2px 8px rgba(9, 132, 227, 0.1);
+        border-color: #6c757d;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transform: translateY(-1px);
     }
 
     .test-header {
         display: flex;
         align-items: center;
-        gap: 8px;
-        margin-bottom: 8px;
+        gap: 12px;
+        margin-bottom: 12px;
         flex-wrap: wrap;
     }
 
     .test-index {
-        background: #0984e3;
+        background: #495057;
         color: white;
-        padding: 2px 6px;
+        padding: 4px 8px;
         border-radius: 4px;
         font-size: 0.7rem;
         font-weight: 600;
+        min-width: 30px;
+        text-align: center;
     }
 
     .test-id {
         font-size: 0.85rem;
-        color: #495057;
+        color: #2c3e50;
         margin: 0;
+        font-weight: 500;
     }
 
     .test-status {
         font-size: 0.8rem;
         color: #6c757d;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
+        padding: 4px 8px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        display: inline-block;
+        border: 1px solid #e9ecef;
     }
 
     .test-actions {
         display: flex;
-        gap: 6px;
+        gap: 8px;
+        flex-wrap: wrap;
     }
 
     .toggle-btn {
-        padding: 4px 8px;
-        background: #28a745;
-        border: none;
+        padding: 6px 12px;
+        background: white;
+        border: 1px solid #28a745;
+        color: #28a745;
         border-radius: 4px;
-        color: white;
         font-size: 0.75rem;
+        font-weight: 500;
         cursor: pointer;
         transition: 0.2s ease;
     }
 
     .toggle-btn:hover {
-        background: #218838;
+        background: #28a745;
+        color: white;
+    }
+
+    .detail-btn {
+        padding: 6px 12px;
+        background: white;
+        border: 1px solid #007bff;
+        color: #007bff;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .detail-btn:hover {
+        background: #007bff;
+        color: white;
+    }
+
+    .create-baikiemtra-pdf-btn {
+        padding: 6px 12px;
+        background: white;
+        border: 1px solid #fd7e14;
+        color: #fd7e14;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .create-baikiemtra-pdf-btn:hover {
+        background: #fd7e14;
+        color: white;
     }
 
     .test-actions .delete-btn {
-        padding: 4px 8px;
+        padding: 6px 12px;
         font-size: 0.75rem;
         flex: initial;
+        min-width: auto;
     }
 
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        color: #636e72;
-        font-size: 1rem;
-    }
-
-    /* Responsive */
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
-        .exam-container {
-            grid-template-columns: 1fr;
-            gap: 20px;
-            height: auto;
-        }
-
-        .exam-list-column,
-        .exam-tests-column {
-            height: auto;
-            max-height: 500px;
-        }
-
         .exam-actions {
             flex-direction: column;
         }
@@ -356,19 +410,26 @@
             flex-direction: column;
             align-items: flex-start;
         }
+
+        .test-actions {
+            flex-direction: column;
+        }
     }
 
     @media (max-width: 480px) {
         .exam-title {
-            font-size: 1rem;
+            font-size: 1.1rem;
         }
 
-        .column-title {
-            font-size: 1.2rem;
+        .exam-card {
+            padding: 20px;
+        }
+
+        .show-exam {
+            padding: 16px;
         }
     }
 </style>
-
 @section('content')
     <div class="lecturer-exam-list">
         <div class="exam-list-content">
@@ -412,175 +473,191 @@
                                 📅 Tạo lúc: {{ $deThi->ngay_tao_de_thi }}
                             </div>
 
-                            <form id="delete-form-{{ $deThi->ma_de_thi }}" action="{{ route('exam_list_del', $deThi->ma_de_thi) }}"
-                                method="POST" style="display: inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="delete-btn btn-delete-test" data-id="{{ $deThi->ma_de_thi }}">
-                                    Xóa đề thi
-                                </button>
-                            </form>
-                            <form action="{{ route('exam_create_store') }}" method="POST" id="create-form-{{ $deThi->ma_de_thi }}"
-                                style="margin-top: 10px;">
-                                @csrf
-                                <input type="hidden" name="ma_de_thi" value="{{ $deThi->ma_de_thi }}">
-                                <button class="create-btn" data-id="{{ $deThi->ma_de_thi }}">Tạo bài kiểm tra</button>
-                            </form>
-                        </div>
+                            <div class="exam-actions">
+                                <form id="delete-form-{{ $deThi->ma_de_thi }}"
+                                    action="{{ route('exam_list_del', $deThi->ma_de_thi) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="delete-btn btn-delete-test" data-id="{{ $deThi->ma_de_thi }}">
+                                        Xóa đề thi
+                                    </button>
+                                </form>
+                                <form action="{{ route('exam_create_store') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="ma_de_thi" value="{{ $deThi->ma_de_thi }}">
+                                    <button class="create-btn" data-id="{{ $deThi->ma_de_thi }}">Tạo bài kiểm tra</button>
+                                </form>
+                                <form action="{{ route('export_de_thi_pdf', $deThi->ma_de_thi) }}" method="POST"
+                                    style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="create-dethi-pdf-btn">
+                                        📄 Xuất PDF đề thi
+                                    </button>
+                                </form>
+                            </div>
 
-                        <div class="show-exam">
-                            @if($deThi->baiKiemTras->isEmpty())
-                                <p class="no-test">🔕 Chưa có bài kiểm tra của {{ $deThi->ten_de_thi }}</p>
-                            @else
-                                <div class="exam-tests">
-                                    <strong>📋 {{ $deThi->ten_de_thi }}:</strong>
-                                    <div class="test-card-container">
-                                        @foreach ($deThi->baiKiemTras as $index => $bkt)
-                                            <div class="test-card">
-                                                <div class="test-header">
-                                                    <span class="test-index">#{{ $index + 1 }}</span>
-                                                    <span class="test-id">Tên: <strong>{{ $bkt->ten_bai_kiem_tra }}</strong></span>
-                                                    <p class="test-id">Tên:
-                                                        <strong>{{ $bkt->lopHoc->ten_lop_hoc ?? 'Không rõ lớp' }}</strong>
-                                                    </p>
-                                                </div>
+                            <div class="show-exam">
+                                @if($deThi->baiKiemTras->isEmpty())
+                                    <p class="no-test">🔕 Chưa có bài kiểm tra của {{ $deThi->ten_de_thi }}</p>
+                                @else
+                                    <div class="exam-tests">
+                                        <strong>📋 {{ $deThi->ten_de_thi }}:</strong>
+                                        <div class="test-card-container">
+                                            @foreach ($deThi->baiKiemTras as $index => $bkt)
+                                                <div class="test-card">
+                                                    <div class="test-header">
+                                                        <span class="test-index">#{{ $index + 1 }}</span>
+                                                        <span class="test-id">Tên: <strong>{{ $bkt->ten_bai_kiem_tra }}</strong></span>
+                                                        <p class="test-id">Tên:
+                                                            <strong>{{ $bkt->lopHoc->ten_lop_hoc ?? 'Không rõ lớp' }}</strong>
+                                                        </p>
+                                                    </div>
 
-                                                <div class="test-status">
-                                                    Trạng thái: <em>{{ ucfirst($bkt->trang_thai) }}</em>
-                                                </div>
+                                                    <div class="test-status">
+                                                        Trạng thái: <em> {{ $bkt->trang_thai === 'khoa' ? 'Khóa' : 'Mở' }}</em>
+                                                    </div>
 
-                                                <div class="test-actions">
-                                                    <form action="{{ route('exam_create_status', $bkt->ma_bai_kiem_tra) }}" method="POST"
-                                                        style="display:inline;">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <button type="submit" class="toggle-btn">
-                                                            {{ $bkt->trang_thai === 'khoa' ? 'Mở' : 'Khoá' }}
-                                                        </button>
-                                                    </form>
-                                                    <form action="{{ route('exam_create_del', $bkt->ma_bai_kiem_tra) }}" method="POST"
-                                                        id="delete-form-{{$bkt->ma_bai_kiem_tra}}" style="display:inline;">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="delete-btn btn-delete-test"
-                                                            data-id="{{ $bkt->ma_bai_kiem_tra }}">
-                                                            Xoá
-                                                        </button>
-                                                    </form>
+                                                    <div class="test-actions">
+                                                        <form action="{{ route('exam_create_status', $bkt->ma_bai_kiem_tra) }}"
+                                                            method="POST" style="display:inline;">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <button type="submit" class="toggle-btn">
+                                                                {{ $bkt->trang_thai === 'khoa' ? 'Mở' : 'Khoá' }}
+                                                            </button>
+                                                        </form>
+                                                        <form action="{{ route('exam_create_del', $bkt->ma_bai_kiem_tra) }}" method="POST"
+                                                            id="delete-form-{{$bkt->ma_bai_kiem_tra}}" style="display:inline;">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="delete-btn btn-delete-test"
+                                                                data-id="{{ $bkt->ma_bai_kiem_tra }}">
+                                                                Xoá
+                                                            </button>
+                                                        </form>
+                                                        <a href="{{ route('exam_check', ['id' => $bkt->ma_bai_kiem_tra]) }}"
+                                                            class="detail-btn">Xem chi tiết</a>
+                                                        <form action="{{ route('export_bai_kiem_tra_pdf', $bkt->ma_bai_kiem_tra) }}"
+                                                            method="POST" style="display:inline;">
+                                                            @csrf
+                                                            <button type="submit" class="create-baikiemtra-pdf-btn">
+                                                                📄 Xuất PDF bài kiểm tra
+                                                            </button>
+                                                        </form>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        @endforeach
+                                            @endforeach
+                                        </div>
                                     </div>
-                                </div>
-                            @endif
-                        </div>
+                                @endif
+                            </div>
                     @endforeach
-                </div>
+                    </div>
             @endif
+            </div>
         </div>
-    </div>
 @endsection
-@section('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const deleteButtons = document.querySelectorAll('.btn-delete-test');
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const examtId = this.getAttribute('data-id');
+    @section('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const deleteButtons = document.querySelectorAll('.btn-delete-test');
+                deleteButtons.forEach(button => {
+                    button.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const examtId = this.getAttribute('data-id');
 
-                    Swal.fire({
-                        title: '⚠️ Bạn chắc chắn muốn xoá đề thi này?',
-                        html: "<b>Tất cả các bài kiểm tra liên quan sẽ bị xoá!</b><br>Hãy đảm bảo bạn đã kiểm tra kỹ trước khi thực hiện.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Xoá ngay',
-                        cancelButtonText: 'Huỷ bỏ'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            document.getElementById('delete-form-' + examtId).submit();
-                        }
-                    });
-                });
-            });
-
-            const buttons = document.querySelectorAll('.create-btn');
-            const lopHocs = @json($lopHocs);
-            let options = lopHocs.map(lop => `<option value="${lop.ma_lop_hoc}">${lop.ten_lop_hoc}</option>`).join('');
-
-            buttons.forEach(button => {
-                button.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const examCreateId = this.getAttribute('data-id');
-
-                    Swal.fire({
-                        title: 'Tạo bài kiểm tra',
-                        html: `
-                                            <input id="ten-bai-kiem-tra" class="swal2-input" placeholder="Nhập tên bài kiểm tra">
-                                            <select id="chon-lop" class="swal2-input">
-                                                <option value="" disabled selected>Chọn lớp học</option>
-                                                ${options}
-                                            </select>
-                                        `,
-                        showCancelButton: true,
-                        confirmButtonText: 'Tạo',
-                        cancelButtonText: 'Huỷ',
-                        focusConfirm: false,
-                        preConfirm: () => {
-                            const tenBKT = document.getElementById('ten-bai-kiem-tra').value;
-                            const maLop = document.getElementById('chon-lop').value;
-
-                            if (!tenBKT || !maLop) {
-                                Swal.showValidationMessage('Vui lòng nhập tên bài kiểm tra và chọn lớp học');
-                                return false;
+                        Swal.fire({
+                            title: '⚠️ Bạn chắc chắn muốn xoá đề thi này?',
+                            html: "<b>Tất cả các bài kiểm tra liên quan sẽ bị xoá!</b><br>Hãy đảm bảo bạn đã kiểm tra kỹ trước khi thực hiện.",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Xoá ngay',
+                            cancelButtonText: 'Huỷ bỏ'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                document.getElementById('delete-form-' + examtId).submit();
                             }
-
-                            return { tenBKT, maLop };
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            const form = document.getElementById('create-form-' + examCreateId);
-
-                            const inputTen = document.createElement('input');
-                            inputTen.type = 'hidden';
-                            inputTen.name = 'ten_bai_kiem_tra';
-                            inputTen.value = result.value.tenBKT;
-
-                            const inputLop = document.createElement('input');
-                            inputLop.type = 'hidden';
-                            inputLop.name = 'ma_lop_hoc';
-                            inputLop.value = result.value.maLop;
-
-                            form.appendChild(inputTen);
-                            form.appendChild(inputLop);
-                            form.submit();
-                        }
+                        });
                     });
                 });
-            });
 
+                const buttons = document.querySelectorAll('.create-btn');
+                const lopHocs = @json($lopHocs);
+                let options = lopHocs.map(lop => `<option value="${lop.ma_lop_hoc}">${lop.ten_lop_hoc}</option>`).join('');
 
-            @if(session('success'))
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Thành công!',
-                    text: '{{ session('success') }}',
-                    showConfirmButton: false,
-                    timer: 2000
+                buttons.forEach(button => {
+                    button.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const examCreateId = this.getAttribute('data-id');
+
+                        Swal.fire({
+                            title: 'Tạo bài kiểm tra',
+                            html: `
+                                                                                                        <input id="ten-bai-kiem-tra" class="swal2-input" placeholder="Nhập tên bài kiểm tra">
+                                                                                                        <select id="chon-lop" class="swal2-input">
+                                                                                                            <option value="" disabled selected>Chọn lớp học</option>
+                                                                                                            ${options}
+                                                                                                        </select>
+                                                                                                    `,
+                            showCancelButton: true,
+                            confirmButtonText: 'Tạo',
+                            cancelButtonText: 'Huỷ',
+                            focusConfirm: false,
+                            preConfirm: () => {
+                                const tenBKT = document.getElementById('ten-bai-kiem-tra').value;
+                                const maLop = document.getElementById('chon-lop').value;
+
+                                if (!tenBKT || !maLop) {
+                                    Swal.showValidationMessage('Vui lòng nhập tên bài kiểm tra và chọn lớp học');
+                                    return false;
+                                }
+
+                                return { tenBKT, maLop };
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const form = document.getElementById('create-form-' + examCreateId);
+
+                                const inputTen = document.createElement('input');
+                                inputTen.type = 'hidden';
+                                inputTen.name = 'ten_bai_kiem_tra';
+                                inputTen.value = result.value.tenBKT;
+
+                                const inputLop = document.createElement('input');
+                                inputLop.type = 'hidden';
+                                inputLop.name = 'ma_lop_hoc';
+                                inputLop.value = result.value.maLop;
+
+                                form.appendChild(inputTen);
+                                form.appendChild(inputLop);
+                                form.submit();
+                            }
+                        });
+                    });
                 });
-            @endif
 
-            @if(session('error'))
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Không thể thực hiện',
-                    text: '{{ session('error') }}',
-                    showConfirmButton: true
-                });
-            @endif
-                                              });
-    </script>
-@endsection
+
+                @if(session('success'))
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: '{{ session('success') }}',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                @endif
+
+                @if(session('error'))
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Không thể thực hiện',
+                        text: '{{ session('error') }}',
+                        showConfirmButton: true
+                    });
+                @endif
+                                                                                                          });
+        </script>
+    @endsection

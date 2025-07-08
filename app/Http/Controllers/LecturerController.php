@@ -22,9 +22,11 @@ use App\Models\BangDiem;
 use App\Models\LichSuLamBai;
 use App\Models\ChuongMonHoc;
 use App\Models\LopHoc;
+use App\Models\ChiTietBaiKiemTraVaCauHoi;
 use Smalot\PdfParser\Parser;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 
 
@@ -416,7 +418,7 @@ class LecturerController extends Controller
             ->where("phan_quyen_days.ma_giang_vien", $giangVienId)
             ->select('mon_hocs.*')
             ->get();
-            
+
 
         return view('lecturer.addquestion')->with('danhSachMonHoc', $danhSachMonHoc);
     }
@@ -916,12 +918,13 @@ class LecturerController extends Controller
         if (!$dethi) {
             return redirect()->back()->with('error', 'Đã có lỗi xảy ra! Vui lòng kiểm tra lại');
         }
-        foreach ($maCauHois as $maCauHoi) {
+        foreach ($maCauHois as $index => $maCauHoi) {
             $maCTCH = 'CT' . substr(uniqid(), -4) . rand(1, 9);
             DB::table('chi_tiet_de_thi_va_cau_hois')->insert([
                 'ma_chi_tiet_dtch' => $maCTCH,
                 'ma_de_thi' => $dethi->ma_de_thi,
                 'ma_cau_hoi' => $maCauHoi,
+                'thu_tu' => $index + 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -992,7 +995,6 @@ class LecturerController extends Controller
     }
     public function taoBaiKiemTra(Request $request)
     {
-
         $request->validate([
             'ma_de_thi' => 'required|exists:de_this,ma_de_thi',
             'ten_bai_kiem_tra' => 'required|string|max:255',
@@ -1002,10 +1004,14 @@ class LecturerController extends Controller
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
         $giangVien = GiangVien::where('ma_nguoi_dung', $maNguoiDung)->firstOrFail();
         $deThi = DeThi::findOrFail($request->ma_de_thi);
+
         if ($deThi->ma_giang_vien !== $giangVien->ma_giang_vien) {
             abort(403, 'Bạn không có quyền tạo bài kiểm tra cho lớp này.');
         }
-        BaiKiemTra::create([
+
+        $maBaiKiemTra = 'BKT' . substr(uniqid(), -5) . rand(10, 99);
+        $baiKiemTra = BaiKiemTra::create([
+            'ma_bai_kiem_tra' => $maBaiKiemTra,
             'ma_de_thi' => $deThi->ma_de_thi,
             'ten_bai_kiem_tra' => $request->ten_bai_kiem_tra,
             'ma_giang_vien' => $giangVien->ma_giang_vien,
@@ -1013,8 +1019,24 @@ class LecturerController extends Controller
             'ma_lop_hoc' => $request->ma_lop_hoc,
         ]);
 
+        $chiTietDeThi = ChiTietDeThiVaCauHoi::where('ma_de_thi', $deThi->ma_de_thi)
+            ->orderBy('thu_tu')
+            ->get();
+
+        foreach ($chiTietDeThi as $index => $ctdt) {
+            DB::table('chi_tiet_bai_kiem_tra_va_cau_hois')->insert([
+                'ma_chi_tiet_bktch' => 'BKTCH' . substr(uniqid(), -4) . rand(10, 99),
+                'ma_bai_kiem_tra' => $baiKiemTra->ma_bai_kiem_tra,
+                'ma_chi_tiet_dtch' => $ctdt->ma_chi_tiet_dtch,
+                'thu_tu' => $index + 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Tạo bài kiểm tra thành công!');
     }
+
 
     public function xoaBaiKiemTra($id)
     {
@@ -1034,7 +1056,11 @@ class LecturerController extends Controller
         }
 
         try {
+            DB::table('chi_tiet_bai_kiem_tra_va_cau_hois')
+                ->where('ma_bai_kiem_tra', $id)
+                ->delete();
             $baiKiemTra->delete();
+
             return redirect()->back()->with('success', 'Xóa bài kiểm tra thành công!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Đã có lỗi xảy ra khi xóa: ' . $e->getMessage());
@@ -1050,7 +1076,40 @@ class LecturerController extends Controller
 
         return redirect()->back()->with('success', 'Trạng thái bài kiểm tra đã được cập nhật.');
     }
+    public function hienThiTrangChiTietBaiKiemTra($id)
+    {
+        $baiKiemTra = BaiKiemTra::with(['deThi.cauHoi.dapAns'])->findOrFail($id);
+        return view('lecturer.exam_check', compact('baiKiemTra'));
+    }
+    public function shuffleCauHoi($id)
+    {
+        $baiKiemTra = BaiKiemTra::with('chiTietCauHoi.chiTietDeThi.cauHoi.dapAns')->findOrFail($id);
+        $chiTietBKT = $baiKiemTra->chiTietCauHoi;
+        $shuffled = $chiTietBKT->shuffle()->values();
+        foreach ($shuffled as $index => $ct) {
+            ChiTietBaiKiemTraVaCauHoi::where('ma_chi_tiet_bktch', $ct->ma_chi_tiet_bktch)
+                ->update(['thu_tu' => $index + 1]);
+        }
 
+        $baiKiemTra = BaiKiemTra::with(['chiTietCauHoi.cauHoi.dapAns'])->findOrFail($id);
+
+        return view('lecturer.exam_check', compact('baiKiemTra'));
+    }
+    public function exportDeThiPDF($id)
+    {
+
+        $deThi = DeThi::with(['cauHoi.dapAns'])->findOrFail($id);
+        $pdf = Pdf::loadView('lecturer.pdf.de_thi_pdf', compact('deThi'));
+        $tenFile = 'DeThi_' . $deThi->ma_de_thi . '.pdf';
+        return $pdf->download($tenFile);
+    }
+    public function exportBaiKiemTraPDF($id)
+    {
+        $baiKiemTra = BaiKiemTra::with(['chiTietCauHoi.chiTietDeThi.cauHoi.dapAns', 'deThi'])->findOrFail($id);
+
+        $pdf = Pdf::loadView('lecturer.pdf.bai_kiem_tra_pdf', compact('baiKiemTra'));
+        return $pdf->download('bai_kiem_tra_' . $baiKiemTra->ma_bai_kiem_tra . '.pdf');
+    }
 
     //Quản lý liên hệ
     public function hienThiLienHe(Request $request)

@@ -34,12 +34,16 @@ class DeThi extends Model
     {
         return $this->belongsToMany(
             CauHoi::class,
-            'chi_tiet_de_thi_va_cau_hois',  // tên bảng 
-            'ma_de_thi',                   // khoá ngoại ở bảng ctdtvch đến bảng de_thi
-            'ma_cau_hoi',                  // khoá ngoại ở bảng ctdtvch  đến bảng cau_hois
-            'ma_de_thi',                   // khóa chính của bảng de_thi
-            'ma_cau_hoi'                   // khóa chính của bảng cau_hois
-        )->withTimestamps();
+            'chi_tiet_de_thi_va_cau_hois',
+            'ma_de_thi',
+            'ma_cau_hoi',
+            'ma_de_thi',
+            'ma_cau_hoi'
+        )
+            ->using(ChiTietDeThiVaCauHoi::class)      // Dùng pivot model tùy chỉnh
+            ->withPivot('thu_tu')
+            ->orderBy('pivot_thu_tu')
+            ->withTimestamps();
     }
     //Note: lý do có sự lặp là do Laravel cần chỉ rõ khoá chính và khoá ngoại
     public function baiKiemTras()

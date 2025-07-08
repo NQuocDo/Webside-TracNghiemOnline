@@ -50,16 +50,14 @@ class CauHoi extends Model
     {
         return $this->belongsTo(NguoiDung::class, 'ma_nguoi_dung', 'ma_nguoi_dung');
     }
-    public function deThi()
+    public function deThis()
     {
         return $this->belongsToMany(
             DeThi::class,
             'chi_tiet_de_thi_va_cau_hois',
             'ma_cau_hoi',
-            'ma_de_thi',
-            'ma_cau_hoi',
             'ma_de_thi'
-        )->withTimestamps();
+        )->withPivot('thu_tu')->orderBy('pivot_thu_tu');
     }
     public function chuongMonHoc()
     {

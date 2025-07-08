@@ -97,6 +97,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/lecturer/exam-create/store', [LecturerController::class, 'taoBaiKiemTra'])->name('exam_create_store');
         Route::delete('/lecturer/exam-create/del/{id}', [LecturerController::class, 'xoaBaiKiemTra'])->name('exam_create_del');
         Route::put('/lecturer/exam-create/status/{id}', [LecturerController::class, 'thayDoiTrangThaiBaiKiemTra'])->name('exam_create_status');
+        Route::get('/lecturer/exam-list/check-exam/{id}', [LecturerController::class, 'hienThiTrangChiTietBaiKiemTra'])->name('exam_check');
+        Route::post('/lecturer/exam-list/check-exam/shuffle/{id}', [LecturerController::class, 'shuffleCauHoi'])->name('exam_check_shuffle');
+        Route::post('/lecturer/export-de-thi/{id}', [LecturerController::class, 'exportDeThiPDF'])->name('export_de_thi_pdf');
+        Route::post('/lecturer/export-bai-kiem-tra/{id}', [LecturerController::class, 'exportBaiKiemTraPDF'])->name('export_bai_kiem_tra_pdf');
 
         //Quản lý thông tin cá nhân của giảng viên
         Route::get('/lecturer/info', [LecturerController::class, 'hienThiThongTinGiangVien'])->name('lecturer_info');
