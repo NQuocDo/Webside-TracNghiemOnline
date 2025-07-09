@@ -145,6 +145,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dean/student-management', [DeanController::class, 'hienThiDanhSachSinhVien'])->name('student_management');//hiển thị danh sách sinh viên
         Route::delete('dean/student-management/{id}/delete', [DeanController::class, 'xoaSinhVien'])->name('student_management_delete');//Xoá sinh viên
         Route::put('/dean/student-management/{id}/status', [DeanController::class, 'thayDoiTrangThaiSinhVien'])->name('student_management_status');//khoá và mở tài khoản sinh viên
+        Route::put('/dean/student-management/{ma_sinh_vien}', [DeanController::class, 'capNhatThongTinSinhVien'])->name('student_management_edit');
+        Route::post('/dean/student-management/store', [DeanController::class, 'themNhieuSinhVienVaoLop'])->name('student_management_store');
 
         //Quản lý môn học{
         Route::get('/dean/subject-management', [DeanController::class, 'hienThiMonHoc'])->name('subject_management');//hiển thị danh sách môn học

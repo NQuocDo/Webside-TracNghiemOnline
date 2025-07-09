@@ -1,6 +1,6 @@
 @extends('layout.student_layout')
 @section('title')
-Trang cá nhân
+    Trang cá nhân
 @endsection
 <style>
     .student-account-content {
@@ -127,7 +127,9 @@ Trang cá nhân
                         </div>
                         <div class="form-account">
                             <label for="email">Lớp<span class="required"></span></label>
-                            <input type="text" id="email" value="{{ $user->sinhVien->lopHoc->ten_lop_hoc }} " disabled>
+                            <input type="text" id="lop_hien_tai"
+                                value="{{ optional($user->sinhVien->lopHienTai->lopHoc)->ten_lop_hoc ?? 'Chưa có lớp hiện tại' }}"
+                                disabled>
                         </div>
                         <div class="form-account">
                             <label for="ho_ten">Họ tên<span class="required"></span></label>

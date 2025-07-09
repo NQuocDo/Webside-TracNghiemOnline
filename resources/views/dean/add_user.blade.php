@@ -132,10 +132,9 @@
             <form action="{{ url('/dean/add-user/store') }}" method="POST" class="add-user-form" id="add-user-form"
                 enctype="multipart/form-data">
                 @csrf
-                {{-- Added mssvGroup --}}
                 <div id="mssvGroup">
                     <label for="user_mssv">MSSV</label>
-                    <input type="text" id="user_mssv" name="mssv"> {{-- Removed inline style --}}
+                    <input type="text" id="user_mssv" name="mssv">
                 </div>
                 <div>
                     <label for="user_email">Email</label> <input type="text" id="user_email" name="email" required>
@@ -151,16 +150,34 @@
                     <label for="hoc_vi">Học vị</label>
                     <input type="text" id="hoc_vi" name="hoc_vi" placeholder="Chỉ nhập nếu là giảng viên">
                 </div>
-                {{-- Changed lopHocGroup to use option-difficulty class --}}
                 <div id="lopHocGroup" class="option-difficulty">
                     <label for="ma_lop">Lớp học</label>
                     <section>
-                        <select id="ma_lop" name="ma_lop"> {{-- Removed inline style --}}
+                        <select id="ma_lop" name="ma_lop">
                             <option value="">-- Chọn lớp học --</option>
                             @foreach ($danhSachLopHoc as $lopHoc)
                                 <option value="{{ $lopHoc->ma_lop_hoc }}">{{ $lopHoc->ten_lop_hoc }}</option>
                             @endforeach
                         </select>
+                    </section>
+                </div>
+                <div id="hocKyGroup" class="option-difficulty">
+                    <label for="hoc_ky">Học kỳ</label>
+                    <section>
+                        <select id="hoc_ky" name="hoc_ky" required>
+                            <option value="">-- Chọn học kỳ --</option>
+                            <option value="1">Học kỳ 1</option>
+                            <option value="2">Học kỳ 2</option>
+                            <option value="3">Học kỳ 3</option>
+                            <option value="4">Học kỳ 4</option>
+                            <option value="5">Học kỳ 5</option>
+                        </select>
+                    </section>
+                </div>
+                <div id="namHocGroup" class="option-difficulty">
+                    <label for="nam_hoc">Năm học</label>
+                    <section>
+                        <input type="number" name="nam_hoc" id="nam_hoc" placeholder="VD: 2025" required>
                     </section>
                 </div>
                 <div class="option-difficulty">
@@ -233,6 +250,22 @@
                                 <input type="file" class="form-control" id="excelFile" name="file" accept=".xlsx,.xls,.csv"
                                     required>
                             </div>
+                            <div class="form-text text-muted mt-1">
+                                <div>
+                                    <strong>Gợi ý:</strong> File Excel nên có các cột: <br>
+                                    <code>Họ tên</code>, <code>Email</code>, <code>Mật khẩu</code>, <code>Giới tính</code>,
+                                    <code>Ngày sinh</code>, <code>Địa chỉ</code>, <code>Số điện thoại</code>,
+                                    <code>Học vị</code><br>
+                                    <em>(Vai trò: Giảng viên)</em>
+                                </div>
+                                <div>
+                                    <code>Họ tên</code>,<code>Mã số sinh viên</code>, <code>Email</code>,
+                                    <code>Mật khẩu</code>, <code>Giới tính</code>,
+                                    <code>Ngày sinh</code>, <code>Địa chỉ</code>, <code>Số điện thoại</code>,
+                                    <code>Lớp</code><br>
+                                    <em>(Vai trò: Sinh viên)</em>
+                                </div>
+                            </div>
                             <div class="d-flex justify-content-end">
                                 <button type="submit" class="btn btn-success">Import</button>
                             </div>
@@ -276,50 +309,64 @@
                     icon: 'error',
                     title: 'Lỗi nhập liệu!',
                     html: `
-                                            <ul>
-                                                @foreach ($errors->all() as $error)
-                                                    <li>{{ $error }}</li>
-                                                @endforeach
-                                            </ul>
-                                            `,
+                                                                                            <ul>
+                                                                                                @foreach ($errors->all() as $error)
+                                                                                                    <li>{{ $error }}</li>
+                                                                                                @endforeach
+                                                                                            </ul>
+                                                                                            `,
                     showConfirmButton: true
                 });
             @endif
 
-                                                    const vaiTroSelect = document.getElementById('user_role');
+            const vaiTroSelect = document.getElementById('user_role');
             const hocViGroup = document.getElementById('hocViGroup');
             const lopHocGroup = document.getElementById('lopHocGroup');
             const mssvGroup = document.getElementById('mssvGroup');
-            const maLopSelect = document.getElementById('ma_lop'); // Get the select element for lopHoc
-            const mssvInput = document.getElementById('user_mssv'); // Get the input element for mssv
+            const hocKyGroup = document.getElementById('hocKyGroup');
+            const namHocGroup = document.getElementById('namHocGroup');
+
+            const maLopSelect = document.getElementById('ma_lop');
+            const mssvInput = document.getElementById('user_mssv');
+            const hocKySelect = document.getElementById('hoc_ky');
+            const namHocInput = document.getElementById('nam_hoc');
 
             function updateFields() {
                 const value = vaiTroSelect.value;
 
-                // Reset required attributes and display styles first
+                // Reset display
                 hocViGroup.style.display = 'none';
                 lopHocGroup.style.display = 'none';
                 mssvGroup.style.display = 'none';
+                hocKyGroup.style.display = 'none';
+                namHocGroup.style.display = 'none';
 
-                // Remove required attributes by default
-                document.getElementById('hoc_vi').removeAttribute('required'); // If you want hoc_vi to be required for giang_vien
+                // Reset required
+                document.getElementById('hoc_vi').removeAttribute('required');
                 maLopSelect.removeAttribute('required');
                 mssvInput.removeAttribute('required');
+                hocKySelect.removeAttribute('required');
+                namHocInput.removeAttribute('required');
 
-                // Set required attributes and display styles based on role
                 if (value === 'giang_vien') {
-                    hocViGroup.style.display = 'flex'; // Use flex for consistency with other inputs
-                    // If 'hoc_vi' should be required for giang_vien:
+                    hocViGroup.style.display = 'flex';
                     // document.getElementById('hoc_vi').setAttribute('required', 'required');
                 } else if (value === 'sinh_vien') {
-                    lopHocGroup.style.display = 'flex'; // Use flex for consistent layout
-                    mssvGroup.style.display = 'flex'; // Use flex for consistent layout
+                    lopHocGroup.style.display = 'flex';
+                    mssvGroup.style.display = 'flex';
+                    hocKyGroup.style.display = 'flex';
+                    namHocGroup.style.display = 'flex';
+
                     maLopSelect.setAttribute('required', 'required');
                     mssvInput.setAttribute('required', 'required');
+                    hocKySelect.setAttribute('required', 'required');
+                    namHocInput.setAttribute('required', 'required');
                 }
             }
+
             vaiTroSelect.addEventListener('change', updateFields);
-            updateFields();
+            updateFields(); // Gọi ban đầu khi trang load
+
         });
     </script>
 @endsection

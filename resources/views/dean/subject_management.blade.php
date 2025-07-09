@@ -568,11 +568,11 @@
                         const form = document.getElementById('add-subject-form');
                         const id = button.dataset.id;
 
-                        form.action = `/dean/subject_management/${id}`; // Đúng route update
+                        form.action = `/dean/subject_management/${id}`;
                         form.querySelector('input[name="name_subject"]').value = button.dataset.name;
                         form.querySelector('input[name="credit_subject"]').value = button.dataset.credit;
-                        form.querySelector('input[name="semester_subject"]').value = button.dataset.semester;
-                        form.querySelector('input[name="description_subject"]').value = button.dataset.description;
+                        form.querySelector('select[name="semester_subject"]').value = button.dataset.semester;
+                        form.querySelector('select[name="description_subject"]').value = button.dataset.description;
                         form.querySelector('input[name="criteria_subject"]').value = button.dataset.criteria;
                         form.querySelector('select[name="difficulty_subject"]').value = button.dataset.difficulty;
 
@@ -621,16 +621,16 @@
                         icon: 'error',
                         title: 'Lỗi nhập liệu!',
                         html: `
-                                                                                                       <ul>
-                                                                                                           @foreach ($errors->all() as $error)
-                                                                                                            <li>{{ $error }}</li>
-                                                                                                           @endforeach
-                                                                                                       </ul>
-                                                                                                  `,
+                                                                                                               <ul>
+                                                                                                                   @foreach ($errors->all() as $error)
+                                                                                                                    <li>{{ $error }}</li>
+                                                                                                                   @endforeach
+                                                                                                               </ul>
+                                                                                                          `,
                         showConfirmButton: true
                     });
                 @endif
-                                                      });
+                                                          });
 
         </script>
     @endsection

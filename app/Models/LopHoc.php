@@ -60,11 +60,6 @@ class LopHoc extends Model
     {
         return $this->belongsTo(MonHoc::class, 'ma_mon_hoc', 'ma_mon_hoc');
     }
-    public function sinhViens()
-    {
-        return $this->hasMany(SinhVien::class, 'ma_lop_hoc', localKey: 'ma_lop_hoc');
-    }
-
     public function thongBaos()
     {
         return $this->hasMany(ThongBao::class, 'ma_lop_hoc', 'ma_lop_hoc');
@@ -77,5 +72,15 @@ class LopHoc extends Model
     public function giangViens()
     {
         return $this->belongsToMany(GiangVien::class, 'phan_quyen_days', 'ma_lop_hoc', 'ma_giang_vien')->withPivot('ma_mon_hoc')->distinct();
+    }
+    public function sinhViens()
+    {
+        return $this->belongsToMany(SinhVien::class, 'sinh_vien_lop_hoc', 'ma_lop_hoc', 'ma_sinh_vien')
+            ->withPivot('hoc_ky', 'nam_hoc');
+    }
+
+    public function sinhVienLopHocs()
+    {
+        return $this->hasMany(SinhVienLopHoc::class, 'ma_lop_hoc', 'ma_lop_hoc');
     }
 }

@@ -427,7 +427,7 @@ class LecturerController extends Controller
             ->join('mon_hocs', 'phan_quyen_days.ma_mon_hoc', '=', 'mon_hocs.ma_mon_hoc')
             ->where("phan_quyen_days.ma_giang_vien", $giangVienId)
             ->select('mon_hocs.*')
-            ->get();
+            ->get()->unique();
 
 
         return view('lecturer.addquestion')->with('danhSachMonHoc', $danhSachMonHoc);

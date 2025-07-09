@@ -10,6 +10,41 @@
         max-width: 1200px;
     }
 
+    .class-actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .filter-form {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .filter-form input,
+    .filter-form button {
+        padding: 10px 15px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+    .filter-button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .filter-button:hover {
+        background-color: #218838;
+    }
+
     .add-class-button {
         background: linear-gradient(135deg, #007bff, #0056b3);
         color: #fff;
@@ -257,11 +292,52 @@
             text-align: left;
         }
     }
+
+    .pagination {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        padding-bottom: 20px;
+    }
+
+    .pagination a,
+    .pagination span {
+        color: #007bff;
+        margin: 0 5px;
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        border: 1px solid #dee2e6;
+    }
+
+    .pagination a:hover {
+        background-color: #007bff;
+        color: white;
+        box-shadow: none;
+    }
+
+    .pagination .active span {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+        font-weight: bold;
+    }
 </style>
 @section('content')
     <div class="class-management-content">
-        <button id="openAddClassModalBtn" class="add-class-button">Thêm Lớp học Mới</button>
+        <div class="class-actions">
+            <button id="openAddClassModalBtn" class="add-class-button">Thêm Lớp học Mới</button>
 
+            <form id="form-search-class-list" method="GET" action="{{ route('add_class') }}" class="filter-form">
+                <input type="text" name="ten_lop_hoc" id="ten_lop_hoc" placeholder="Nhập tên lớp"
+                    value="{{ request('ten_lop_hoc') }}" />
+
+                <input type="number" name="nam_hoc" id="nam_hoc" placeholder="Năm học" value="{{ request('nam_hoc') }}"
+                    min="2000" max="{{ now()->year + 5 }}" />
+            </form>
+        </div>
         <div id="addClassModal" class="modal">
             <div class="modal-content">
                 <span class="close-button">&times;</span>
@@ -281,6 +357,16 @@
                         <label for="class_name">Tên Lớp</label>
                         <input type="text" id="class_name" name="ten_lop_hoc" value="{{ old('ten_lop_hoc') }}" required
                             maxlength="255">
+                    </div>
+                    <div>
+                        <label for="semester">Học Kỳ</label>
+                        <select id="semester" name="hoc_ky" required>
+                            <option value="" disabled {{ old('hoc_ky') === null ? 'selected' : '' }}>-- Chọn học kỳ --
+                            </option>
+                            @for ($i = 1; $i <= 6; $i++)
+                                <option value="{{ $i }}" {{ old('hoc_ky') == $i ? 'selected' : '' }}>Học kỳ {{ $i }}</option>
+                            @endfor
+                        </select>
                     </div>
                     <div>
                         <label for="academic_year">Năm Học</label>
@@ -344,6 +430,17 @@
                 </tbody>
             </table>
         </div>
+        <div class="add-class-footer">
+            <div class="pagination">
+                <a href="{{$danhSachLopHoc->previousPageUrl()}}"><i class="fa-solid fa-chevron-left"></i></a>
+                @if($danhSachLopHoc->currentPage() - 1 != 0) <a
+                href="{{$danhSachLopHoc->previousPageUrl()}}">{{$danhSachLopHoc->currentPage() - 1}}</i></a> @endif
+                <a href="{{$danhSachLopHoc->currentPage()}}" class="active"> {{$danhSachLopHoc->currentPage()}}</a>
+                @if($danhSachLopHoc->currentPage() != $danhSachLopHoc->lastPage())<a
+                href="{{$danhSachLopHoc->nextPageUrl()}}">{{$danhSachLopHoc->currentPage() + 1}}</a> @endif
+                <a href="{{$danhSachLopHoc->nextPageUrl()}}"><i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+        </div>
     </div>
 @endsection
 @section('scripts')
@@ -351,6 +448,18 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById("form-search-class-list");
+            const tenLopInput = document.getElementById("ten_lop_hoc");
+            const namHocInput = document.getElementById("nam_hoc");
+
+            if (tenLopInput && namHocInput) {
+                const triggerSearch = () => {
+                    form.submit();
+                };
+
+                tenLopInput.addEventListener("change", triggerSearch);
+                namHocInput.addEventListener("change", triggerSearch);
+            }
             var modal = document.getElementById('addClassModal');
             var btn = document.getElementById('openAddClassModalBtn');
             var span = document.querySelector('.close-button');
@@ -434,6 +543,6 @@
                     showConfirmButton: true
                 });
             @endif
-                           });
+                                                           });
     </script>
 @endsection

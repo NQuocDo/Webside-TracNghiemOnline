@@ -523,6 +523,8 @@
                     @csrf
                     <input type="hidden" name="_method" id="form-method" value="POST">
                     <input type="hidden" name="phan_quyen_id" id="phanQuyenId">
+
+                    {{-- Khóa học --}}
                     <div>
                         <label for="year_select">Khóa học:</label>
                         <section>
@@ -539,8 +541,13 @@
                     <div>
                         <label for="hoc_ky_select">Học kỳ:</label>
                         <section>
-                            <select name="hoc_ky" id="hoc_ky_select" required disabled>
+                            <select name="hoc_ky" id="hoc_ky_select" required>
                                 <option value="" disabled selected>-- Chọn học kỳ --</option>
+                                <option value="1">Học kỳ 1</option>
+                                <option value="2">Học kỳ 2</option>
+                                <option value="3">Học kỳ 3</option>
+                                <option value="4">Học kỳ 4</option>
+                                <option value="5">Học kỳ 5</option>
                             </select>
                         </section>
                     </div>
@@ -551,7 +558,6 @@
                         <section>
                             <select name="ma_lop_hoc" id="class_select" required disabled>
                                 <option value="" disabled selected>-- Chọn lớp học --</option>
-                                {{-- Sẽ được load bằng JS --}}
                             </select>
                         </section>
                     </div>
@@ -562,7 +568,6 @@
                         <section>
                             <select name="ma_mon_hoc" id="subject_select" required disabled>
                                 <option value="" disabled selected>-- Chọn môn học --</option>
-                                {{-- Load bằng JS --}}
                             </select>
                         </section>
                     </div>
@@ -573,7 +578,6 @@
                         <section>
                             <select name="ma_giang_vien" id="lecturer_select" required disabled>
                                 <option value="" disabled selected>-- Chọn giảng viên --</option>
-                                {{-- Load bằng JS --}}
                             </select>
                         </section>
                     </div>
@@ -681,28 +685,40 @@
                     });
                 });
             });
-            $('#year_select').on('change', function () {
-                let namHoc = $(this).val();
+            $(document).ready(function () {
+                $('#year_select').on('change', function () {
+                    let namHoc = $(this).val();
 
-                $.get('/data-decentralization', { nam_hoc: namHoc }, function (data) {
-                    $('#class_select').prop('disabled', false).html('<option disabled selected>-- Chọn lớp học --</option>');
-                    data.lop_hocs.forEach(function (lop) {
-                        $('#class_select').append(`<option value="${lop.ma_lop_hoc}">${lop.ten_lop_hoc}</option>`);
-                    });
-                    $('#hoc_ky_select').prop('disabled', false).html('<option disabled selected>-- Chọn học kỳ --</option>');
-                    data.lop_hocs.forEach(function (hk) {
-                        $('#hoc_ky_select').append(`<option value="${hk.hoc_ky}">Học kỳ ${hk.hoc_ky}</option>`);
-                    });
-                    $('#subject_select').prop('disabled', false).html('<option disabled selected>-- Chọn môn học --</option>');
-                    data.mon_hocs.forEach(function (mon) {
-                        $('#subject_select').append(`<option value="${mon.ma_mon_hoc}">${mon.ten_mon_hoc}</option>`);
-                    });
-                    $('#lecturer_select').prop('disabled', false).html('<option disabled selected>-- Chọn giảng viên --</option>');
-                    data.giang_viens.forEach(function (gv) {
-                        $('#lecturer_select').append(`<option value="${gv.ma_giang_vien}">${gv.ho_ten}</option>`);
-                    });
+                    if (namHoc) {
+                        $.get('/data-decentralization', { nam_hoc: namHoc }, function (data) {
+                            $('#class_select').prop('disabled', false).html('<option disabled selected>-- Chọn lớp học --</option>');
+                            data.lop_hocs.forEach(function (lop) {
+                                $('#class_select').append(`<option value="${lop.ma_lop_hoc}">${lop.ten_lop_hoc}</option>`);
+                            });
+                            $('#subject_select').html('<option disabled selected>-- Chọn môn học --</option>').prop('disabled', true);
+                            $('#lecturer_select').html('<option disabled selected>-- Chọn giảng viên --</option>').prop('disabled', true);
+                            $('#submitBtn').prop('disabled', true);
+                        });
+                    }
+                });
 
-                    $('#submitBtn').prop('disabled', true);
+                $('#hoc_ky_select').on('change', function () {
+                    let hocKy = $(this).val();
+
+                    if (hocKy) {
+                        $.get('/data-decentralization', { hoc_ky: hocKy }, function (data) {
+                            $('#subject_select').prop('disabled', false).html('<option disabled selected>-- Chọn môn học --</option>');
+                            data.mon_hocs.forEach(function (mon) {
+                                $('#subject_select').append(`<option value="${mon.ma_mon_hoc}">${mon.ten_mon_hoc}</option>`);
+                            });
+                            $('#lecturer_select').prop('disabled', false).html('<option disabled selected>-- Chọn giảng viên --</option>');
+                            data.giang_viens.forEach(function (gv) {
+                                $('#lecturer_select').append(`<option value="${gv.ma_giang_vien}">${gv.ho_ten}</option>`);
+                            });
+
+                            $('#submitBtn').prop('disabled', true);
+                        });
+                    }
                 });
             });
 
@@ -729,6 +745,6 @@
                     showConfirmButton: true
                 });
             @endif
-                                            });
+                                                        });
     </script>
 @endsection

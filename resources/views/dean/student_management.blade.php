@@ -103,7 +103,7 @@
     }
 
     .actions-cell {
-        width: 200px;
+        width: 300px;
         text-align: center;
         padding: 12px 8px;
     }
@@ -251,61 +251,82 @@
                 </select>
             </div>
         </form>
+
         <div class="student-manage-body">
             <table class="student-manage-table">
                 <thead>
                     <tr>
-                        <th>STT</th>
+                        <th><input type="checkbox" id="check-all"> STT</th>
                         <th>Tên sinh viên</th>
-                        <th>Mã số sinh viên</th>
+                        <th>MSSV</th>
                         <th>Email</th>
                         <th>Giới tính</th>
-                        <th>Lớp</th>
+                        <th>Lớp hiện tại</th>
+                        <th>Lớp đã học</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if($danhSachSinhVien->isEmpty())
                         <tr>
-                            <td colspan="7" class="text-center text-muted">Không có sinh viên</td>
+                            <td colspan="8" class="text-center text-muted">Không có sinh viên</td>
                         </tr>
                     @else
                         @foreach($danhSachSinhVien as $index => $sinhVien)
                             @php
                                 $nguoiDung = $sinhVien->nguoiDung;
+                                $stt = ($danhSachSinhVien->currentPage() - 1) * $danhSachSinhVien->perPage() + $index + 1;
+                                $lopHienTai = $sinhVien->lopHienTai;
+                                $tatCaLopHoc = $sinhVien->tatCaLop->sortByDesc('nam_hoc')->sortByDesc('hoc_ky');
                             @endphp
                             <tr>
-                                <td class="stt-cell" style="text-align:center">
-                                    {{ ($danhSachSinhVien->currentPage() - 1) * $danhSachSinhVien->perPage() + $index + 1 }}
+                                <td class="stt-cell text-center">
+                                    <input type="checkbox" class="student-checkbox" value="{{ $sinhVien->ma_sinh_vien }}">
+                                    {{ $stt }}
                                 </td>
 
-                                <td class="student-name-cell">
-                                    {{ $nguoiDung->ho_ten ?? 'Không rõ' }}
+                                <td>{{ $nguoiDung->ho_ten ?? 'Không rõ' }}</td>
+                                <td>{{ $sinhVien->mssv ?? 'Không rõ' }}</td>
+                                <td>{{ $nguoiDung->email ?? 'Không rõ' }}</td>
+                                <td>{{ $nguoiDung->gioi_tinh ?? 'Không rõ' }}</td>
+
+                                {{-- Cột: Lớp hiện tại --}}
+                                <td>
+                                    @if ($lopHienTai && $lopHienTai->lopHoc)
+                                        {{ $lopHienTai->lopHoc->ten_lop_hoc }}
+                                    @else
+                                        Chưa có lớp hiện tại
+                                    @endif
                                 </td>
 
-                                <td class="student-score-cell">
-                                    {{ $sinhVien->mssv ?? 'Không rõ' }}
-                                </td>
-                                <td class="student-email-cell">
-                                    {{ $nguoiDung->email ?? 'Không rõ' }}
-                                </td>
+                                {{-- Cột: Lớp đã học (khác lớp hiện tại) --}}
+                                <td>
+                                    @php
+                                        $lopHienTaiID = $lopHienTai?->ma_lop_hoc;
+                                        $lopDaHoc = $tatCaLopHoc->filter(function ($item) use ($lopHienTaiID) {
+                                            return $item->ma_lop_hoc !== $lopHienTaiID;
+                                        });
+                                    @endphp
 
-                                <td class="student-sex-cell">
-                                    {{ $nguoiDung->gioi_tinh ?? 'Không rõ' }}
-                                </td>
-
-                                <td class="student-class-cell">
-                                    {{ $sinhVien->lopHoc->ten_lop_hoc ?? 'Chưa có lớp' }}
+                                    @if ($lopDaHoc->isNotEmpty())
+                                        <ul class="mb-0 ps-3">
+                                            @foreach ($lopDaHoc as $lh)
+                                                {{ optional($lh->lopHoc)->ten_lop_hoc ?? 'Không rõ tên lớp' }}
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        Không có lớp đã học
+                                    @endif
                                 </td>
 
                                 <td class="actions-cell">
-                                    @if(isset($sinhVien->nguoiDung))
+                                    @if($nguoiDung)
                                         <button type="button" class="btn btn-sm btn-toggle-status" style="color:white;"
-                                            data-id="{{ $sinhVien->nguoiDung->ma_nguoi_dung }}"
-                                            data-status="{{ $sinhVien->nguoiDung->trang_thai_tai_khoan }}">
+                                            data-id="{{ $nguoiDung->ma_nguoi_dung }}"
+                                            data-status="{{ $nguoiDung->trang_thai_tai_khoan }}">
                                             <i class="fa-solid fa-circle-xmark me-1"></i>
                                             <span class="status-label">
-                                                {{ $sinhVien->nguoiDung->trang_thai_tai_khoan === 'hoat_dong' ? 'Khoá' : 'Mở' }}
+                                                {{ $nguoiDung->trang_thai_tai_khoan === 'hoat_dong' ? 'Khoá' : 'Mở' }}
                                             </span>
                                         </button>
                                     @else
@@ -317,9 +338,16 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="delete-btn" data-id="{{ $sinhVien->ma_sinh_vien }}">
-                                            <i class="fas fa-trash-alt"></i> Xóa
+                                            <i class="fas fa-trash-alt"></i> Xoá
                                         </button>
                                     </form>
+                                    <button type="button" class="btn btn-sm btn-warning btn-edit-student" data-bs-toggle="modal"
+                                        data-bs-target="#editStudentModal" data-id="{{ $sinhVien->ma_sinh_vien }}"
+                                        data-mssv="{{ $sinhVien->mssv }}" data-ho-ten="{{ $nguoiDung->ho_ten }}"
+                                        data-email="{{ $nguoiDung->email }}" data-gioi-tinh="{{ $nguoiDung->gioi_tinh }}"
+                                        data-lop-hien-tai="{{ optional($sinhVien->lopHienTai)->ma_lop_hoc }}">
+                                        <i class="fa fa-edit me-1"></i> Sửa
+                                    </button>
                                 </td>
                             </tr>
                         @endforeach
@@ -327,15 +355,107 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-success mb-3 mt-3" id="open-multi-class-modal">
+                Thêm nhiều sinh viên vào lớp
+            </button>
+        </div>
+
         <div class="student-manage-footer">
             <div class="pagination">
-                <a href="{{$danhSachSinhVien->previousPageUrl()}}"><i class="fa-solid fa-chevron-left"></i></a>
-                @if($danhSachSinhVien->currentPage() - 1 != 0) <a
-                href="{{$danhSachSinhVien->previousPageUrl()}}">{{$danhSachSinhVien->currentPage() - 1}}</i></a> @endif
-                <a href="{{$danhSachSinhVien->currentPage()}}" class="active"> {{$danhSachSinhVien->currentPage()}}</a>
-                @if($danhSachSinhVien->currentPage() != $danhSachSinhVien->lastPage())<a
-                href="{{$danhSachSinhVien->nextPageUrl()}}">{{$danhSachSinhVien->currentPage() + 1}}</a> @endif
-                <a href="{{$danhSachSinhVien->nextPageUrl()}}"><i class="fa-solid fa-chevron-right"></i></a>
+                <a href="{{ $danhSachSinhVien->previousPageUrl() }}"><i class="fa-solid fa-chevron-left"></i></a>
+                @if($danhSachSinhVien->currentPage() > 1)
+                    <a href="{{ $danhSachSinhVien->previousPageUrl() }}">{{ $danhSachSinhVien->currentPage() - 1 }}</a>
+                @endif
+                <a href="#" class="active">{{ $danhSachSinhVien->currentPage() }}</a>
+                @if($danhSachSinhVien->hasMorePages())
+                    <a href="{{ $danhSachSinhVien->nextPageUrl() }}">{{ $danhSachSinhVien->currentPage() + 1 }}</a>
+                @endif
+                <a href="{{ $danhSachSinhVien->nextPageUrl() }}"><i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+        </div>
+
+        <div class="modal fade" id="changeClassModal" tabindex="-1" aria-labelledby="changeClassModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <form action="{{ route('student_management_store') }}" method="POST" class="modal-content">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="changeClassModalLabel">Thêm nhiều sinh viên vào lớp</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="selected-student-inputs"></div>
+
+                        <label for="ma_lop_hoc">Chọn lớp:</label>
+                        <select name="ma_lop_hoc" class="form-select" required>
+                            @foreach($danhSachLopHoc as $lop)
+                                <option value="{{ $lop->ma_lop_hoc }}">{{ $lop->ten_lop_hoc }}</option>
+                            @endforeach
+                        </select>
+
+                        <input type="number" name="hoc_ky" class="form-control mt-2" placeholder="Học kỳ" required>
+                        <input type="number" name="nam_hoc" class="form-control mt-2" placeholder="Năm học" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                        <button type="submit" class="btn btn-primary">Thêm vào lớp</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <form id="edit-student-form" method="POST" class="modal-content">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h5 class="modal-title">Chỉnh sửa thông tin sinh viên</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body row g-3">
+                        <input type="hidden" id="edit-student-id" name="ma_sinh_vien">
+
+                        <div class="col-md-6">
+                            <label>MSSV</label>
+                            <input type="text" name="mssv" id="edit-mssv" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label>Họ tên</label>
+                            <input type="text" name="ho_ten" id="edit-ho-ten" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label>Email</label>
+                            <input type="email" name="email" id="edit-email" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label>Giới tính</label>
+                            <select name="gioi_tinh" id="edit-gioi-tinh" class="form-select">
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label>Lớp hiện tại</label>
+                            <select name="lop_hien_tai" id="edit-lop-hien-tai" class="form-select">
+                                <option value="">-- Chọn lớp --</option>
+                                @foreach ($danhSachLopHoc as $lop)
+                                    <option value="{{ $lop->ma_lop_hoc }}">{{ $lop->ten_lop_hoc }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -344,6 +464,35 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('check-all').addEventListener('change', function () {
+                const isChecked = this.checked;
+                document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = isChecked);
+            });
+
+            document.getElementById('open-multi-class-modal').addEventListener('click', function () {
+                const selectedIds = [];
+                document.querySelectorAll('.student-checkbox:checked').forEach(cb => {
+                    selectedIds.push(cb.value);
+                });
+
+                if (selectedIds.length === 0) {
+                    Swal.fire('Chưa chọn sinh viên nào!');
+                    return;
+                }
+
+                const container = document.getElementById('selected-student-inputs');
+                container.innerHTML = '';
+                selectedIds.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'ma_sinh_viens[]';
+                    input.value = id;
+                    container.appendChild(input);
+                });
+
+                const modal = new bootstrap.Modal(document.getElementById('changeClassModal'));
+                modal.show();
+            });
             document.querySelectorAll('.btn-toggle-status').forEach(button => {
                 button.addEventListener('click', function () {
                     const userId = this.dataset.id;
@@ -389,6 +538,29 @@
                                 });
                         }
                     });
+                });
+            });
+            document.querySelectorAll('.btn-edit-student').forEach(button => {
+                button.addEventListener('click', function () {
+                    // Lấy dữ liệu từ attribute
+                    const maSinhVien = this.getAttribute('data-id');
+                    const mssv = this.getAttribute('data-mssv');
+                    const hoTen = this.getAttribute('data-ho-ten');
+                    const email = this.getAttribute('data-email');
+                    const gioiTinh = this.getAttribute('data-gioi-tinh');
+                    const lopHienTai = this.getAttribute('data-lop-hien-tai');
+
+                    // Gán vào form trong modal
+                    document.getElementById('edit-student-id').value = maSinhVien;
+                    document.getElementById('edit-mssv').value = mssv;
+                    document.getElementById('edit-ho-ten').value = hoTen;
+                    document.getElementById('edit-email').value = email;
+                    document.getElementById('edit-gioi-tinh').value = gioiTinh;
+                    document.getElementById('edit-lop-hien-tai').value = lopHienTai;
+
+                    // Gán action cho form
+                    const form = document.getElementById('edit-student-form');
+                    form.action = `/dean/student-management/${maSinhVien}`; // route('student_management_edit', maSinhVien)
                 });
             });
 
