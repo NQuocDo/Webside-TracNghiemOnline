@@ -22,7 +22,11 @@ class StudentController extends Controller
     public function hienThiDanhSachBaiKiemTra(Request $request)
     {
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
-        $maSinhVien = SinhVien::where('ma_nguoi_dung', $maNguoiDung)->value('ma_sinh_vien');
+        $sinhVien = SinhVien::where('ma_nguoi_dung', $maNguoiDung)->firstOrFail();
+
+        $maSinhVien = $sinhVien->ma_sinh_vien;
+        $maLopHoc = $sinhVien->ma_lop_hoc;
+
         $maMonHoc = $request->query('ma_mon_hoc');
         $maGiangVien = $request->query('ma_giang_vien');
         $keyword = $request->query('keyword');
@@ -32,22 +36,19 @@ class StudentController extends Controller
             ->join('mon_hocs as mh', 'dt.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
             ->join('giangviens as gv', 'dt.ma_giang_vien', '=', 'gv.ma_giang_vien')
             ->join('nguoidungs as nd', 'gv.ma_nguoi_dung', '=', 'nd.ma_nguoi_dung')
-
             ->join('phan_quyen_days as pq', function ($join) {
                 $join->on('pq.ma_mon_hoc', '=', 'dt.ma_mon_hoc')
-                    ->on('pq.ma_giang_vien', '=', 'dt.ma_giang_vien');
+                    ->on('pq.ma_giang_vien', '=', 'dt.ma_giang_vien')
+                    ->on('pq.ma_lop_hoc', '=', 'bkt.ma_lop_hoc');
             })
-            ->join('lop_hocs as lh', 'pq.ma_lop_hoc', '=', 'lh.ma_lop_hoc')
-            ->join('sinhviens as sv', function ($join) {
-                $join->on('sv.ma_lop_hoc', '=', 'lh.ma_lop_hoc');
+            ->join('sinhviens as sv', function ($join) use ($maSinhVien, $maLopHoc) {
+                $join->on('sv.ma_lop_hoc', '=', 'bkt.ma_lop_hoc')
+                    ->where('sv.ma_sinh_vien', '=', $maSinhVien);
             })
-
             ->leftJoin('bang_diems as bd', function ($join) use ($maSinhVien) {
                 $join->on('bd.ma_bai_kiem_tra', '=', 'bkt.ma_bai_kiem_tra')
                     ->where('bd.ma_sinh_vien', '=', $maSinhVien);
             })
-
-            ->where('sv.ma_sinh_vien', $maSinhVien)
             ->where('bkt.trang_thai', 'mo')
             ->whereNull('bd.ma_bang_diem')
             ->when($maMonHoc, function ($query, $maMonHoc) {
@@ -64,14 +65,15 @@ class StudentController extends Controller
                 'bkt.ten_bai_kiem_tra',
                 'mh.ten_mon_hoc',
                 'nd.ho_ten as ten_giang_vien',
+                'bkt.ma_lop_hoc',
                 'dt.so_luong_cau_hoi',
                 'dt.thoi_gian_lam_bai'
             )
             ->distinct()
             ->get();
-
-        return view('student.exam_list')->with('danhSachBaiKiemTra', $danhSachBaiKiemTra);
+        return view('student.exam_list', compact('danhSachBaiKiemTra'));
     }
+
     //hàm danh sách môn trang chủ
     public function layDanhSachMonHoc()
     {
@@ -111,25 +113,17 @@ class StudentController extends Controller
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
         $sinhVien = SinhVien::with('nguoiDung')->where('ma_nguoi_dung', $maNguoiDung)->first();
 
-        // Lấy bài kiểm tra
         $baiKiemTra = BaiKiemTra::findOrFail($id);
-
-        // Kiểm tra sinh viên có học lớp này không
         if ($baiKiemTra->ma_lop_hoc !== $sinhVien->ma_lop_hoc) {
             abort(403, 'Bạn không có quyền truy cập bài kiểm tra này.');
         }
+        $deThis = DeThi::findOrFail($baiKiemTra->ma_de_thi);
 
-        $maDeThi = $baiKiemTra->ma_de_thi;
-        $deThis = DeThi::where('ma_de_thi', $maDeThi)->first();
-
-        // Lấy danh sách câu hỏi
-        $cauHoiList = DB::table('chi_tiet_de_thi_va_cau_hois as ct')
+        $cauHoiList = DB::table('chi_tiet_bai_kiem_tra_va_cau_hois as ct')
             ->join('cau_hois as ch', 'ct.ma_cau_hoi', '=', 'ch.ma_cau_hoi')
-            ->where('ct.ma_de_thi', $maDeThi)
+            ->where('ct.ma_bai_kiem_tra', $id)
             ->select('ch.*')
             ->get();
-
-        // Lấy đáp án cho mỗi câu hỏi
         foreach ($cauHoiList as $cauHoi) {
             $cauHoi->dap_an = DB::table('dap_ans')
                 ->where('ma_cau_hoi', $cauHoi->ma_cau_hoi)
@@ -212,7 +206,11 @@ class StudentController extends Controller
     public function hienThiBangDiemSinhVien()
     {
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
-        $sinhVien = SinhVien::with('nguoiDung')->where('ma_nguoi_dung', $maNguoiDung)->first();
+
+        $sinhVien = SinhVien::with('nguoiDung')
+            ->where('ma_nguoi_dung', $maNguoiDung)
+            ->firstOrFail();
+
         $bangDiems = BangDiem::with([
             'baiKiemTra.deThi.monHoc',
             'baiKiemTra.deThi.giangVien.nguoiDung'
@@ -221,10 +219,7 @@ class StudentController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        return view('student.history', [
-            'bangDiems' => $bangDiems,
-            'sinhVien' => $sinhVien,
-        ]);
+        return view('student.history', compact('bangDiems', 'sinhVien'));
     }
     //trang info
     public function hienThiThongTinSinhVien()
@@ -293,12 +288,17 @@ class StudentController extends Controller
         $thongBaos = DB::table('thong_baos as tb')
             ->leftJoin('giangviens as gv', 'tb.nguoi_gui', '=', 'gv.ma_giang_vien')
             ->leftJoin('nguoidungs as nd', 'gv.ma_nguoi_dung', '=', 'nd.ma_nguoi_dung')
-            ->leftJoin('lop_hocs as lh', 'tb.ma_lop_hoc', '=', 'lh.ma_lop_hoc')
-            ->leftJoin('mon_hocs as mh', 'lh.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
+            ->leftJoin('phan_quyen_days as pq', function ($join) {
+                $join->on('pq.ma_lop_hoc', '=', 'tb.ma_lop_hoc')
+                    ->on('pq.ma_giang_vien', '=', 'tb.nguoi_gui');
+            })
+            ->leftJoin('mon_hocs as mh', 'pq.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
             ->where('tb.ma_lop_hoc', $maLopHoc)
             ->select('tb.*', 'nd.ho_ten as ten_giang_vien', 'mh.ten_mon_hoc')
             ->orderByDesc('tb.ngay_gui')
-            ->get();
+            ->get()->unique('ma_thong_bao')
+            ->values();
+
 
         return view('student.announce')->with('thongBaos', $thongBaos);
     }

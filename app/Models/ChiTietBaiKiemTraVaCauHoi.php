@@ -15,6 +15,7 @@ class ChiTietBaiKiemTraVaCauHoi extends Model
         'ma_chi_tiet_bktch',
         'ma_bai_kiem_tra',
         'ma_chi_tiet_dtch',
+        'ma_cau_hoi',
         'thu_tu',
     ];
 

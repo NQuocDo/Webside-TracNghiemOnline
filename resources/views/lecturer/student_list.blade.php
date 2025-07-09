@@ -271,6 +271,23 @@
         margin: 0;
         font-size: 14px;
     }
+
+    .pagination {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pagination a {
+        color: black;
+        margin: auto 10px;
+        text-decoration: none;
+        padding: 5px;
+    }
+
+    .pagination a:hover {
+        color: blue;
+        box-shadow: 1px 1px 3px rgb(0, 0, 0, 0.5);
+    }
 </style>
 @section('content')
     <div class="student-list-content">
@@ -319,6 +336,20 @@
             </table>
         </div>
         <div class="student-list-footer">
+            <div class="pagination">
+                @if ($danhSachSinhVien->onFirstPage())
+                    <a href="#" class="disabled"><i class="fa-solid fa-chevron-left"></i></a>
+                @else
+                    <a href="{{ $danhSachSinhVien->previousPageUrl() }}"><i class="fa-solid fa-chevron-left"></i></a>
+                @endif
+                <a href="{{ $danhSachSinhVien->url($danhSachSinhVien->currentPage()) }}" class="active">
+                    {{ $danhSachSinhVien->currentPage() }}</a>
+                @if ($danhSachSinhVien->onLastPage())
+                    <a href="#" class="disabled"><i class="fa-solid fa-chevron-right"></i></a>
+                @else
+                    <a href="{{ $danhSachSinhVien->nextPageUrl() }}"><i class="fa-solid fa-chevron-right"></i></a>
+                @endif
+            </div>
         </div>
         <!-- Modal đổi mật khẩu -->
         <div class="modal fade" id="doiMatKhauModal" tabindex="-1" aria-labelledby="doiMatKhauLabel" aria-hidden="true">

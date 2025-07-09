@@ -78,16 +78,19 @@
                             <td colspan="5" class="text-center">Giảng viên chưa được phân dạy môn nào.</td>
                         </tr>
                     @else
-                        @foreach($danhSachMonHoc as $index => $monHoc)
-                            <tr>
-                                <td class="subject-score-cell">{{ $index + 1 }}</td>
-                                <td class="subject-name-cell">{{ $monHoc->ten_mon_hoc }}</td>
-                                <td class="subject-name-cell">{{ $monHoc->hoc_ky }}</td>
-                                <td class="subject-class-cell">
-                                    {{ $monHoc->phanQuyenDays->pluck('lopHoc.ten_lop_hoc')->unique()->implode(', ') }}
-                                </td>
-                                <td class="subject-semester-cell">{{ $monHoc->mo_ta }}</td>
-                            </tr>
+                        @php $stt = 1; @endphp
+                        @foreach($danhSachMonHoc as $monHoc)
+                            @foreach($monHoc->phanQuyenDays->unique('ma_lop_hoc') as $phanQuyen)
+                                @if($phanQuyen->lopHoc)
+                                    <tr>
+                                        <td>{{ $stt++ }}</td>
+                                        <td>{{ $monHoc->ten_mon_hoc }}</td>
+                                        <td>{{ $monHoc->hoc_ky }}</td>
+                                        <td>{{ $phanQuyen->lopHoc->ten_lop_hoc }}</td>
+                                        <td>{{ $monHoc->mo_ta }}</td>
+                                    </tr>
+                                @endif
+                            @endforeach
                         @endforeach
                     @endif
                 </tbody>

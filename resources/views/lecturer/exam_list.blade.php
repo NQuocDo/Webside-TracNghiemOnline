@@ -482,7 +482,8 @@
                                         Xóa đề thi
                                     </button>
                                 </form>
-                                <form action="{{ route('exam_create_store') }}" method="POST">
+                                <form id="create-form-{{ $deThi->ma_de_thi }}" action="{{ route('exam_create_store') }}"
+                                    method="POST">
                                     @csrf
                                     <input type="hidden" name="ma_de_thi" value="{{ $deThi->ma_de_thi }}">
                                     <button class="create-btn" data-id="{{ $deThi->ma_de_thi }}">Tạo bài kiểm tra</button>
@@ -596,12 +597,12 @@
                         Swal.fire({
                             title: 'Tạo bài kiểm tra',
                             html: `
-                                                                                                        <input id="ten-bai-kiem-tra" class="swal2-input" placeholder="Nhập tên bài kiểm tra">
-                                                                                                        <select id="chon-lop" class="swal2-input">
-                                                                                                            <option value="" disabled selected>Chọn lớp học</option>
-                                                                                                            ${options}
-                                                                                                        </select>
-                                                                                                    `,
+                                                                                                            <input id="ten-bai-kiem-tra" class="swal2-input" placeholder="Nhập tên bài kiểm tra">
+                                                                                                            <select id="chon-lop" class="swal2-input">
+                                                                                                                <option value="" disabled selected>Chọn lớp học</option>
+                                                                                                                ${options}
+                                                                                                            </select>
+                                                                                                        `,
                             showCancelButton: true,
                             confirmButtonText: 'Tạo',
                             cancelButtonText: 'Huỷ',
@@ -658,6 +659,6 @@
                         showConfirmButton: true
                     });
                 @endif
-                                                                                                          });
+                                                                                                              });
         </script>
     @endsection

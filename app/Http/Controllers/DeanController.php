@@ -480,6 +480,14 @@ class DeanController extends Controller
             'ma_mon_hoc' => 'required|string|exists:mon_hocs,ma_mon_hoc',
             'ma_lop_hoc' => 'required|string|exists:lop_hocs,ma_lop_hoc',
         ]);
+        $monHocDaCoGiangVien = PhanQuyenDay::where('ma_mon_hoc', $request->input('ma_mon_hoc'))
+            ->where('ma_lop_hoc', $request->input('ma_lop_hoc'))
+            ->where('ma_giang_vien', '!=', $request->input('ma_giang_vien'))
+            ->exists();
+
+        if ($monHocDaCoGiangVien) {
+            return redirect()->route('decentralization')->with('error', 'Môn học ở lớp này đã có giảng viên, vui lòng chọn lại.');
+        }
         $daTonTai = PhanQuyenDay::where('ma_giang_vien', $request->input('ma_giang_vien'))
             ->where('ma_mon_hoc', $request->input('ma_mon_hoc'))
             ->where('ma_lop_hoc', $request->input('ma_lop_hoc'))

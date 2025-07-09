@@ -658,7 +658,7 @@
                     <div class="form-group">
                         <label for="monHoc">Môn học:</label>
                         <select name="ma_mon_hoc" id="monHoc" class="form-control">
-                            @foreach($danhSachMonHoc as $monHoc)
+                            @foreach($danhSachMonHoc->unique('ten_mon_hoc') as $monHoc)
                                 <option value="{{ $monHoc->ma_mon_hoc }}">{{ $monHoc->ten_mon_hoc }}</option>
                             @endforeach
                         </select>

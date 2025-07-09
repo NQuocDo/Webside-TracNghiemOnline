@@ -125,22 +125,32 @@ class LecturerController extends Controller
         if (!Auth::check()) {
             return redirect('/login');
         }
-
         $user = Auth::user();
 
         if ($user->vai_tro !== 'giang_vien') {
             return redirect()->back()->with('error', 'Bạn không có quyền truy cập trang này.');
         }
-
         $giangVien = GiangVien::where('ma_nguoi_dung', $user->ma_nguoi_dung)->first();
 
         if (!$giangVien) {
             return redirect()->back()->with('error', 'Không tìm thấy thông tin giảng viên.');
         }
-        $danhSachMonHoc = $giangVien->monHocs()->paginate(5);
+        $maGV = $giangVien->ma_giang_vien;
+        $danhSachMonHoc = MonHoc::whereHas('phanQuyenDays', function ($query) use ($maGV) {
+            $query->where('ma_giang_vien', $maGV);
+        })
+            ->with([
+                'phanQuyenDays' => function ($q) use ($maGV) {
+                    $q->where('ma_giang_vien', $maGV)->with('lopHoc');
+                }
+            ])
+            ->paginate(5);
 
-        return view('lecturer.subject_list')->with('danhSachMonHoc', $danhSachMonHoc);
+        return view('lecturer.subject_list', [
+            'danhSachMonHoc' => $danhSachMonHoc
+        ]);
     }
+
 
 
 
@@ -800,25 +810,21 @@ class LecturerController extends Controller
     public function hienThiDanhSachSinhVien(Request $request)
     {
         $user = Auth::user();
-
-        $giangVien = GiangVien::where('ma_nguoi_dung', $user->ma_nguoi_dung)->first();
         $keyword = $request->query('keyword');
-        $lopHoc = $giangVien->lopHocs;
-        $danhSachSinhVien = collect();
-        foreach ($lopHoc as $lop) {
-            $sinhViens = $lop->sinhViens;
-            $sinhViens = $sinhViens->filter(function ($sv) {
-                return $sv->trang_thai !== 'an';
-            });
+        $giangVien = GiangVien::where('ma_nguoi_dung', $user->ma_nguoi_dung)->firstOrFail();
+        $maLopHocs = $giangVien->lopHocs->pluck('ma_lop_hoc')->unique();
+        $query = SinhVien::with('nguoiDung')
+            ->whereIn('ma_lop_hoc', $maLopHocs)
+            ->where('trang_thai', '!=', 'an');
 
-            if ($keyword) {
-                $sinhViens = $sinhViens->filter(function ($sv) use ($keyword) {
-                    return stripos($sv->nguoiDung->ho_ten, $keyword) !== false;
-                });
-            }
-            $danhSachSinhVien = $danhSachSinhVien->merge($sinhViens);
+        if ($keyword) {
+            $query->whereHas('nguoiDung', function ($q) use ($keyword) {
+                $q->where('ho_ten', 'like', '%' . $keyword . '%');
+            });
         }
-        $danhSachSinhVien = $danhSachSinhVien->unique('ma_sinh_vien')->values();
+
+        $danhSachSinhVien = $query->paginate(10);
+
 
         return view('lecturer.student_list')->with('danhSachSinhVien', $danhSachSinhVien)->with('keyword', $keyword);
     }
@@ -1004,12 +1010,11 @@ class LecturerController extends Controller
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
         $giangVien = GiangVien::where('ma_nguoi_dung', $maNguoiDung)->firstOrFail();
         $deThi = DeThi::findOrFail($request->ma_de_thi);
-
         if ($deThi->ma_giang_vien !== $giangVien->ma_giang_vien) {
             abort(403, 'Bạn không có quyền tạo bài kiểm tra cho lớp này.');
         }
-
         $maBaiKiemTra = 'BKT' . substr(uniqid(), -5) . rand(10, 99);
+
         $baiKiemTra = BaiKiemTra::create([
             'ma_bai_kiem_tra' => $maBaiKiemTra,
             'ma_de_thi' => $deThi->ma_de_thi,
@@ -1028,6 +1033,7 @@ class LecturerController extends Controller
                 'ma_chi_tiet_bktch' => 'BKTCH' . substr(uniqid(), -4) . rand(10, 99),
                 'ma_bai_kiem_tra' => $baiKiemTra->ma_bai_kiem_tra,
                 'ma_chi_tiet_dtch' => $ctdt->ma_chi_tiet_dtch,
+                'ma_cau_hoi' => $ctdt->ma_cau_hoi,
                 'thu_tu' => $index + 1,
                 'created_at' => now(),
                 'updated_at' => now(),
