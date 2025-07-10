@@ -17,9 +17,9 @@ Route::get('/login', function () {
     return view(view: 'login');
 })->name('login');
 //Trang lỗi
-// Route::get('/error', function () {
-//     return view('error');
-// })->name('error');
+Route::get('/error', function () {
+    return view('error');
+})->name('error');
 
 
 //Middleware chức năng đăng nhập
