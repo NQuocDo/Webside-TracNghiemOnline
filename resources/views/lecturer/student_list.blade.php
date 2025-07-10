@@ -322,7 +322,14 @@
                                 <td class="stt-cell">{{ $index + 1 }}</td>
                                 <td class="student-name-cell">{{ $sinhVien->nguoiDung->ho_ten }}</td>
                                 <td class="student-score-cell">{{ $sinhVien->mssv }}</td>
-                                <td class="student-class-cell">{{ $sinhVien->lopHoc->ten_lop_hoc }}</td>
+                                <td class="student-class-cell"> @if($sinhVien->lopHocs->isNotEmpty())
+                                    @foreach($sinhVien->lopHocs as $lop)
+                                        <span>{{ $lop->ten_lop_hoc }}</span>
+                                    @endforeach
+                                @else
+                                        <span class="text-muted">Chưa có lớp</span>
+                                    @endif
+                                </td>
                                 <td class="actions-cell">
                                     <button class="changepassword-btn" data-bs-toggle="modal" data-bs-target="#doiMatKhauModal"
                                         onclick="setStudentId('{{ $sinhVien->ma_sinh_vien }}')">

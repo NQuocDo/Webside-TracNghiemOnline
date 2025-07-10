@@ -202,7 +202,7 @@
                                 <td class="lecturer-sex-cell">{{ $giangVien->nguoiDung->gioi_tinh ?? '' }}</td>
                                 <td class="lecturer-subject-cell">
                                     <ul>
-                                        @forelse($giangVien->monHocs as $monHoc) <li>{{ $monHoc->ten_mon_hoc }}</li>
+                                        @forelse($giangVien->monHocs->unique('ma_mon_hoc') as $monHoc) <li>{{ $monHoc->ten_mon_hoc }}</li>
                                         @empty
                                             <li>Chưa phân công</li>
                                         @endforelse

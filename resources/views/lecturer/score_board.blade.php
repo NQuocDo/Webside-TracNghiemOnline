@@ -142,11 +142,12 @@
 @section('content')
     <div class="score-table-container">
         <h3 style="margin-bottom: 20px;">Danh sách điểm sinh viên</h3>
+
         <form id="filter-form" method="GET" class="filter-form">
             <div class="filter-group">
                 <div class="filter-item">
                     <label for="bai_kiem_tra">Lọc theo bài kiểm tra:</label>
-                    <select name="bai_kiem_tra" id="bai_kiem_tra" class="form-select">
+                    <select name="bai_kiem_tra" id="bai_kiem_tra" class="form-select" onchange="this.form.submit()">
                         <option value="">-- Chọn bài kiểm tra --</option>
                         @foreach($danhSachBaiKiemTra as $bkt)
                             <option value="{{ $bkt->ma_bai_kiem_tra }}" {{ request('bai_kiem_tra') == $bkt->ma_bai_kiem_tra ? 'selected' : '' }}>
@@ -157,7 +158,7 @@
                 </div>
                 <div class="filter-item">
                     <label for="lop">Lọc theo lớp:</label>
-                    <select name="lop" id="lop" class="form-select">
+                    <select name="lop" id="lop" class="form-select" onchange="this.form.submit()">
                         <option value="">-- Chọn lớp --</option>
                         @foreach($danhSachLop as $lop)
                             <option value="{{ $lop->ma_lop_hoc }}" {{ request('lop') == $lop->ma_lop_hoc ? 'selected' : '' }}>
@@ -168,7 +169,7 @@
                 </div>
                 <div class="filter-item">
                     <label for="mon">Lọc theo môn:</label>
-                    <select name="mon" id="mon" class="form-select">
+                    <select name="mon" id="mon" class="form-select" onchange="this.form.submit()">
                         <option value="">-- Chọn môn --</option>
                         @foreach($danhSachMon as $mon)
                             <option value="{{ $mon->ma_mon_hoc }}" {{ request('mon') == $mon->ma_mon_hoc ? 'selected' : '' }}>
@@ -180,12 +181,13 @@
             </div>
         </form>
 
-
         <table class="score-table">
             <thead>
                 <tr>
                     <th>STT</th>
                     <th>Tên sinh viên</th>
+                    <th>Lớp</th>
+                    <th>Môn học</th>
                     <th>Tên bài kiểm tra</th>
                     <th>Điểm số</th>
                     <th>Thao tác</th>
@@ -194,13 +196,15 @@
             <tbody>
                 @if($bangDiem->isEmpty())
                     <tr>
-                        <td colspan="5" style="text-align: center;">Không có dữ liệu điểm.</td>
+                        <td colspan="7" style="text-align: center;">Không có dữ liệu điểm.</td>
                     </tr>
                 @else
                     @foreach($bangDiem as $index => $diem)
                         <tr>
-                            <td>{{(int) $index + 1 }}</td>
+                            <td>{{ $loop->iteration + ($bangDiem->currentPage() - 1) * $bangDiem->perPage() }}</td>
                             <td>{{ $diem->ten_sinh_vien ?? 'N/A' }}</td>
+                            <td>{{ $diem->ten_lop_hoc ?? 'N/A' }}</td>
+                            <td>{{ $diem->ten_mon_hoc ?? 'N/A' }}</td>
                             <td>{{ $diem->ten_bai_kiem_tra ?? 'N/A' }}</td>
                             <td>{{ $diem->diem_so ?? 'Chưa có điểm' }}</td>
                             <td>
@@ -219,6 +223,7 @@
                 @endif
             </tbody>
         </table>
+
         <div class="score-board-footer">
             <div class="pagination">
                 @if ($bangDiem->onFirstPage())
@@ -226,8 +231,11 @@
                 @else
                     <a href="{{ $bangDiem->previousPageUrl() }}"><i class="fa-solid fa-chevron-left"></i></a>
                 @endif
+
                 <a href="{{ $bangDiem->url($bangDiem->currentPage()) }}" class="active">
-                    {{ $bangDiem->currentPage() }}</a>
+                    {{ $bangDiem->currentPage() }}
+                </a>
+
                 @if ($bangDiem->onLastPage())
                     <a href="#" class="disabled"><i class="fa-solid fa-chevron-right"></i></a>
                 @else

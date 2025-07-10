@@ -202,7 +202,7 @@ class LecturerController extends Controller
         }
 
         $danhSachCauHoi = $thongTinCauHoi
-            ->orderByDesc('created_at') 
+            ->orderByDesc('created_at')
             ->paginate(10)
             ->appends(request()->query());
 
@@ -811,23 +811,38 @@ class LecturerController extends Controller
     {
         $user = Auth::user();
         $keyword = $request->query('keyword');
-        $giangVien = GiangVien::where('ma_nguoi_dung', $user->ma_nguoi_dung)->firstOrFail();
-        $maLopHocs = $giangVien->lopHocs->pluck('ma_lop_hoc')->unique();
-        $query = SinhVien::with('nguoiDung')
-            ->whereIn('ma_lop_hoc', $maLopHocs)
-            ->where('trang_thai', '!=', 'an');
 
+        // Lấy mã giảng viên hiện tại
+        $giangVien = GiangVien::where('ma_nguoi_dung', $user->ma_nguoi_dung)->firstOrFail();
+
+        // Lấy danh sách mã lớp được phân quyền giảng dạy
+        $maLopHocs = DB::table('phan_quyen_days')
+            ->where('ma_giang_vien', $giangVien->ma_giang_vien)
+            ->pluck('ma_lop_hoc')
+            ->unique();
+
+        // Truy vấn sinh viên qua bảng trung gian sinh_vien_lop_hoc
+        $query = SinhVien::with('nguoiDung')
+            ->join('sinh_vien_lop_hoc as svlh', 'sinhviens.ma_sinh_vien', '=', 'svlh.ma_sinh_vien')
+            ->whereIn('svlh.ma_lop_hoc', $maLopHocs)
+            ->where('sinhviens.trang_thai', '!=', 'an')
+            ->distinct('sinhviens.ma_sinh_vien'); // Tránh trùng sinh viên nếu học nhiều lớp
+
+        // Tìm kiếm theo tên
         if ($keyword) {
             $query->whereHas('nguoiDung', function ($q) use ($keyword) {
                 $q->where('ho_ten', 'like', '%' . $keyword . '%');
             });
         }
 
+        // Phân trang
         $danhSachSinhVien = $query->paginate(10);
 
-
-        return view('lecturer.student_list')->with('danhSachSinhVien', $danhSachSinhVien)->with('keyword', $keyword);
+        return view('lecturer.student_list')
+            ->with('danhSachSinhVien', $danhSachSinhVien)
+            ->with('keyword', $keyword);
     }
+
     public function doiMatKhauSinhVien(Request $request)
     {
         $request->validate([
@@ -872,20 +887,53 @@ class LecturerController extends Controller
             $maMonHoc = $request->input('ma_mon_hoc');
             $soLuong = (int) $request->input('so_luong');
 
-            $tongCauHoi = CauHoi::where('ma_mon_hoc', $maMonHoc)
+            // Lấy tất cả câu hỏi theo môn và trạng thái
+            $tatCaCauHoi = CauHoi::where('ma_mon_hoc', $maMonHoc)
                 ->where('trang_thai', 'hien')
-                ->count();
+                ->get();
 
+            $tongCauHoi = $tatCaCauHoi->count();
             if ($soLuong > $tongCauHoi) {
                 return redirect()->back()->with('error', 'Số lượng câu hỏi tạo quá giới hạn số lượng có. Vui lòng kiểm tra và tạo lại đề thi mới!');
             }
 
-            $cauHoiDaChon = CauHoi::with('dapAns')
-                ->where('ma_mon_hoc', $maMonHoc)
-                ->where('trang_thai', 'hien')
-                ->inRandomOrder()
-                ->take($soLuong)
-                ->get();
+            // Gom nhóm câu hỏi theo chương
+            $cauHoiTheoChuong = $tatCaCauHoi->groupBy('chuong');
+            $soChuongCoCauHoi = $cauHoiTheoChuong->count();
+
+            if ($soChuongCoCauHoi == 0) {
+                return redirect()->back()->with('error', 'Không có chương nào có câu hỏi.');
+            }
+
+            // Tính số lượng câu hỏi mỗi chương
+            $phanBo = [];
+            $soLuongMoiChuong = intdiv($soLuong, $soChuongCoCauHoi);
+            $du = $soLuong % $soChuongCoCauHoi;
+
+            foreach ($cauHoiTheoChuong as $chuong => $dsCauHoi) {
+                $soCauChuong = $soLuongMoiChuong;
+
+                // Phân phối phần dư cho một số chương đầu
+                if ($du > 0) {
+                    $soCauChuong += 1;
+                    $du--;
+                }
+
+                // Lấy ngẫu nhiên số lượng câu hỏi phù hợp
+                $soCauLay = min($soCauChuong, $dsCauHoi->count());
+
+                $phanBo[$chuong] = $dsCauHoi->shuffle()->take($soCauLay);
+            }
+
+            // Gộp toàn bộ các câu hỏi lại
+            $cauHoiDaChon = new \Illuminate\Database\Eloquent\Collection();
+
+            foreach ($phanBo as $ds) {
+                $cauHoiDaChon = $cauHoiDaChon->merge($ds);
+            }
+
+            // Load đáp án
+            $cauHoiDaChon->load('dapAns');
         } else {
             return redirect()->back()->with('error', 'Vui lòng chọn câu hỏi đã có hoặc nhập số lượng và môn học.');
         }
@@ -1043,7 +1091,6 @@ class LecturerController extends Controller
         return redirect()->back()->with('success', 'Tạo bài kiểm tra thành công!');
     }
 
-
     public function xoaBaiKiemTra($id)
     {
         $baiKiemTra = BaiKiemTra::find($id);
@@ -1176,7 +1223,8 @@ class LecturerController extends Controller
 
         $bangDiemTruyVan = DB::table('sinhviens as sv')
             ->join('nguoidungs as nd', 'sv.ma_nguoi_dung', '=', 'nd.ma_nguoi_dung')
-            ->join('lop_hocs as lh', 'sv.ma_lop_hoc', '=', 'lh.ma_lop_hoc')
+            ->join('sinh_vien_lop_hoc as svlh', 'sv.ma_sinh_vien', '=', 'svlh.ma_sinh_vien')
+            ->join('lop_hocs as lh', 'svlh.ma_lop_hoc', '=', 'lh.ma_lop_hoc')
             ->join('phan_quyen_days as pqd', 'lh.ma_lop_hoc', '=', 'pqd.ma_lop_hoc')
             ->join('mon_hocs as mh', 'pqd.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
             ->join('de_this as dt', function ($join) use ($maGiangVien) {
@@ -1207,12 +1255,14 @@ class LecturerController extends Controller
         if ($maMon) {
             $bangDiemTruyVan->where('mh.ma_mon_hoc', $maMon);
         }
+
         if ($maBaiKiemTra) {
             $bangDiemTruyVan->where('bkt.ma_bai_kiem_tra', $maBaiKiemTra);
         }
 
         $bangDiem = $bangDiemTruyVan->paginate(10);
 
+        // Danh sách lớp từ phân quyền
         $danhSachLop = DB::table('phan_quyen_days as pq')
             ->join('lop_hocs as lh', 'pq.ma_lop_hoc', '=', 'lh.ma_lop_hoc')
             ->where('pq.ma_giang_vien', $maGiangVien)
@@ -1220,6 +1270,7 @@ class LecturerController extends Controller
             ->distinct()
             ->get();
 
+        // Danh sách môn
         $danhSachMon = DB::table('phan_quyen_days as pq')
             ->join('mon_hocs as mh', 'pq.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
             ->where('pq.ma_giang_vien', $maGiangVien)
@@ -1227,6 +1278,7 @@ class LecturerController extends Controller
             ->distinct()
             ->get();
 
+        // Danh sách bài kiểm tra
         $danhSachBaiKiemTra = DB::table('de_this as dt')
             ->join('bai_kiem_tras as bkt', 'bkt.ma_de_thi', '=', 'dt.ma_de_thi')
             ->where('dt.ma_giang_vien', $maGiangVien)
@@ -1242,6 +1294,7 @@ class LecturerController extends Controller
             ->with('maLop', $maLop)
             ->with('maMon', $maMon);
     }
+
     public function xoaDiemSinhVien($id)
     {
         $bangDiem = DB::table('bang_diems')->where('ma_bang_diem', $id)->first();

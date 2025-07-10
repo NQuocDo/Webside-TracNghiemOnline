@@ -21,12 +21,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
         ]);
     })
-    ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->renderable(function (Throwable $e, $request) {
-            \Log::error('Lỗi hệ thống: ' . $e->getMessage());
-            return response()->view('error', [], 503);
-        });
-    })
+    // ->withExceptions(function (Exceptions $exceptions) {
+    //     $exceptions->renderable(function (Throwable $e, $request) {
+    //         \Log::error('Lỗi hệ thống: ' . $e->getMessage());
+    //         return response()->view('error', [], 503);
+    //     });
+    // })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })
