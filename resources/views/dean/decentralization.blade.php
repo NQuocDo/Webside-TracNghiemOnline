@@ -745,6 +745,6 @@
                     showConfirmButton: true
                 });
             @endif
-                                                        });
+                    });
     </script>
 @endsection

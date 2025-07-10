@@ -738,7 +738,7 @@ class LecturerController extends Controller
             ->where("ma_nguoi_dung", $user->ma_nguoi_dung)
             ->value("ma_giang_vien");
 
-        $danhSachThongBao = ThongBao::where('nguoi_gui', $giangVienId)->paginate(10);
+        $danhSachThongBao = ThongBao::with('lopHoc')->where('nguoi_gui', $giangVienId)->paginate(10);
 
         return view('lecturer.announce_list')->with('danhSachThongBao', $danhSachThongBao);
     }
@@ -746,7 +746,8 @@ class LecturerController extends Controller
     {
         $nguoiDung = Auth::user();
         $giangVien = GiangVien::where('ma_nguoi_dung', $nguoiDung->ma_nguoi_dung)->first();
-        $danhSachLopHoc = $giangVien->lopHocs->unique('ma_lop_hoc');
+        $danhSachLopHoc = $giangVien->lopHocs->unique('ma_lop_hoc')->values();
+
         return view('lecturer.announce')->with('danhSachLopHoc', $danhSachLopHoc);
     }
     public function guiThongBao(Request $request)
@@ -770,7 +771,7 @@ class LecturerController extends Controller
         $thongBao->ma_thong_bao = 'MTB' . now()->format('is') . rand(10, 99);
         $thongBao->tieu_de = $request->input('title-announce');
         $thongBao->noi_dung = $request->input('title-content');
-        $thongBao->ma_lop_hoc = $request->input('class');
+        $thongBao->ma_lop_hoc = $request->input('ma_lop_hoc');
         $thongBao->nguoi_gui = $maGiangVien;
         $thongBao->save();
 

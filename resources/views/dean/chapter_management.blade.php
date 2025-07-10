@@ -415,13 +415,19 @@
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
+                            <label for="hoc_ky_select" class="form-label">Học kỳ <span class="text-danger">*</span></label>
+                            <select class="form-select" id="hoc_ky_select" name="hoc_ky" required>
+                                <option value="" disabled selected>-- Chọn học kỳ --</option>
+                                @foreach ($danhSachHocKy as $hocKy)
+                                    <option value="{{ $hocKy->hoc_ky }}">Học kỳ {{ $hocKy->hoc_ky }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label for="ma_mon_hoc_add" class="form-label">Môn học <span
                                     class="text-danger">*</span></label>
-                            <select class="form-select" name="ma_mon_hoc" id="ma_mon_hoc_add" required>
-                                <option value="">Chọn môn học</option>
-                                @foreach($danhSachMonHoc as $monHoc)
-                                    <option value="{{ $monHoc->ma_mon_hoc }}">{{ $monHoc->ten_mon_hoc }}</option>
-                                @endforeach
+                            <select class="form-select" name="ma_mon_hoc" id="ma_mon_hoc_add" required disabled>
+                                <option value="">-- Chọn môn học --</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -497,9 +503,9 @@
         </div>
     </div>
 @endsection
-
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
         function editChapter(maChuong, tenChuong, maMonHoc, soChuong) {
@@ -576,6 +582,34 @@
 
             $('#editChapterModal').on('hidden.bs.modal', function () {
                 $(this).find('form')[0].reset();
+            });
+            $(document).ready(function () {
+                $('#hoc_ky_select').on('change', function () {
+                    const hocKy = $(this).val();
+                    const $monHocSelect = $('#ma_mon_hoc_add');
+
+                    $monHocSelect.prop('disabled', true)
+                        .html('<option>-- Đang tải môn học... --</option>');
+
+                    $.ajax({
+                        url: '/get-subject-by-semester',
+                        method: 'GET',
+                        data: { hoc_ky: hocKy },
+                        success: function (data) {
+                            $monHocSelect.html('<option value="" disabled selected>-- Chọn môn học --</option>');
+                            $.each(data, function (i, mon) {
+                                $monHocSelect.append(
+                                    $('<option></option>').val(mon.ma_mon_hoc).text(mon.ten_mon_hoc)
+                                );
+                            });
+                            $monHocSelect.prop('disabled', false);
+                        },
+                        error: function () {
+                            $monHocSelect.html('<option>-- Lỗi khi tải môn học --</option>');
+                            $monHocSelect.prop('disabled', true);
+                        }
+                    });
+                });
             });
         });
     </script>

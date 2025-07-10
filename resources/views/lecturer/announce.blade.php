@@ -163,15 +163,11 @@
             <div class="option-class">
                 <label>Lớp:</label>
                 <section>
-                    <select name="class" id="class">
-                        @if($danhSachLopHoc->isEmpty())
-                            <option value="">Không có</option>
-                        @else
-                            @foreach ($danhSachLopHoc as $lopHoc)
-                                <option value="">-- Chọn lớp --</option>
-                                <option value="{{ $lopHoc->ma_lop_hoc}}">{{ $lopHoc->ten_lop_hoc}}</option>
-                            @endforeach
-                        @endif
+                    <select name="ma_lop_hoc" id="ma_lop_hoc">
+                        <option value="">-- Chọn lớp --</option>
+                        @foreach ($danhSachLopHoc as $lop)
+                            <option value="{{ $lop->ma_lop_hoc }}">{{ $lop->ten_lop_hoc }}</option>
+                        @endforeach
                     </select>
                 </section>
             </div>

@@ -1,5 +1,7 @@
 @extends('layout.lecturer_layout')
-
+@section('title')
+    Trang Danh sách thông báo
+@endsection
 <style>
     /* Announcement Management Styles - Matching Contact Management Style */
 
@@ -486,7 +488,7 @@
                                     <td class="announce-list-title">{{ $thongBao->tieu_de }}</td>
                                     <td class="announce-list-content" title="{{ $thongBao->noi_dung }}">{{ $thongBao->noi_dung }}
                                     </td>
-                                    <td class="announce-class">{{ $thongBao->lopHoc->ten_lop_hoc }}</td>
+                                    <td class="announce-class">{{ optional($thongBao->lopHoc)->ten_lop_hoc }}</td>
                                     <td class="announce-time">{{ $thongBao->ngay_gui }}</td>
                                     <td class="actions-cell">
                                         <form id="delete-form-{{ $thongBao->ma_thong_bao }}"
@@ -540,7 +542,7 @@
 
             deleteButtons.forEach(button => {
                 button.addEventListener('click', function (event) {
-                    event.preventDefault(); 
+                    event.preventDefault();
 
                     const questionId = this.getAttribute('data-id');
 

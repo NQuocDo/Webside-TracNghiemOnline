@@ -157,6 +157,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/dean/chapter-management/store', [DeanController::class, 'themChuong'])->name('chapter_management_store');
         Route::put('/dean/chapter-management', [DeanController::class, 'suaChuong'])->name('chapter_management_update');
         Route::delete('/dean/chapter-management/del/{id}', [DeanController::class, 'xoaChuong'])->name('chapter_management_del');
+        Route::get('/get-subject-by-semester', [DeanController::class, 'layMonHocTheoHocKy'])->name('layMonHocTheoHocKy');
+
         //}
 
         //Quản lý giảng viên{
@@ -183,8 +185,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dean/add-user', [DeanController::class, 'hienThiThongTinLopHoc'])->name('add_user');
         Route::post('/dean/add-user/store', [DeanController::class, 'themNguoiDung'])->name('add_user.store');
         Route::post('/dean/add-user/import-excel', [DeanController::class, 'themNguoiDungExcel'])->name('add_user_import_excel');
-        //}
-
+        
+        //Quản lý thêm lớp học
         Route::get('/dean/add-class', [DeanController::class, 'hienThiLopHoc'])->name('add_class');
         Route::post('/dean/add-class/store', [DeanController::class, 'themLopHoc'])->name('add_class_store');
         Route::put('/dean/add-class/update/{id}', [DeanController::class, 'suaLopHoc'])->name('add_class_update');

@@ -290,10 +290,18 @@ class DeanController extends Controller
         return redirect()->back()->with('success', 'Cập nhật môn học thành công');
     }
 
+    public function layMonHocTheoHocKy(Request $request)
+    {
+        $hocKy = $request->query('hoc_ky');
+
+        $monHoc = MonHoc::where('hoc_ky', $hocKy)->where('trang_thai', 'hien')->get(['ma_mon_hoc', 'ten_mon_hoc']);
+
+        return response()->json($monHoc);
+    }
     public function hienThiDanhSachChuong(Request $request)
     {
-        $monHocId = $request->input('ma_mon_hoc');
-        $keyword = $request->input('keyword');
+        $monHocId = $request->input('mon_hoc_id');
+        $keyword = $request->input('tu_khoa_tim_kiem');
 
         $danhSachMonHoc = MonHoc::where('trang_thai', 'hien')->get();
 
@@ -304,12 +312,14 @@ class DeanController extends Controller
         }
 
         $danhSachChuong = $query->paginate(10);
+        $danhSachHocKy = MonHoc::select('hoc_ky')->distinct()->get();
 
         return view('dean.chapter_management', [
             'danhSachChuong' => $danhSachChuong,
             'danhSachMonHoc' => $danhSachMonHoc,
             'monHocDaChon' => $monHocId,
             'keyword' => $keyword,
+            'danhSachHocKy' => $danhSachHocKy
         ]);
     }
     public function themChuong(Request $request)

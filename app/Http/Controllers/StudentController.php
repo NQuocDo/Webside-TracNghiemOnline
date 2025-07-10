@@ -131,7 +131,7 @@ class StudentController extends Controller
         $sinhVien = SinhVien::with('nguoiDung')->where('ma_nguoi_dung', $maNguoiDung)->first();
 
         $baiKiemTra = BaiKiemTra::findOrFail($id);
-        if ($baiKiemTra->ma_lop_hoc !== $sinhVien->ma_lop_hoc) {
+        if ($baiKiemTra->ma_lop_hoc !== $sinhVien->lopHienTai->lopHoc->ma_lop_hoc) {
             abort(403, 'Bạn không có quyền truy cập bài kiểm tra này.');
         }
         $deThis = DeThi::findOrFail($baiKiemTra->ma_de_thi);
