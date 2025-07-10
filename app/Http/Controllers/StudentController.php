@@ -19,60 +19,101 @@ use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
+
+
+
+    public function layDanhSachMonHoc()
+    {
+        $maNguoiDung = Auth::user()->ma_nguoi_dung;
+
+        $sinhVien = SinhVien::with('nguoiDung')->where('ma_nguoi_dung', $maNguoiDung)->first();
+
+        if (!$sinhVien) {
+            return view('student.dashboard')->with(['monDangHoc' => collect()]);
+        }
+
+        $maSinhVien = $sinhVien->ma_sinh_vien;
+
+        // 1. Lấy toàn bộ lớp mà sinh viên đã học
+        $lopSinhVien = DB::table('sinh_vien_lop_hoc')
+            ->where('ma_sinh_vien', $maSinhVien)
+            ->pluck('ma_lop_hoc');
+
+        if ($lopSinhVien->isEmpty()) {
+            return view('student.dashboard')->with(['monDangHoc' => collect()]);
+        }
+
+        // 2. Lấy tất cả môn học mà sinh viên được dạy bởi giảng viên (qua lớp của SV)
+        $monDangHoc = DB::table('phan_quyen_days as pqd')
+            ->join('mon_hocs as mh', 'mh.ma_mon_hoc', '=', 'pqd.ma_mon_hoc')
+            ->join('giangviens as gv', 'gv.ma_giang_vien', '=', 'pqd.ma_giang_vien')
+            ->join('nguoidungs as nd', 'nd.ma_nguoi_dung', '=', 'gv.ma_nguoi_dung')
+            ->join('lop_hocs as lh', 'lh.ma_lop_hoc', '=', 'pqd.ma_lop_hoc')
+            ->whereIn('pqd.ma_lop_hoc', $lopSinhVien)
+            ->select(
+                'pqd.ma_mon_hoc',
+                'mh.ten_mon_hoc',
+                'mh.hoc_ky',
+                'pqd.ma_giang_vien',
+                'nd.ho_ten as ten_giang_vien',
+                'nd.hinh_anh',
+                'pqd.ma_lop_hoc',
+                'lh.ten_lop_hoc',
+                'lh.nam_hoc',
+                'lh.hoc_ky'
+            )
+            ->distinct()
+            ->get();
+
+        return view('student.dashboard')->with([
+            'monDangHoc' => $monDangHoc
+        ]);
+    }
+
     //hàm hiển thị danh sách bài kiêm tra trang exam_list
-    public function hienThiDanhSachBaiKiemTra(Request $request)
+    public function hienThiDanhSachBaiKiemTra()
     {
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
 
         $sinhVien = SinhVien::where('ma_nguoi_dung', $maNguoiDung)->firstOrFail();
         $maSinhVien = $sinhVien->ma_sinh_vien;
 
-        // Lấy lớp hiện tại từ bảng trung gian
-        $lopHienTai = SinhVienLopHoc::where('ma_sinh_vien', $maSinhVien)
-            ->orderByDesc('nam_hoc')
-            ->orderByDesc('hoc_ky')
-            ->first();
+        // 1. Lấy tất cả lớp mà sinh viên đã/đang học
+        $cacLopCuaSinhVien = DB::table('sinh_vien_lop_hoc')
+            ->where('ma_sinh_vien', $maSinhVien)
+            ->pluck('ma_lop_hoc');
 
-        if (!$lopHienTai) {
+        if ($cacLopCuaSinhVien->isEmpty()) {
             return view('student.exam_list', ['danhSachBaiKiemTra' => collect()]);
         }
 
-        $maLopHoc = $lopHienTai->ma_lop_hoc;
+        // 2. Lấy danh sách quyền giảng viên được dạy ở lớp sinh viên đã học
+        $phanQuyen = DB::table('phan_quyen_days')
+            ->whereIn('ma_lop_hoc', $cacLopCuaSinhVien)
+            ->select('ma_lop_hoc', 'ma_mon_hoc', 'ma_giang_vien')
+            ->distinct()
+            ->get();
 
-        $maMonHoc = $request->query('ma_mon_hoc');
-        $maGiangVien = $request->query('ma_giang_vien');
-        $keyword = $request->query('keyword');
+        // Nếu không có quyền nào phù hợp => không có bài kiểm tra nào được phép xem
+        if ($phanQuyen->isEmpty()) {
+            return view('student.exam_list', ['danhSachBaiKiemTra' => collect()]);
+        }
 
+        // 3. Truy vấn bài kiểm tra khớp phân quyền và sinh viên chưa làm
         $danhSachBaiKiemTra = DB::table('bai_kiem_tras as bkt')
             ->join('de_this as dt', 'bkt.ma_de_thi', '=', 'dt.ma_de_thi')
             ->join('mon_hocs as mh', 'dt.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
             ->join('giangviens as gv', 'dt.ma_giang_vien', '=', 'gv.ma_giang_vien')
             ->join('nguoidungs as nd', 'gv.ma_nguoi_dung', '=', 'nd.ma_nguoi_dung')
-            ->join('phan_quyen_days as pq', function ($join) {
-                $join->on('pq.ma_mon_hoc', '=', 'dt.ma_mon_hoc')
-                    ->on('pq.ma_giang_vien', '=', 'dt.ma_giang_vien')
-                    ->on('pq.ma_lop_hoc', '=', 'bkt.ma_lop_hoc');
-            })
-            ->join('sinh_vien_lop_hoc as svlh', function ($join) use ($maSinhVien, $maLopHoc) {
-                $join->on('svlh.ma_lop_hoc', '=', 'bkt.ma_lop_hoc')
-                    ->where('svlh.ma_sinh_vien', '=', $maSinhVien)
-                    ->where('svlh.ma_lop_hoc', '=', $maLopHoc);
-            })
             ->leftJoin('bang_diems as bd', function ($join) use ($maSinhVien) {
                 $join->on('bd.ma_bai_kiem_tra', '=', 'bkt.ma_bai_kiem_tra')
                     ->where('bd.ma_sinh_vien', '=', $maSinhVien);
             })
             ->where('bkt.trang_thai', 'mo')
             ->whereNull('bd.ma_bang_diem')
-            ->when($maMonHoc, function ($query, $maMonHoc) {
-                $query->where('mh.ma_mon_hoc', $maMonHoc);
-            })
-            ->when($maGiangVien, function ($query, $maGiangVien) {
-                $query->where('gv.ma_giang_vien', $maGiangVien);
-            })
-            ->when($keyword, function ($query, $keyword) {
-                $query->where('bkt.ten_bai_kiem_tra', 'like', '%' . $keyword . '%');
-            })
+            ->whereIn('bkt.ma_lop_hoc', $phanQuyen->pluck('ma_lop_hoc'))
+            ->whereIn('dt.ma_mon_hoc', $phanQuyen->pluck('ma_mon_hoc'))
+            ->whereIn('dt.ma_giang_vien', $phanQuyen->pluck('ma_giang_vien'))
             ->select(
                 'bkt.ma_bai_kiem_tra',
                 'bkt.ten_bai_kiem_tra',
@@ -87,53 +128,28 @@ class StudentController extends Controller
 
         return view('student.exam_list', compact('danhSachBaiKiemTra'));
     }
-    //hàm danh sách môn trang chủ
-    public function layDanhSachMonHoc()
-    {
-        $maNguoiDung = Auth::user()->ma_nguoi_dung;
-
-        $sinhVien = SinhVien::with('nguoiDung')->where('ma_nguoi_dung', $maNguoiDung)->first();
-
-        if (!$sinhVien) {
-            return view('student.dashboard')->with('monDangHoc', collect());
-        }
-
-        $monDangHoc = DB::table('sinhviens as sv')
-            ->join('nguoidungs as nd_sv', 'sv.ma_nguoi_dung', '=', 'nd_sv.ma_nguoi_dung')
-            ->join('sinh_vien_lop_hoc as svlh', 'svlh.ma_sinh_vien', '=', 'sv.ma_sinh_vien')
-            ->join('lop_hocs as lh', 'lh.ma_lop_hoc', '=', 'svlh.ma_lop_hoc')
-            ->join('phan_quyen_days as pqd', 'lh.ma_lop_hoc', '=', 'pqd.ma_lop_hoc')
-            ->join('mon_hocs as mh', 'mh.ma_mon_hoc', '=', 'pqd.ma_mon_hoc')
-            ->join('giangviens as gv', 'pqd.ma_giang_vien', '=', 'gv.ma_giang_vien')
-            ->join('nguoidungs as nd_gv', 'gv.ma_nguoi_dung', '=', 'nd_gv.ma_nguoi_dung')
-            ->where('sv.ma_sinh_vien', $sinhVien->ma_sinh_vien)
-            ->select(
-                'mh.ma_mon_hoc',
-                'mh.ten_mon_hoc',
-                'mh.hoc_ky',
-                'nd_sv.ho_ten as ten_sinh_vien',
-                'nd_gv.ho_ten as ten_giang_vien',
-                'nd_gv.hinh_anh as hinh_anh',
-                'gv.ma_giang_vien as ma_giang_vien',
-                'lh.ten_lop_hoc',
-                'lh.ma_lop_hoc'
-            )
-            ->distinct()
-            ->get();
-
-        return view('student.dashboard')->with('monDangHoc', $monDangHoc);
-    }
 
 
     public function hienThiBaiKiemTraTheoId($id)
     {
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
-        $sinhVien = SinhVien::with('nguoiDung')->where('ma_nguoi_dung', $maNguoiDung)->first();
+
+        $sinhVien = SinhVien::with('nguoiDung')->where('ma_nguoi_dung', $maNguoiDung)->firstOrFail();
+        $maSinhVien = $sinhVien->ma_sinh_vien;
 
         $baiKiemTra = BaiKiemTra::findOrFail($id);
-        if ($baiKiemTra->ma_lop_hoc !== $sinhVien->lopHienTai->lopHoc->ma_lop_hoc) {
+
+        // Lấy danh sách các lớp mà sinh viên đã hoặc đang học
+        $cacMaLopSinhVien = DB::table('sinh_vien_lop_hoc')
+            ->where('ma_sinh_vien', $maSinhVien)
+            ->pluck('ma_lop_hoc')
+            ->toArray();
+
+        // Nếu bài kiểm tra không thuộc lớp của sinh viên => không cho vào
+        if (!in_array($baiKiemTra->ma_lop_hoc, $cacMaLopSinhVien)) {
             abort(403, 'Bạn không có quyền truy cập bài kiểm tra này.');
         }
+
         $deThis = DeThi::findOrFail($baiKiemTra->ma_de_thi);
 
         $cauHoiList = DB::table('chi_tiet_bai_kiem_tra_va_cau_hois as ct')
@@ -141,6 +157,7 @@ class StudentController extends Controller
             ->where('ct.ma_bai_kiem_tra', $id)
             ->select('ch.*')
             ->get();
+
         foreach ($cauHoiList as $cauHoi) {
             $cauHoi->dap_an = DB::table('dap_ans')
                 ->where('ma_cau_hoi', $cauHoi->ma_cau_hoi)
@@ -156,6 +173,7 @@ class StudentController extends Controller
             'ma_sinh_vien' => $sinhVien->ma_sinh_vien,
         ]);
     }
+
 
 
     //hàm tính điểm trang exam

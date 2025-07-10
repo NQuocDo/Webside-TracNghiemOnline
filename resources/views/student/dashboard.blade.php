@@ -3,6 +3,18 @@
     Trang chủ Sinh Viên
 @endsection
 <style>
+    .section-title {
+        font-weight: bold;
+        font-size: 18px;
+        margin: 20px 0 10px;
+        color: #34495e;
+    }
+
+    .text-muted {
+        color: #888;
+        font-style: italic;
+    }
+
     .dashboard-wrapper {
         background-color: #f8f9fa;
         min-height: 100vh;
@@ -242,86 +254,85 @@
                     <span class="icon">📚</span>
                     Danh Sách Môn Học
                 </h2>
-                <p class="subtitle">Quản lý và theo dõi các môn học của bạn</p>
+                <p class="subtitle">Chỉ hiển thị các môn học bạn đang theo học tại lớp hiện tại</p>
             </div>
 
+            {{-- MÔN HỌC ĐANG HỌC --}}
+            <div class="section-title">📘 Môn học tại lớp hiện tại</div>
             <div class="item-content">
                 @if($monDangHoc->isEmpty())
-                    <li>Không có</li>
+                    <p class="text-muted">Không có môn học nào trong lớp hiện tại mà giảng viên được phân quyền dạy.</p>
                 @else
                     @foreach($monDangHoc as $mon)
                         <div class="item">
                             <div class="card-header">
-                                <h5 class="quiz-title" name="subject-score" value="{{ $mon->ma_mon_hoc }}">{{ $mon->ten_mon_hoc }}
-                                </h5>
+                                <h5 class="quiz-title">{{ $mon->ten_mon_hoc }}</h5>
                                 <span class="quiz-code">Học kỳ: {{ $mon->hoc_ky }}</span>
                             </div>
                             <div class="card-body">
-                                <img src="{{ !empty($mon->hinh_anh) ? asset('images/'.$mon->hinh_anh) : asset('images/lecturer.jpg') }}"  alt="Giảng viên" class="src-lecturer"> 
-                                <h6 class="lecturer-name" name="lecturer-score" value="{{ $mon->ma_giang_vien }}">GV:
-                                    {{ $mon->ten_giang_vien }}</h6>
+                                <img src="{{ !empty($mon->hinh_anh) ? asset('images/' . $mon->hinh_anh) : asset('images/lecturer.jpg') }}"
+                                    alt="Giảng viên" class="src-lecturer">
+                                <h6 class="lecturer-name">GV: {{ $mon->ten_giang_vien }}</h6>
                             </div>
                             <div class="card-footer">
-                                <button type="button" class="description-btn"><a
-                                        href="{{ route('student_exam_list', ['ma_mon_hoc' => $mon->ma_mon_hoc, 'ma_giang_vien' => $mon->ma_giang_vien]) }}"
-                                        class="description-btn">
-                                        Xem chi tiết
-                                    </a></button>
+                                <a href="{{ route('student_exam_list', ['ma_mon_hoc' => $mon->ma_mon_hoc, 'ma_giang_vien' => $mon->ma_giang_vien]) }}"
+                                    class="description-btn">
+                                    Xem chi tiết
+                                </a>
                             </div>
                         </div>
                     @endforeach
                 @endif
-
             </div>
         </div>
     </div>
 @endsection
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    function getRandomGradientSophisticated() {
-        const gradients = [
-            'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-            'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-            'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-            'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-            'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-            'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-            'linear-gradient(135deg, #ff8a80 0%, #ea4c89 100%)',
-            'linear-gradient(135deg, #8fd3f4 0%, #84fab0 100%)',
-            'linear-gradient(135deg, #d299c2 0%, #fef9d7 100%)'
-        ];
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function getRandomGradientSophisticated() {
+            const gradients = [
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+                'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+                'linear-gradient(135deg, #ff8a80 0%, #ea4c89 100%)',
+                'linear-gradient(135deg, #8fd3f4 0%, #84fab0 100%)',
+                'linear-gradient(135deg, #d299c2 0%, #fef9d7 100%)'
+            ];
 
-        return gradients[Math.floor(Math.random() * gradients.length)];
-    }
+            return gradients[Math.floor(Math.random() * gradients.length)];
+        }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const cardHeaders = document.querySelectorAll('.item .card-header');
-        cardHeaders.forEach(header => {
-            header.style.background = getRandomGradientSophisticated();
-        });
+        document.addEventListener('DOMContentLoaded', () => {
+            const cardHeaders = document.querySelectorAll('.item .card-header');
+            cardHeaders.forEach(header => {
+                header.style.background = getRandomGradientSophisticated();
+            });
 
-        // Add click event to buttons
-        const buttons = document.querySelectorAll('.description-btn');
-        buttons.forEach(button => {
-            button.addEventListener('click', function () {
-                // Add your navigation logic here
-                console.log('Viewing details for course...');
+            // Add click event to buttons
+            const buttons = document.querySelectorAll('.description-btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function () {
+                    // Add your navigation logic here
+                    console.log('Viewing details for course...');
+                });
             });
         });
-    });
-     @if (session('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Thành công!',
-                text: @json(session('success')),
-                confirmButtonText: 'OK'
-            });
-            localStorage.removeItem("selectedQuestions");
-        </script>
-    @endif
+        @if (session('success'))
+                    < script >
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: @json(session('success')),
+                        confirmButtonText: 'OK'
+                    });
+                localStorage.removeItem("selectedQuestions");
+            </script>
+        @endif
 
     @if (session('error'))
         <script>
@@ -333,5 +344,5 @@
             });
         </script>
     @endif
-</script>
+    </script>
 @endsection

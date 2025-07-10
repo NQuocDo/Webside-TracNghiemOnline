@@ -201,11 +201,10 @@ class LecturerController extends Controller
             $thongTinCauHoi->where('ma_mon_hoc', $locTheoMocHoc);
         }
 
-        $danhSachCauHoi = $thongTinCauHoi->paginate(10)
-            ->appends([
-                'mon_hoc_id' => $locTheoMocHoc,
-                'tu_khoa_tim_kiem' => $tuKhoaTimKiem
-            ]);
+        $danhSachCauHoi = $thongTinCauHoi
+            ->orderByDesc('created_at') 
+            ->paginate(10)
+            ->appends(request()->query());
 
         return view('lecturer.question', [
             'danhSachCauHoi' => $danhSachCauHoi,

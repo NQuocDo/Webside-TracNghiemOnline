@@ -47,7 +47,6 @@ class SinhVien extends Model
             ->orderByDesc('nam_hoc')
             ->orderByDesc('hoc_ky');
     }
-
     public function tatCaLop()
     {
         return $this->hasMany(SinhVienLopHoc::class, 'ma_sinh_vien', 'ma_sinh_vien');

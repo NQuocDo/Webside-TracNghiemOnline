@@ -322,8 +322,39 @@
         background-color: #545b62;
         border-color: #545b62;
     }
-</style>
 
+    .pagination {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        padding-bottom: 20px;
+    }
+
+    .pagination a,
+    .pagination span {
+        color: #007bff;
+        margin: 0 5px;
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        border: 1px solid #dee2e6;
+    }
+
+    .pagination a:hover {
+        background-color: #007bff;
+        color: white;
+        box-shadow: none;
+    }
+
+    .pagination .active span {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+        font-weight: bold;
+    }
+</style>
 @section('content')
     <div class="chapter-management-content">
         <div class="chapter-management-header">
@@ -400,6 +431,19 @@
                 </tbody>
 
             </table>
+        </div>
+        <div class="chapter-manage-footer">
+            <div class="pagination">
+                <a href="{{ $danhSachChuong->previousPageUrl() }}"><i class="fa-solid fa-chevron-left"></i></a>
+                @if($danhSachChuong->currentPage() > 1)
+                    <a href="{{ $danhSachChuong->previousPageUrl() }}">{{ $danhSachChuong->currentPage() - 1 }}</a>
+                @endif
+                <a href="#" class="active">{{ $danhSachChuong->currentPage() }}</a>
+                @if($danhSachChuong->hasMorePages())
+                    <a href="{{ $danhSachChuong->nextPageUrl() }}">{{ $danhSachChuong->currentPage() + 1 }}</a>
+                @endif
+                <a href="{{ $danhSachChuong->nextPageUrl() }}"><i class="fa-solid fa-chevron-right"></i></a>
+            </div>
         </div>
     </div>
 

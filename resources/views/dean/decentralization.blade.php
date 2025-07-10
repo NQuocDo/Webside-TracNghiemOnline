@@ -508,7 +508,6 @@
     </div>
 
     <div class="modal-overlay" id="decentralizationModalOverlay"></div>
-
     <div class="decentralization-modal" id="decentralizationModal">
         <span class="close-modal" id="closeModal">&times;</span>
 
@@ -590,13 +589,88 @@
             </div>
         </div>
     </div>
+
+    <div class="modal-overlay" id="editDecentralizationOverlay"></div>
+
+    <div class="decentralization-modal" id="editDecentralizationModal">
+        <span class="close-modal" id="closeEditModal">&times;</span>
+        <div class="decentralization-header">
+            <div class="header-title">
+                <h3 id="edit-modal-title">Cập nhật quyền giảng dạy</h3>
+            </div>
+            <div class="header-content">
+                <form method="POST" class="add-decentralization-form" id="edit-decentralization-form">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="phan_quyen_id" id="editPhanQuyenId">
+                    <div>
+                        <label>Khóa học:</label>
+                        <section>
+                            <select id="edit_year_select" disabled>
+                                @foreach($danhSachLopHoc->pluck('nam_hoc')->unique() as $namHoc)
+                                    <option value="{{ $namHoc }}">{{ $namHoc }}</option>
+                                @endforeach
+                            </select>
+                        </section>
+                    </div>
+                    <div>
+                        <label>Học kỳ:</label>
+                        <section>
+                            <select id="edit_hoc_ky_select" disabled>
+                                <option value="1">Học kỳ 1</option>
+                                <option value="2">Học kỳ 2</option>
+                                <option value="3">Học kỳ 3</option>
+                                <option value="4">Học kỳ 4</option>
+                                <option value="5">Học kỳ 5</option>
+                            </select>
+                        </section>
+                    </div>
+                    <div>
+                        <label for="edit_class_select">Lớp học:</label>
+                        <section>
+                            <select id="edit_class_select" disabled>
+                                @foreach($danhSachLopHoc as $lop)
+                                    <option value="{{ $lop->ma_lop_hoc }}">{{ $lop->ten_lop_hoc }}</option>
+                                @endforeach
+                            </select>
+                        </section>
+                    </div>
+                    <div>
+                        <label for="edit_subject_select">Môn học:</label>
+                        <section>
+                            <select id="edit_subject_select" disabled>
+                                @foreach($danhSachMonHoc as $mon)
+                                    <option value="{{ $mon->ma_mon_hoc }}">{{ $mon->ten_mon_hoc }}</option>
+                                @endforeach
+                            </select>
+                        </section>
+                    </div>
+                    <div>
+                        <label for="edit_lecturer_select">Giảng viên:</label>
+                        <section>
+                            <select name="ma_giang_vien" id="edit_lecturer_select" required>
+                                @foreach($danhSachGiangVien as $gv)
+                                    <option value="{{ $gv->ma_giang_vien }}">{{ $gv->nguoiDung->ho_ten }}</option>
+                                @endforeach
+                            </select>
+                        </section>
+                    </div>
+
+                    <button type="submit" class="add-decentralization-btn">Cập nhật quyền dạy học</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // ==== 1. KHAI BÁO BIẾN ====
             const openModalBtn = document.getElementById('add-decentralization-btn-fake');
             const decentralizationModal = document.getElementById('decentralizationModal');
             const modalOverlay = document.getElementById('decentralizationModalOverlay');
@@ -609,6 +683,13 @@
             const submitBtn = document.getElementById('submitBtn');
             const modalTitle = document.getElementById('modal-title');
 
+            const editModal = document.getElementById('editDecentralizationModal');
+            const editOverlay = document.getElementById('editDecentralizationOverlay');
+            const closeEditBtn = document.getElementById('closeEditModal');
+            const editForm = document.getElementById('edit-decentralization-form');
+            const editPhanQuyenId = document.getElementById('editPhanQuyenId');
+
+            // ==== 2. HÀM MỞ/ĐÓNG MODAL ====
             function openModal() {
                 modalOverlay.classList.remove('hide-animation');
                 decentralizationModal.classList.remove('hide-animation');
@@ -628,44 +709,61 @@
                 idInput.value = '';
                 submitBtn.textContent = 'Thêm quyền dạy học';
                 modalTitle.textContent = 'Thêm quyền giảng dạy';
+
+                form.reset();
+                $('#class_select').prop('disabled', true).html('<option disabled selected>-- Chọn lớp học --</option>');
+                $('#subject_select').prop('disabled', true).html('<option disabled selected>-- Chọn môn học --</option>');
+                $('#lecturer_select').prop('disabled', true).html('<option disabled selected>-- Chọn giảng viên --</option>');
+                $('#submitBtn').prop('disabled', true);
             }
 
+            function openEditModal() {
+                editOverlay.classList.add('active');
+                editModal.classList.add('active');
+            }
+
+            function closeEditModal() {
+                editOverlay.classList.remove('active');
+                editModal.classList.remove('active');
+            }
+
+            closeModalBtn.addEventListener('click', closeOutModal);
+            modalOverlay.addEventListener('click', closeOutModal);
+            closeEditBtn.addEventListener('click', closeEditModal);
+            editOverlay.addEventListener('click', closeEditModal);
+
+            // ==== 3. NÚT "THÊM QUYỀN GIẢNG DẠY" ====
+            if (openModalBtn) {
+                openModalBtn.addEventListener('click', openModal);
+            }
+
+            // ==== 4. CHỌN GIẢNG VIÊN LỌC ====
             if (filterForm && select) {
                 select.addEventListener("change", function () {
                     filterForm.submit();
                 });
             }
 
-            openModalBtn.addEventListener('click', openModal);
-            closeModalBtn.addEventListener('click', closeOutModal);
-            modalOverlay.addEventListener('click', closeOutModal);
-            decentralizationModal.addEventListener('click', function (event) {
-                event.stopPropagation();
-            });
-
-            const editButtons = document.querySelectorAll('.btn-edit-decentralization');
-            editButtons.forEach(button => {
+            // ==== 5. NÚT SỬA ====
+            document.querySelectorAll('.btn-edit-decentralization').forEach(button => {
                 button.addEventListener('click', function () {
                     const id = this.dataset.id;
                     const lecturer = this.dataset.lecturer;
                     const subject = this.dataset.subject;
                     const classId = this.dataset.class;
 
-                    document.getElementById('lecturer_select').value = lecturer;
-                    document.getElementById('subject_select').value = subject;
-                    document.getElementById('class_select').value = classId;
+                    editForm.action = '{{ route('decentralization.update', ':id') }}'.replace(':id', id);
+                    editPhanQuyenId.value = id;
+                    document.getElementById('edit_class_select').value = classId;
+                    document.getElementById('edit_subject_select').value = subject;
+                    document.getElementById('edit_lecturer_select').value = lecturer;
 
-                    form.action = `/dean/decentralization/update/${id}`;
-                    formMethod.value = 'PUT';
-                    idInput.value = id;
-                    submitBtn.textContent = 'Cập nhật quyền dạy học';
-                    modalTitle.textContent = 'Cập nhật quyền giảng dạy';
-                    openModal();
+                    openEditModal();
                 });
             });
 
-            const deleteButtons = document.querySelectorAll('.btn-delete-confirm');
-            deleteButtons.forEach(button => {
+            // ==== 6. XÓA QUYỀN ====
+            document.querySelectorAll('.btn-delete-confirm').forEach(button => {
                 button.addEventListener('click', function (event) {
                     event.preventDefault();
                     const subjectId = this.getAttribute('data-id');
@@ -685,48 +783,48 @@
                     });
                 });
             });
-            $(document).ready(function () {
-                $('#year_select').on('change', function () {
-                    let namHoc = $(this).val();
 
-                    if (namHoc) {
-                        $.get('/data-decentralization', { nam_hoc: namHoc }, function (data) {
-                            $('#class_select').prop('disabled', false).html('<option disabled selected>-- Chọn lớp học --</option>');
-                            data.lop_hocs.forEach(function (lop) {
-                                $('#class_select').append(`<option value="${lop.ma_lop_hoc}">${lop.ten_lop_hoc}</option>`);
-                            });
-                            $('#subject_select').html('<option disabled selected>-- Chọn môn học --</option>').prop('disabled', true);
-                            $('#lecturer_select').html('<option disabled selected>-- Chọn giảng viên --</option>').prop('disabled', true);
-                            $('#submitBtn').prop('disabled', true);
+            // ==== 7. XỬ LÝ AJAX - NĂM HỌC & HỌC KỲ ====
+            $('#year_select').on('change', function () {
+                let namHoc = $(this).val();
+
+                if (namHoc) {
+                    $.get('/data-decentralization', { nam_hoc: namHoc }, function (data) {
+                        $('#class_select').prop('disabled', false).html('<option disabled selected>-- Chọn lớp học --</option>');
+                        data.lop_hocs.forEach(function (lop) {
+                            $('#class_select').append(`<option value="${lop.ma_lop_hoc}">${lop.ten_lop_hoc}</option>`);
                         });
-                    }
-                });
-
-                $('#hoc_ky_select').on('change', function () {
-                    let hocKy = $(this).val();
-
-                    if (hocKy) {
-                        $.get('/data-decentralization', { hoc_ky: hocKy }, function (data) {
-                            $('#subject_select').prop('disabled', false).html('<option disabled selected>-- Chọn môn học --</option>');
-                            data.mon_hocs.forEach(function (mon) {
-                                $('#subject_select').append(`<option value="${mon.ma_mon_hoc}">${mon.ten_mon_hoc}</option>`);
-                            });
-                            $('#lecturer_select').prop('disabled', false).html('<option disabled selected>-- Chọn giảng viên --</option>');
-                            data.giang_viens.forEach(function (gv) {
-                                $('#lecturer_select').append(`<option value="${gv.ma_giang_vien}">${gv.ho_ten}</option>`);
-                            });
-
-                            $('#submitBtn').prop('disabled', true);
-                        });
-                    }
-                });
+                        $('#subject_select').prop('disabled', true).html('<option disabled selected>-- Chọn môn học --</option>');
+                        $('#lecturer_select').prop('disabled', true).html('<option disabled selected>-- Chọn giảng viên --</option>');
+                        $('#submitBtn').prop('disabled', true);
+                    });
+                }
             });
 
-            // Bật nút submit sau khi chọn đủ
+            $('#hoc_ky_select').on('change', function () {
+                let hocKy = $(this).val();
+
+                if (hocKy) {
+                    $.get('/data-decentralization', { hoc_ky: hocKy }, function (data) {
+                        $('#subject_select').prop('disabled', false).html('<option disabled selected>-- Chọn môn học --</option>');
+                        data.mon_hocs.forEach(function (mon) {
+                            $('#subject_select').append(`<option value="${mon.ma_mon_hoc}">${mon.ten_mon_hoc}</option>`);
+                        });
+                        $('#lecturer_select').prop('disabled', false).html('<option disabled selected>-- Chọn giảng viên --</option>');
+                        data.giang_viens.forEach(function (gv) {
+                            $('#lecturer_select').append(`<option value="${gv.ma_giang_vien}">${gv.ho_ten}</option>`);
+                        });
+                        $('#submitBtn').prop('disabled', true);
+                    });
+                }
+            });
+
+            // ==== 8. BẬT SUBMIT KHI CHỌN ĐỦ ====
             $('#lecturer_select').on('change', function () {
                 $('#submitBtn').prop('disabled', false);
             });
 
+            // ==== 9. HIỆN THÔNG BÁO SWEETALERT ====
             @if(session('success'))
                 Swal.fire({
                     icon: 'success',
@@ -745,6 +843,6 @@
                     showConfirmButton: true
                 });
             @endif
-                    });
+        });
     </script>
 @endsection

@@ -171,7 +171,7 @@ Route::middleware(['auth'])->group(function () {
         //Quản lý quyền dạy học{
         Route::get('/dean/decentralization', [DeanController::class, 'hienthiQuyenGiangDay'])->name('decentralization');
         Route::post('/dean/decentralization/store', [DeanController::class, 'themQuyenDayHoc'])->name('decentralization.store');
-        Route::put('/dean/decentralization/update/{id}', [DeanController::class, 'suaPhanQuyen'])->name('decentralization.update');//thêm quyền dạy học
+        Route::put('/dean/decentralization/update/{id}', [DeanController::class, 'suaPhanQuyen'])->name('decentralization.update');
         Route::delete('/dean/decentralization/del/{id}', [DeanController::class, 'xoaQuyenDayHoc'])->name('decentralization_del');
         Route::get('/data-decentralization', [DeanController::class, 'duLieuPhanQuyen']);
 
