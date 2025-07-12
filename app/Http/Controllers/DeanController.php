@@ -68,7 +68,7 @@ class DeanController extends Controller
     {
         $tuKhoaTimKiem = $request->input('tu_khoa_tim_kiem');
         $maLopHoc = $request->input('ma_lop_hoc');
-        $query = SinhVien::with(['nguoiDung', 'lopHienTai.lopHoc', 'tatCaLop.lopHoc'])
+        $query = SinhVien::with(['nguoiDung', 'lopHienTai.lopHoc', 'sinhVienLopHocs.lopHoc'])
             ->whereHas('nguoiDung', function ($query) use ($tuKhoaTimKiem) {
                 $query->where('vai_tro', 'sinh_vien');
 
@@ -137,34 +137,35 @@ class DeanController extends Controller
         $request->validate([
             'ma_sinh_viens' => 'required|array',
             'ma_lop_hoc' => 'required|string',
-            'hoc_ky' => 'required|numeric',
-            'nam_hoc' => 'required|numeric',
         ]);
+
         $daThem = 0;
         $boQua = 0;
+
         foreach ($request->ma_sinh_viens as $maSV) {
             $daTonTai = SinhVienLopHoc::where('ma_sinh_vien', $maSV)
                 ->where('ma_lop_hoc', $request->ma_lop_hoc)
-                ->where('hoc_ky', $request->hoc_ky)
-                ->where('nam_hoc', $request->nam_hoc)
                 ->exists();
 
             if (!$daTonTai) {
+                SinhVienLopHoc::where('ma_sinh_vien', $maSV)
+                    ->update(['is_hien_tai' => 0]);
                 SinhVienLopHoc::create([
                     'ma_sv_lh' => 'MSVLH' . strtoupper(substr(uniqid(), -2)) . rand(10, 99),
                     'ma_sinh_vien' => $maSV,
                     'ma_lop_hoc' => $request->ma_lop_hoc,
-                    'hoc_ky' => $request->hoc_ky,
-                    'nam_hoc' => $request->nam_hoc,
+                    'is_hien_tai' => 1
                 ]);
+
                 $daThem++;
             } else {
                 $boQua++;
             }
         }
 
-        return redirect()->back()->with('success', 'Đã thêm sinh viên vào lớp học!');
+        return redirect()->back()->with('success', " Đã thêm $daThem sinh viên vào lớp mới, bỏ qua $boQua sinh viên đã tồn tại.");
     }
+
     public function capNhatThongTinSinhVien(Request $request, $ma_sinh_vien)
     {
         $request->validate([
@@ -213,7 +214,7 @@ class DeanController extends Controller
 
         $user = Auth::user();
 
-        if ($user->vai_tro !== "truong_khoa") {
+        if ($user->vai_tro !== "can_bo") {
             return redirect()->back()->with("error", "Bạn không có quyền truy cập trang này.");
         }
         $query = MonHoc::query()->where('trang_thai', 'hien');
@@ -508,8 +509,7 @@ class DeanController extends Controller
         $giangVienId = $request->input('giang_vien_id');
         $danhSachGiangVien = GiangVien::with('nguoiDung')->get();
         $danhSachLopHoc = LopHoc::where('trang_thai', 'hien')
-            ->orderByDesc('nam_hoc')
-            ->orderBy('hoc_ky')
+            ->orderByDesc('nien_khoa')
             ->get();
         $danhSachMonHoc = MonHoc::orderBy('ten_mon_hoc')->get();
 
@@ -530,10 +530,16 @@ class DeanController extends Controller
     }
     public function duLieuPhanQuyen(Request $request)
     {
-        $namHoc = (int) $request->nam_hoc;
-        $hocKy = (int) $request->hoc_ky;
-        $lopHocs = LopHoc::where('nam_hoc', $namHoc)->get();
-        $monHocs = MonHoc::where('hoc_ky', $hocKy)->get();
+        $namHoc = $request->input('nien_khoa');
+        $hocKy = $request->input('hoc_ky');
+        $lopHocs = [];
+        if ($namHoc) {
+            $lopHocs = LopHoc::where('nien_khoa', $namHoc)->get(['ma_lop_hoc', 'ten_lop_hoc']);
+        }
+        $monHocs = [];
+        if ($hocKy) {
+            $monHocs = MonHoc::where('hoc_ky', $hocKy)->get(['ma_mon_hoc', 'ten_mon_hoc']);
+        }
         $giangViens = GiangVien::with('nguoiDung')->get()->map(function ($gv) {
             return [
                 'ma_giang_vien' => $gv->ma_giang_vien,
@@ -636,24 +642,20 @@ class DeanController extends Controller
     }
     public function themNguoiDung(Request $request)
     {
-        // Validate cơ bản
         $validated = $request->validate([
-            'email' => 'required|email',
+            'email' => 'required|email|unique:nguoidungs,email',
             'mat_khau' => 'required',
             'ho_ten' => 'required',
             'gioi_tinh' => 'required',
-            'ngay_sinh' => 'required',
-            'vai_tro' => 'required',
+            'ngay_sinh' => 'required|date',
+            'vai_tro' => 'required|in:sinh_vien,giang_vien,can_bo',
             'so_dien_thoai' => 'required',
             'mssv' => 'required_if:vai_tro,sinh_vien',
             'ma_lop' => 'required_if:vai_tro,sinh_vien',
-            'hoc_ky' => 'required_if:vai_tro,sinh_vien',
-            'nam_hoc' => 'required_if:vai_tro,sinh_vien|numeric|min:2000'
+            'hoc_ky' => 'required_if:vai_tro,sinh_vien|integer|min:1|max:10',
+            'khoa_hoc' => 'required_if:vai_tro,sinh_vien|numeric|min:2000|max:' . (now()->year + 3),
         ]);
-
-        // Tạo mã người dùng
         $maNguoiDungMoi = 'ND' . strtoupper(substr(uniqid(), -4)) . rand(10, 99);
-        // Tạo người dùng
         $nguoiDung = NguoiDung::create([
             'ma_nguoi_dung' => $maNguoiDungMoi,
             'email' => $validated['email'],
@@ -673,25 +675,29 @@ class DeanController extends Controller
                 'ma_nguoi_dung' => $nguoiDung->ma_nguoi_dung,
                 'hoc_vi' => $request->input('hoc_vi'),
             ]);
-        } elseif ($validated['vai_tro'] === 'sinh_vien') {
+        }
+
+        if ($validated['vai_tro'] === 'sinh_vien') {
             $maSinhVienMoi = 'SV' . strtoupper(substr(uniqid(), -4)) . rand(10, 99);
+            $nienKhoa = $validated['khoa_hoc'];
             SinhVien::create([
                 'ma_sinh_vien' => $maSinhVienMoi,
                 'ma_nguoi_dung' => $nguoiDung->ma_nguoi_dung,
-                'ma_lop_hoc' => $request->input('ma_lop'),
-                'mssv' => $request->input('mssv'),
+                'mssv' => $validated['mssv'],
             ]);
             SinhVienLopHoc::create([
                 'ma_sv_lh' => 'MSVLH' . strtoupper(substr(uniqid(), -2)) . rand(10, 99),
                 'ma_sinh_vien' => $maSinhVienMoi,
                 'ma_lop_hoc' => $validated['ma_lop'],
-                'hoc_ky' => $validated['hoc_ky'],
-                'nam_hoc' => $validated['nam_hoc'],
+                'hoc_ky' => 1,
+                'nam_hoc' => $nienKhoa,
+                'is_hien_tai' => 1,
             ]);
         }
 
         return redirect()->route('add_user')->with('success', 'Thêm người dùng thành công.');
     }
+
     public function themNguoiDungExcel(Request $request)
     {
         $request->validate([
@@ -708,7 +714,6 @@ class DeanController extends Controller
 
         $rows = SimpleExcelReader::create($absolutePath)->getRows();
 
-        // Bảng ánh xạ key viết tắt -> key chuẩn
         $keyMapping = [
             'sdt' => 'so_dien_thoai',
             'so_dt' => 'so_dien_thoai',
@@ -723,15 +728,12 @@ class DeanController extends Controller
             'hk' => 'hoc_ky',
             'namhoc' => 'nam_hoc',
         ];
-
         $successCount = 0;
         $failCount = 0;
         $errors = [];
-
         foreach ($rows as $index => $row) {
             try {
                 $data = [];
-
                 foreach ($row as $key => $value) {
                     $newKey = Str::of($key)
                         ->ascii()
@@ -743,21 +745,25 @@ class DeanController extends Controller
                     if (isset($keyMapping[$newKey])) {
                         $newKey = $keyMapping[$newKey];
                     }
-
                     $data[$newKey] = $value;
                 }
-
-                // Kiểm tra email trùng
+                if (empty($data['email'])) {
+                    throw new \Exception("Thiếu email.");
+                }
                 if (NguoiDung::where('email', $data['email'])->exists()) {
                     throw new \Exception("Email đã tồn tại: " . $data['email']);
                 }
+                if ($request->vai_tro === 'sinh_vien') {
+                    if (empty($data['lop'])) {
+                        throw new \Exception("Thiếu tên lớp.");
+                    }
 
-                if ($request->vai_tro === 'sinh_vien' && !empty($data['lop'])) {
-                    if (!LopHoc::where('ten_lop_hoc', $data['lop'])->exists()) {
+                    $lop = LopHoc::where('ten_lop_hoc', $data['lop'])->first();
+
+                    if (!$lop) {
                         throw new \Exception("Lớp không tồn tại: " . $data['lop']);
                     }
                 }
-
                 $user = NguoiDung::create([
                     'ma_nguoi_dung' => 'ND' . strtoupper(substr(uniqid(), -4)) . rand(10, 99),
                     'ho_ten' => $data['ho_ten'] ?? 'Chưa rõ',
@@ -769,27 +775,23 @@ class DeanController extends Controller
                     'so_dien_thoai' => $data['so_dien_thoai'] ?? null,
                     'vai_tro' => $request->vai_tro,
                 ]);
-
                 if ($request->vai_tro === 'sinh_vien') {
-                    $maLop = LopHoc::where('ten_lop_hoc', $data['lop'])->first();
+                    $maSinhVienMoi = 'SV' . strtoupper(substr(uniqid(), -4)) . rand(10, 99);
 
-                    if ($maLop) {
-                        $maSinhVienMoi = 'SV' . strtoupper(substr(uniqid(), -4)) . rand(10, 99);
+                    SinhVien::create([
+                        'ma_sinh_vien' => $maSinhVienMoi,
+                        'ma_nguoi_dung' => $user->ma_nguoi_dung,
+                        'mssv' => $data['ma_so_sinh_vien'] ?? null,
+                    ]);
 
-                        SinhVien::create([
-                            'ma_sinh_vien' => $maSinhVienMoi,
-                            'ma_nguoi_dung' => $user->ma_nguoi_dung,
-                            'mssv' => $data['ma_so_sinh_vien'] ?? null,
-                        ]);
-
-                        SinhVienLopHoc::create([
-                            'ma_sv_lh' => 'MSVLH' . strtoupper(substr(uniqid(), -2)) . rand(10, 99),
-                            'ma_sinh_vien' => $maSinhVienMoi,
-                            'ma_lop_hoc' => $maLop->ma_lop_hoc,
-                            'hoc_ky' => $data['hoc_ky'] ?? 1,
-                            'nam_hoc' => $data['nam_hoc'] ?? date('Y'),
-                        ]);
-                    }
+                    SinhVienLopHoc::create([
+                        'ma_sv_lh' => 'MSVLH' . strtoupper(substr(uniqid(), -2)) . rand(10, 99),
+                        'ma_sinh_vien' => $maSinhVienMoi,
+                        'ma_lop_hoc' => $lop->ma_lop_hoc,
+                        'hoc_ky' => $data['hoc_ky'] ?? 1,
+                        'nam_hoc' => $data['nam_hoc'] ?? now()->year,
+                        'is_hien_tai' => 1
+                    ]);
                 } else {
                     GiangVien::create([
                         'ma_giang_vien' => 'GV' . strtoupper(substr(uniqid(), -4)) . rand(10, 99),
@@ -801,28 +803,36 @@ class DeanController extends Controller
                 $successCount++;
             } catch (\Throwable $e) {
                 $failCount++;
-                $errors[] = "Dòng " . ($index + 2) . ": " . $e->getMessage(); // +2 vì có header và index bắt đầu từ 0
+                $errors[] = "Dòng " . ($index + 2) . ": " . $e->getMessage();
             }
         }
-
         if ($failCount > 0) {
-            return redirect()->back()->with('error', "Import hoàn tất: {$successCount} thành công, {$failCount} thất bại.")
+            return redirect()->back()->with('error', "Import xong: {$successCount} thành công, {$failCount} lỗi.")
                 ->with('detail_errors', $errors);
         }
-
         return back()->with('success', 'Import thành công toàn bộ!');
     }
 
 
+
     //Quản lý lớp học
+    public function layLopTheoKhoa($khoa)
+    {
+        $khoaHoc = (int) substr($khoa, offset: -2);
+        $lopHocs = LopHoc::where('nien_khoa', $khoaHoc)
+            ->where('loai_lop', 'chinh_thuc')->get();
+
+        return response()->json($lopHocs);
+    }
     public function hienThiLopHoc(Request $request)
     {
         $query = LopHoc::query();
         $query->where('trang_thai', 'hien');
         $fiveYearsAgo = Carbon::now()->subYears(5);
-        $query->where('created_at', '>=', $fiveYearsAgo);
+        $query->where('created_at', '>=', value: $fiveYearsAgo);
+        $nienKhoa = (int) substr($request->nam_hoc, offset: -2);
         if ($request->filled('nam_hoc')) {
-            $query->where('nam_hoc', $request->nam_hoc);
+            $query->where('nien_khoa', $nienKhoa);
         }
         if ($request->filled('ten_lop_hoc')) {
             $query->where('ten_lop_hoc', 'like', '%' . $request->ten_lop_hoc . '%');
@@ -845,11 +855,6 @@ class DeanController extends Controller
                 'integer',
                 Rule::in($dsNamChoPhep),
             ],
-            'hoc_ky' => [
-                'required',
-                'integer',
-                Rule::in([1, 2, 3, 4, 5, 6]),
-            ],
         ]);
 
         if ($validator->fails()) {
@@ -862,13 +867,10 @@ class DeanController extends Controller
         try {
             $namHoc = (int) $request->nam_hoc;
             $nienKhoa = (int) substr($namHoc, -2);
-            $hocKy = (int) $request->hoc_ky;
 
             LopHoc::create([
                 'ten_lop_hoc' => $request->ten_lop_hoc,
-                'nam_hoc' => $namHoc,
                 'nien_khoa' => $nienKhoa,
-                'hoc_ky' => $hocKy,
             ]);
 
             return redirect()->route('add_class')->with('success', 'Thêm lớp học thành công!');

@@ -1077,10 +1077,9 @@ class LecturerController extends Controller
             ->get();
 
         foreach ($chiTietDeThi as $index => $ctdt) {
-            DB::table('chi_tiet_bai_kiem_tra_va_cau_hois')->insert([
+            DB::table(table: 'chi_tiet_bai_kiem_tra_va_cau_hois')->insert([
                 'ma_chi_tiet_bktch' => 'BKTCH' . substr(uniqid(), -4) . rand(10, 99),
                 'ma_bai_kiem_tra' => $baiKiemTra->ma_bai_kiem_tra,
-                'ma_chi_tiet_dtch' => $ctdt->ma_chi_tiet_dtch,
                 'ma_cau_hoi' => $ctdt->ma_cau_hoi,
                 'thu_tu' => $index + 1,
                 'created_at' => now(),
@@ -1131,23 +1130,33 @@ class LecturerController extends Controller
     }
     public function hienThiTrangChiTietBaiKiemTra($id)
     {
-        $baiKiemTra = BaiKiemTra::with(['deThi.cauHoi.dapAns'])->findOrFail($id);
-        return view('lecturer.exam_check', compact('baiKiemTra'));
+        $baiKiemTra = BaiKiemTra::findOrFail($id);
+        $chiTietCauHois = ChiTietBaiKiemTraVaCauHoi::with('cauHoi.dapAns')
+            ->where('ma_bai_kiem_tra', $id)
+            ->orderBy('thu_tu')
+            ->get();
+        return view('lecturer.exam_check', compact('baiKiemTra', 'chiTietCauHois'));
     }
     public function shuffleCauHoi($id)
     {
-        $baiKiemTra = BaiKiemTra::with('chiTietCauHoi.chiTietDeThi.cauHoi.dapAns')->findOrFail($id);
-        $chiTietBKT = $baiKiemTra->chiTietCauHoi;
+        $baiKiemTra = BaiKiemTra::findOrFail($id);
+        $chiTietBKT = ChiTietBaiKiemTraVaCauHoi::where('ma_bai_kiem_tra', $id)
+            ->orderBy('thu_tu')
+            ->get();
+
         $shuffled = $chiTietBKT->shuffle()->values();
+
         foreach ($shuffled as $index => $ct) {
-            ChiTietBaiKiemTraVaCauHoi::where('ma_chi_tiet_bktch', $ct->ma_chi_tiet_bktch)
-                ->update(['thu_tu' => $index + 1]);
+            $ct->update(['thu_tu' => $index + 1]);
         }
+        $chiTietCauHois = ChiTietBaiKiemTraVaCauHoi::with('cauHoi.dapAns')
+            ->where('ma_bai_kiem_tra', $id)
+            ->orderBy('thu_tu')
+            ->get();
 
-        $baiKiemTra = BaiKiemTra::with(['chiTietCauHoi.cauHoi.dapAns'])->findOrFail($id);
-
-        return view('lecturer.exam_check', compact('baiKiemTra'));
+        return view('lecturer.exam_check', compact('baiKiemTra', 'chiTietCauHois'));
     }
+
     public function exportDeThiPDF($id)
     {
 

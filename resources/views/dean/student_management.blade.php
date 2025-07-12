@@ -277,8 +277,11 @@
                                 $nguoiDung = $sinhVien->nguoiDung;
                                 $stt = ($danhSachSinhVien->currentPage() - 1) * $danhSachSinhVien->perPage() + $index + 1;
                                 $lopHienTai = $sinhVien->lopHienTai;
-                                $tatCaLopHoc = $sinhVien->tatCaLop->sortByDesc('nam_hoc')->sortByDesc('hoc_ky');
+                                $tatCaLopHoc = $sinhVien->sinhVienLopHocs->sortByDesc('nam_hoc')->sortByDesc('hoc_ky');
+                                $lopHienTaiID = $lopHienTai?->ma_lop_hoc;
+                                $lopDaHoc = $tatCaLopHoc->filter(fn($item) => $item->ma_lop_hoc !== $lopHienTaiID);
                             @endphp
+
                             <tr>
                                 <td class="stt-cell text-center">
                                     <input type="checkbox" class="student-checkbox" value="{{ $sinhVien->ma_sinh_vien }}">
@@ -292,26 +295,15 @@
 
                                 {{-- Cột: Lớp hiện tại --}}
                                 <td>
-                                    @if ($lopHienTai && $lopHienTai->lopHoc)
-                                        {{ $lopHienTai->lopHoc->ten_lop_hoc }}
-                                    @else
-                                        Chưa có lớp hiện tại
-                                    @endif
+                                    {{ optional($lopHienTai?->lopHoc)->ten_lop_hoc ?? 'Chưa có lớp hiện tại' }}
                                 </td>
 
-                                {{-- Cột: Lớp đã học (khác lớp hiện tại) --}}
+                                {{-- Cột: Lớp đã học --}}
                                 <td>
-                                    @php
-                                        $lopHienTaiID = $lopHienTai?->ma_lop_hoc;
-                                        $lopDaHoc = $tatCaLopHoc->filter(function ($item) use ($lopHienTaiID) {
-                                            return $item->ma_lop_hoc !== $lopHienTaiID;
-                                        });
-                                    @endphp
-
                                     @if ($lopDaHoc->isNotEmpty())
                                         <ul class="mb-0 ps-3">
                                             @foreach ($lopDaHoc as $lh)
-                                                {{ optional($lh->lopHoc)->ten_lop_hoc ?? 'Không rõ tên lớp' }}
+                                                <li>{{ optional($lh->lopHoc)->ten_lop_hoc ?? 'Không rõ tên lớp' }}</li>
                                             @endforeach
                                         </ul>
                                     @else
@@ -332,6 +324,7 @@
                                     @else
                                         <span class="text-muted">Không rõ trạng thái</span>
                                     @endif
+
                                     <form id="delete-form-{{ $sinhVien->ma_sinh_vien }}"
                                         action="{{ route('student_management_delete', $sinhVien->ma_sinh_vien) }}" method="POST"
                                         style="display: inline;">
@@ -341,11 +334,12 @@
                                             <i class="fas fa-trash-alt"></i> Xoá
                                         </button>
                                     </form>
+
                                     <button type="button" class="btn btn-sm btn-warning btn-edit-student" data-bs-toggle="modal"
                                         data-bs-target="#editStudentModal" data-id="{{ $sinhVien->ma_sinh_vien }}"
                                         data-mssv="{{ $sinhVien->mssv }}" data-ho-ten="{{ $nguoiDung->ho_ten }}"
                                         data-email="{{ $nguoiDung->email }}" data-gioi-tinh="{{ $nguoiDung->gioi_tinh }}"
-                                        data-lop-hien-tai="{{ optional($sinhVien->lopHienTai)->ma_lop_hoc }}">
+                                        data-lop-hien-tai="{{ optional($lopHienTai)->ma_lop_hoc }}">
                                         <i class="fa fa-edit me-1"></i> Sửa
                                     </button>
                                 </td>
@@ -353,6 +347,7 @@
                         @endforeach
                     @endif
                 </tbody>
+
             </table>
         </div>
 
@@ -394,9 +389,6 @@
                                 <option value="{{ $lop->ma_lop_hoc }}">{{ $lop->ten_lop_hoc }}</option>
                             @endforeach
                         </select>
-
-                        <input type="number" name="hoc_ky" class="form-control mt-2" placeholder="Học kỳ" required>
-                        <input type="number" name="nam_hoc" class="form-control mt-2" placeholder="Năm học" required>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>

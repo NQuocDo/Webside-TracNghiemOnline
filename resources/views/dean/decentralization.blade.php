@@ -523,14 +523,13 @@
                     <input type="hidden" name="_method" id="form-method" value="POST">
                     <input type="hidden" name="phan_quyen_id" id="phanQuyenId">
 
-                    {{-- Khóa học --}}
                     <div>
                         <label for="year_select">Khóa học:</label>
                         <section>
                             <select name="nam_hoc" id="year_select" required>
                                 <option value="" disabled selected>-- Chọn khóa học --</option>
-                                @foreach($danhSachLopHoc->pluck('nam_hoc')->unique() as $namHoc)
-                                    <option value="{{ $namHoc }}">{{ $namHoc }}</option>
+                                @foreach($danhSachLopHoc->pluck('nien_khoa')->unique() as $nienKhoa)
+                                    <option value="{{ $nienKhoa }}">{{ $nienKhoa }}</option>
                                 @endforeach
                             </select>
                         </section>
@@ -607,8 +606,8 @@
                         <label>Khóa học:</label>
                         <section>
                             <select id="edit_year_select" disabled>
-                                @foreach($danhSachLopHoc->pluck('nam_hoc')->unique() as $namHoc)
-                                    <option value="{{ $namHoc }}">{{ $namHoc }}</option>
+                                @foreach($danhSachLopHoc->pluck('nien_khoa')->unique() as $nienKhoa)
+                                    <option value="{{ $nienKhoa }}">{{ $nienKhoa }}</option>
                                 @endforeach
                             </select>
                         </section>
@@ -670,7 +669,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // ==== 1. KHAI BÁO BIẾN ====
             const openModalBtn = document.getElementById('add-decentralization-btn-fake');
             const decentralizationModal = document.getElementById('decentralizationModal');
             const modalOverlay = document.getElementById('decentralizationModalOverlay');
@@ -784,45 +782,68 @@
                 });
             });
 
-            // ==== 7. XỬ LÝ AJAX - NĂM HỌC & HỌC KỲ ====
-            $('#year_select').on('change', function () {
-                let namHoc = $(this).val();
+            function fetchDecentralizationData() {
+                let nienKhoa = $('#year_select').val();
+                let hocKy = $('#hoc_ky_select').val();
 
-                if (namHoc) {
-                    $.get('/data-decentralization', { nam_hoc: namHoc }, function (data) {
+                if (nienKhoa && hocKy) {
+                    $.get('/data-decentralization', { nien_khoa: nienKhoa, hoc_ky: hocKy }, function (data) {
+                        // Cập nhật lớp học
                         $('#class_select').prop('disabled', false).html('<option disabled selected>-- Chọn lớp học --</option>');
-                        data.lop_hocs.forEach(function (lop) {
-                            $('#class_select').append(`<option value="${lop.ma_lop_hoc}">${lop.ten_lop_hoc}</option>`);
-                        });
-                        $('#subject_select').prop('disabled', true).html('<option disabled selected>-- Chọn môn học --</option>');
-                        $('#lecturer_select').prop('disabled', true).html('<option disabled selected>-- Chọn giảng viên --</option>');
-                        $('#submitBtn').prop('disabled', true);
-                    });
-                }
-            });
+                        if (data.lop_hocs.length > 0) {
+                            data.lop_hocs.forEach(function (lop) {
+                                $('#class_select').append(`<option value="${lop.ma_lop_hoc}">${lop.ten_lop_hoc}</option>`);
+                            });
+                        } else {
+                            $('#class_select').append('<option disabled>Không có lớp học nào</option>');
+                        }
 
-            $('#hoc_ky_select').on('change', function () {
-                let hocKy = $(this).val();
-
-                if (hocKy) {
-                    $.get('/data-decentralization', { hoc_ky: hocKy }, function (data) {
+                        // Cập nhật môn học
                         $('#subject_select').prop('disabled', false).html('<option disabled selected>-- Chọn môn học --</option>');
-                        data.mon_hocs.forEach(function (mon) {
-                            $('#subject_select').append(`<option value="${mon.ma_mon_hoc}">${mon.ten_mon_hoc}</option>`);
-                        });
+                        if (data.mon_hocs.length > 0) {
+                            data.mon_hocs.forEach(function (mon) {
+                                $('#subject_select').append(`<option value="${mon.ma_mon_hoc}">${mon.ten_mon_hoc}</option>`);
+                            });
+                        } else {
+                            $('#subject_select').append('<option disabled>Không có môn học nào</option>');
+                        }
+
+                        // Cập nhật giảng viên
                         $('#lecturer_select').prop('disabled', false).html('<option disabled selected>-- Chọn giảng viên --</option>');
-                        data.giang_viens.forEach(function (gv) {
-                            $('#lecturer_select').append(`<option value="${gv.ma_giang_vien}">${gv.ho_ten}</option>`);
-                        });
+                        if (data.giang_viens.length > 0) {
+                            data.giang_viens.forEach(function (gv) {
+                                $('#lecturer_select').append(`<option value="${gv.ma_giang_vien}">${gv.ho_ten}</option>`);
+                            });
+                        } else {
+                            $('#lecturer_select').append('<option disabled>Không có giảng viên nào</option>');
+                        }
+
+                        // Reset nút submit
                         $('#submitBtn').prop('disabled', true);
                     });
+                } else {
+                    // Nếu chưa đủ điều kiện, reset các select và nút
+                    $('#class_select').prop('disabled', true).html('<option disabled selected>-- Chọn lớp học --</option>');
+                    $('#subject_select').prop('disabled', true).html('<option disabled selected>-- Chọn môn học --</option>');
+                    $('#lecturer_select').prop('disabled', true).html('<option disabled selected>-- Chọn giảng viên --</option>');
+                    $('#submitBtn').prop('disabled', true);
+                }
+            }
+
+            $('#year_select, #hoc_ky_select').on('change', fetchDecentralizationData);
+
+            $('#lecturer_select').on('change', function () {
+                // Bật nút submit khi chọn đủ
+                let lop = $('#class_select').val();
+                let mon = $('#subject_select').val();
+                let gv = $('#lecturer_select').val();
+                if (lop && mon && gv) {
+                    $('#submitBtn').prop('disabled', false);
+                } else {
+                    $('#submitBtn').prop('disabled', true);
                 }
             });
 
-            // ==== 8. BẬT SUBMIT KHI CHỌN ĐỦ ====
-            $('#lecturer_select').on('change', function () {
-                $('#submitBtn').prop('disabled', false);
-            });
 
             // ==== 9. HIỆN THÔNG BÁO SWEETALERT ====
             @if(session('success'))
@@ -843,6 +864,6 @@
                     showConfirmButton: true
                 });
             @endif
-        });
+                    });
     </script>
 @endsection

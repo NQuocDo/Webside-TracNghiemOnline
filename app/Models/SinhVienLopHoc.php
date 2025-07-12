@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class SinhVienLopHoc extends Model
 {
-    //
     protected $table = 'sinh_vien_lop_hoc';
     protected $primaryKey = 'ma_sv_lh';
     public $incrementing = false;
@@ -18,20 +17,18 @@ class SinhVienLopHoc extends Model
         'ma_lop_hoc',
         'hoc_ky',
         'nam_hoc',
+        'is_hien_tai',
     ];
 
     public $timestamps = false;
 
-    // Quan hệ: Mỗi bản ghi thuộc về 1 sinh viên
     public function sinhVien()
     {
         return $this->belongsTo(SinhVien::class, 'ma_sinh_vien', 'ma_sinh_vien');
     }
 
-    // Quan hệ: Mỗi bản ghi thuộc về 1 lớp học
     public function lopHoc()
     {
         return $this->belongsTo(LopHoc::class, 'ma_lop_hoc', 'ma_lop_hoc');
     }
-  
 }

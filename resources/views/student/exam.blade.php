@@ -497,7 +497,9 @@
             } else {
                 clearInterval(timerInterval);
                 Swal.fire('Hết giờ', 'Bài thi sẽ được nộp tự động.', 'info');
-                submitExam();
+                setTimeout(function () {
+                    submitExam();
+                }, 3000); 
             }
         }
 

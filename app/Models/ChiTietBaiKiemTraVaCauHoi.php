@@ -32,14 +32,7 @@ class ChiTietBaiKiemTraVaCauHoi extends Model
     }
     public function cauHoi()
     {
-        return $this->hasOneThrough(
-            CauHoi::class,
-            ChiTietDeThiVaCauHoi::class,
-            'ma_chi_tiet_dtch',     // Foreign key trên bảng chi_tiet_de_thi_va_cau_hois
-            'ma_cau_hoi',           // Foreign key trên bảng cau_hois
-            'ma_chi_tiet_dtch',     // Local key trên bảng này
-            'ma_cau_hoi'            // Local key trên bảng chi_tiet_de_thi_va_cau_hois
-        );
+        return $this->belongsTo(CauHoi::class, 'ma_cau_hoi', 'ma_cau_hoi');
     }
     public function chiTietDeThi()
     {

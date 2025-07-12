@@ -359,16 +359,6 @@
                             maxlength="255">
                     </div>
                     <div>
-                        <label for="semester">Học Kỳ</label>
-                        <select id="semester" name="hoc_ky" required>
-                            <option value="" disabled {{ old('hoc_ky') === null ? 'selected' : '' }}>-- Chọn học kỳ --
-                            </option>
-                            @for ($i = 1; $i <= 6; $i++)
-                                <option value="{{ $i }}" {{ old('hoc_ky') == $i ? 'selected' : '' }}>Học kỳ {{ $i }}</option>
-                            @endfor
-                        </select>
-                    </div>
-                    <div>
                         <label for="academic_year">Năm Học</label>
                         @php
                             $now = now()->year;
@@ -377,7 +367,10 @@
                         @endphp
                         <input type="number" id="academic_year" name="nam_hoc" min="{{ $min }}" max="{{ $max }}" required
                             value="{{ old('nam_hoc') }}">
-                        <small>(Chỉ cho phép từ {{ $min }} đến {{ $max }})</small>
+                    </div>
+                    <div>
+                        <small>(Chỉ cho phép từ {{ $min }} đến {{ $max }}). Nhập niên khóa. Ví dụ: năm 2023 dành cho khoá
+                            23.</small>
                     </div>
 
                     <button type="submit" id="addClassSubmitBtn" class="add-class-submit-btn">
@@ -394,8 +387,7 @@
                     <tr>
                         <th>Mã Lớp</th>
                         <th>Tên Lớp</th>
-                        <th>Năm Học</th>
-                        <th>Học Kỳ</th>
+                        <th>Khoá</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
@@ -407,8 +399,7 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $lopHoc->ten_lop_hoc }}</td>
-                                <td>{{ $lopHoc->nam_hoc }}</td>
-                                <td>{{ $lopHoc->hoc_ky }}</td>
+                                <td>{{ $lopHoc->nien_khoa }}</td>
                                 <td>
                                     <a href="javascript:void(0);" class="btn btn-primary edit-class-btn"
                                         data-id="{{ $lopHoc->ma_lop_hoc }}" data-ten="{{ $lopHoc->ten_lop_hoc }}"
@@ -543,6 +534,6 @@
                     showConfirmButton: true
                 });
             @endif
-                                                           });
+                                                                       });
     </script>
 @endsection

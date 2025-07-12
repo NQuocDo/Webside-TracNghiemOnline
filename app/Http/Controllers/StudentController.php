@@ -21,7 +21,6 @@ class StudentController extends Controller
 {
 
 
-
     public function layDanhSachMonHoc()
     {
         $maNguoiDung = Auth::user()->ma_nguoi_dung;
@@ -34,22 +33,21 @@ class StudentController extends Controller
 
         $maSinhVien = $sinhVien->ma_sinh_vien;
 
-        // 1. Lấy toàn bộ lớp mà sinh viên đã học
-        $lopSinhVien = DB::table('sinh_vien_lop_hoc')
-            ->where('ma_sinh_vien', $maSinhVien)
-            ->pluck('ma_lop_hoc');
-
-        if ($lopSinhVien->isEmpty()) {
+        $lopHienTai = DB::table('sinh_vien_lop_hoc as svlh')
+            ->where('svlh.ma_sinh_vien', $maSinhVien)
+            ->where('svlh.is_hien_tai', 1)
+            ->pluck('svlh.ma_lop_hoc');
+        if ($lopHienTai->isEmpty()) {
             return view('student.dashboard')->with(['monDangHoc' => collect()]);
         }
 
-        // 2. Lấy tất cả môn học mà sinh viên được dạy bởi giảng viên (qua lớp của SV)
+        // Lấy môn học của lớp hiện tại
         $monDangHoc = DB::table('phan_quyen_days as pqd')
             ->join('mon_hocs as mh', 'mh.ma_mon_hoc', '=', 'pqd.ma_mon_hoc')
             ->join('giangviens as gv', 'gv.ma_giang_vien', '=', 'pqd.ma_giang_vien')
             ->join('nguoidungs as nd', 'nd.ma_nguoi_dung', '=', 'gv.ma_nguoi_dung')
             ->join('lop_hocs as lh', 'lh.ma_lop_hoc', '=', 'pqd.ma_lop_hoc')
-            ->whereIn('pqd.ma_lop_hoc', $lopSinhVien)
+            ->whereIn('pqd.ma_lop_hoc', $lopHienTai)
             ->select(
                 'pqd.ma_mon_hoc',
                 'mh.ten_mon_hoc',
@@ -59,8 +57,7 @@ class StudentController extends Controller
                 'nd.hinh_anh',
                 'pqd.ma_lop_hoc',
                 'lh.ten_lop_hoc',
-                'lh.nam_hoc',
-                'lh.hoc_ky'
+                'lh.nien_khoa',
             )
             ->distinct()
             ->get();
@@ -70,6 +67,7 @@ class StudentController extends Controller
         ]);
     }
 
+
     //hàm hiển thị danh sách bài kiêm tra trang exam_list
     public function hienThiDanhSachBaiKiemTra()
     {
@@ -78,28 +76,28 @@ class StudentController extends Controller
         $sinhVien = SinhVien::where('ma_nguoi_dung', $maNguoiDung)->firstOrFail();
         $maSinhVien = $sinhVien->ma_sinh_vien;
 
-        // 1. Lấy tất cả lớp mà sinh viên đã/đang học
-        $cacLopCuaSinhVien = DB::table('sinh_vien_lop_hoc')
+        // 🔸 1. Lấy lớp hiện tại của sinh viên
+        $lopHienTai = DB::table('sinh_vien_lop_hoc')
             ->where('ma_sinh_vien', $maSinhVien)
+            ->where('is_hien_tai', 1)
             ->pluck('ma_lop_hoc');
 
-        if ($cacLopCuaSinhVien->isEmpty()) {
+        if ($lopHienTai->isEmpty()) {
             return view('student.exam_list', ['danhSachBaiKiemTra' => collect()]);
         }
 
-        // 2. Lấy danh sách quyền giảng viên được dạy ở lớp sinh viên đã học
+        // 🔸 2. Lấy phân quyền ở lớp hiện tại
         $phanQuyen = DB::table('phan_quyen_days')
-            ->whereIn('ma_lop_hoc', $cacLopCuaSinhVien)
+            ->whereIn('ma_lop_hoc', $lopHienTai)
             ->select('ma_lop_hoc', 'ma_mon_hoc', 'ma_giang_vien')
             ->distinct()
             ->get();
 
-        // Nếu không có quyền nào phù hợp => không có bài kiểm tra nào được phép xem
         if ($phanQuyen->isEmpty()) {
             return view('student.exam_list', ['danhSachBaiKiemTra' => collect()]);
         }
 
-        // 3. Truy vấn bài kiểm tra khớp phân quyền và sinh viên chưa làm
+        // 🔸 3. Lấy danh sách bài kiểm tra chưa làm
         $danhSachBaiKiemTra = DB::table('bai_kiem_tras as bkt')
             ->join('de_this as dt', 'bkt.ma_de_thi', '=', 'dt.ma_de_thi')
             ->join('mon_hocs as mh', 'dt.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
@@ -128,6 +126,7 @@ class StudentController extends Controller
 
         return view('student.exam_list', compact('danhSachBaiKiemTra'));
     }
+
 
 
     public function hienThiBaiKiemTraTheoId($id)

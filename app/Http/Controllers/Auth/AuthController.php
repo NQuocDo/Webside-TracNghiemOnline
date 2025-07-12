@@ -41,7 +41,7 @@ class AuthController extends Controller
                     return redirect()->intended('/student/dashboard');
                 case 'giang_vien':
                     return redirect()->intended('/lecturer/dashboard');
-                case 'truong_khoa':
+                case 'can_bo':
                     return redirect()->intended('/dean/dashboard');
                 default:
                     Auth::logout();

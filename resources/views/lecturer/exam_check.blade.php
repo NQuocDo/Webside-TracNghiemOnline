@@ -99,15 +99,15 @@
         </div>
 
         <div class="exam-question-body">
-            @foreach ($baiKiemTra->chiTietCauHoi as $index => $chiTiet)
+            @foreach ($chiTietCauHois as $index => $chiTiet)
                 @php
-                    $cauHoi = optional($chiTiet->chiTietDeThi)->cauHoi;
+                    $cauHoi = $chiTiet->cauHoi; 
                 @endphp
 
                 @if ($cauHoi)
                     <div class="question-content">
                         <strong>Câu hỏi {{ $index + 1 }}:</strong>
-                        <p>{{ $cauHoi->noi_dung }}</p>
+                        <p>{!! nl2br(e($cauHoi->noi_dung)) !!}</p>
 
                         @if ($cauHoi->hinh_anh)
                             <img src="{{ asset('images/' . $cauHoi->hinh_anh) }}" alt="Câu hỏi" class="question-src">
@@ -128,6 +128,11 @@
                                 </li>
                             @endforeach
                         </ul>
+                    </div>
+                @else
+                    <div class="question-content">
+                        <strong>Câu hỏi {{ $index + 1 }}:</strong>
+                        <p><em>Câu hỏi không tồn tại hoặc đã bị xóa.</em></p>
                     </div>
                 @endif
             @endforeach

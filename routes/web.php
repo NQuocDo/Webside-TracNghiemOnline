@@ -137,7 +137,7 @@ Route::middleware(['auth'])->group(function () {
 
 //Kiểm tra đúng vai_tro là truong_khoa thì vào được những uri này
 Route::middleware(['auth'])->group(function () {
-    Route::middleware(['role:truong_khoa'])->group(function () {
+    Route::middleware(['role:can_bo'])->group(function () {
 
         Route::get('/dean/dashboard', [DeanController::class, 'hienThiTenTruongKhoa'])->name('dean.dashboard');
 
@@ -182,10 +182,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dean/department-statis', [DeanController::class, 'hienThiThongKe'])->name('department_statis');
 
         //Quản lý thêm người dùng
+        Route::get('/get-class-by-year/{khoa}', [DeanController::class, 'layLopTheoKhoa']);
         Route::get('/dean/add-user', [DeanController::class, 'hienThiThongTinLopHoc'])->name('add_user');
         Route::post('/dean/add-user/store', [DeanController::class, 'themNguoiDung'])->name('add_user.store');
         Route::post('/dean/add-user/import-excel', [DeanController::class, 'themNguoiDungExcel'])->name('add_user_import_excel');
-        
+
         //Quản lý thêm lớp học
         Route::get('/dean/add-class', [DeanController::class, 'hienThiLopHoc'])->name('add_class');
         Route::post('/dean/add-class/store', [DeanController::class, 'themLopHoc'])->name('add_class_store');

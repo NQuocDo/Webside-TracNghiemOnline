@@ -137,236 +137,163 @@
                     <input type="text" id="user_mssv" name="mssv">
                 </div>
                 <div>
-                    <label for="user_email">Email</label> <input type="text" id="user_email" name="email" required>
+                    <label for="user_email">Email</label>
+                    <input type="text" id="user_email" name="email" required>
                 </div>
                 <div>
-                    <label for="user_password">Mật khẩu</label> <input type="password" id="user_password" name="mat_khau"
-                        required>
+                    <label for="user_password">Mật khẩu</label>
+                    <input type="password" id="user_password" name="mat_khau" required>
                 </div>
                 <div>
-                    <label for="user_name">Họ Tên</label> <input type="text" id="user_name" name="ho_ten" required>
+                    <label for="user_name">Họ Tên</label>
+                    <input type="text" id="user_name" name="ho_ten" required>
                 </div>
                 <div id="hocViGroup">
                     <label for="hoc_vi">Học vị</label>
                     <input type="text" id="hoc_vi" name="hoc_vi" placeholder="Chỉ nhập nếu là giảng viên">
                 </div>
-                <div id="lopHocGroup" class="option-difficulty">
+                <div id="nienKhoacGroup">
+                      @php
+                            $now = now()->year;
+                            $min = $now - 2;
+                            $max = $now + 3;
+                        @endphp
+                    <label for="khoa_hoc">Niên khóa</label>
+                    <select id="khoa_hoc" name="khoa_hoc" required>
+                        <option value="">-- Chọn niên khóa --</option>
+                        @for ($i = $min; $i <= $max ; $i++)
+                            <option value="{{ $i }}">{{ $i }}</option>
+                        @endfor
+                    </select>
+                </div>
+                <div id="lopHocGroup">
                     <label for="ma_lop">Lớp học</label>
-                    <section>
-                        <select id="ma_lop" name="ma_lop">
-                            <option value="">-- Chọn lớp học --</option>
-                            @foreach ($danhSachLopHoc as $lopHoc)
-                                <option value="{{ $lopHoc->ma_lop_hoc }}">{{ $lopHoc->ten_lop_hoc }}</option>
-                            @endforeach
-                        </select>
-                    </section>
+                    <select id="ma_lop" name="ma_lop" required>
+                        <option value="">-- Chọn lớp học --</option>
+                    </select>
                 </div>
-                <div id="hocKyGroup" class="option-difficulty">
-                    <label for="hoc_ky">Học kỳ</label>
-                    <section>
-                        <select id="hoc_ky" name="hoc_ky" required>
-                            <option value="">-- Chọn học kỳ --</option>
-                            <option value="1">Học kỳ 1</option>
-                            <option value="2">Học kỳ 2</option>
-                            <option value="3">Học kỳ 3</option>
-                            <option value="4">Học kỳ 4</option>
-                            <option value="5">Học kỳ 5</option>
-                        </select>
-                    </section>
-                </div>
-                <div id="namHocGroup" class="option-difficulty">
-                    <label for="nam_hoc">Năm học</label>
-                    <section>
-                        <input type="number" name="nam_hoc" id="nam_hoc" placeholder="VD: 2025" required>
-                    </section>
-                </div>
-                <div class="option-difficulty">
+                <input type="hidden" name="hoc_ky" value="1">
+                <div>
                     <label for="user_gender">Giới tính</label>
-                    <section>
-                        <select id="user_gender" name="gioi_tinh" required>
-                            <option value="">-- Chọn giới tính --</option>
-                            <option value="Nam">Nam</option>
-                            <option value="Nữ">Nữ</option>
-                        </select>
-                    </section>
+                    <select id="user_gender" name="gioi_tinh" required>
+                        <option value="">-- Chọn giới tính --</option>
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                    </select>
                 </div>
                 <div>
-                    <label for="user_dob">Ngày sinh</label> <input type="date" id="user_dob" name="ngay_sinh" required>
+                    <label for="user_dob">Ngày sinh</label>
+                    <input type="date" id="user_dob" name="ngay_sinh" required>
                 </div>
                 <div>
-                    <label for="user_address">Địa chỉ</label> <input type="text" id="user_address" name="dia_chi">
+                    <label for="user_address">Địa chỉ</label>
+                    <input type="text" id="user_address" name="dia_chi">
                 </div>
                 <div>
-                    <label for="user_phone">Số điện thoại</label> <input type="text" id="user_phone" name="so_dien_thoai">
+                    <label for="user_phone">Số điện thoại</label>
+                    <input type="text" id="user_phone" name="so_dien_thoai">
                 </div>
-                <div class="option-difficulty">
+                <div>
                     <label for="user_account_status">Trạng thái tài khoản</label>
-                    <section>
-                        <select id="user_account_status" name="trang_thai_tai_khoan" required>
-                            <option value="">-- Chọn trạng thái --</option>
-                            <option value="hoat_dong">Hoạt động</option>
-                            <option value="khong_hoat_dong">Không hoạt động</option>
-                        </select>
-                    </section>
+                    <select id="user_account_status" name="trang_thai_tai_khoan" required>
+                        <option value="">-- Chọn trạng thái --</option>
+                        <option value="hoat_dong">Hoạt động</option>
+                        <option value="khong_hoat_dong">Không hoạt động</option>
+                    </select>
                 </div>
-                <div class="option-difficulty">
+                <div>
                     <label for="user_role">Vai trò</label>
-                    <section>
-                        <select id="user_role" name="vai_tro" required>
-                            <option value="">-- Chọn vai trò --</option>
-                            <option value="sinh_vien">Sinh viên</option>
-                            <option value="giang_vien">Giảng viên</option>
-                        </select>
-                    </section>
+                    <select id="user_role" name="vai_tro" required>
+                        <option value="">-- Chọn vai trò --</option>
+                        <option value="sinh_vien">Sinh viên</option>
+                        <option value="giang_vien">Giảng viên</option>
+                    </select>
                 </div>
-
                 <div class="button-group">
-                    <button type="submit" id="add-user-submit-btn" class="add-user-submit-btn">Thêm Người Dùng</button>
-                    <button type="button" id="add-user-submit-btn-import-excel"
-                        class="add-user-submit-btn-import-excel">Thêm Người Dùng Excel</button>
+                    <button type="submit" class="btn btn-primary">Thêm Người Dùng</button>
                 </div>
             </form>
         </div>
-        <div class="modal fade" id="importExcelModal" tabindex="-1" aria-labelledby="importExcelLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content p-3">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="importExcelLabel">Import Người Dùng bằng Excel</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form action="{{ route('add_user_import_excel') }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            <div class="mb-3">
-                                <label for="vai_tro" class="form-label">Loại người dùng:</label>
-                                <select class="form-select" id="vai_tro" name="vai_tro" required>
-                                    <option value="" disabled selected>-- Chọn loại người dùng --</option>
-                                    <option value="sinh_vien">Sinh viên</option>
-                                    <option value="giang_vien">Giảng viên</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="excelFile" class="form-label">Chọn file Excel:</label>
-                                <input type="file" class="form-control" id="excelFile" name="file" accept=".xlsx,.xls,.csv"
-                                    required>
-                            </div>
-                            <div class="form-text text-muted mt-1">
-                                <div>
-                                    <strong>Gợi ý:</strong> File Excel nên có các cột: <br>
-                                    <code>Họ tên</code>, <code>Email</code>, <code>Mật khẩu</code>, <code>Giới tính</code>,
-                                    <code>Ngày sinh</code>, <code>Địa chỉ</code>, <code>Số điện thoại</code>,
-                                    <code>Học vị</code><br>
-                                    <em>(Vai trò: Giảng viên)</em>
-                                </div>
-                                <div>
-                                    <code>Họ tên</code>,<code>Mã số sinh viên</code>, <code>Email</code>,
-                                    <code>Mật khẩu</code>, <code>Giới tính</code>,
-                                    <code>Ngày sinh</code>, <code>Địa chỉ</code>, <code>Số điện thoại</code>,
-                                    <code>Lớp</code><br>
-                                    <em>(Vai trò: Sinh viên)</em>
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn-success">Import</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const importBtn = document.getElementById("add-user-submit-btn-import-excel");
-            if (importBtn) {
-                importBtn.addEventListener("click", function () {
-                    const modal = new bootstrap.Modal(document.getElementById('importExcelModal'));
-                    modal.show();
-                });
+        $(document).ready(function () {
+            const vaiTroSelect = $('#user_role');
+            const hocViGroup = $('#hocViGroup');
+            const lopHocGroup = $('#lopHocGroup');
+            const mssvGroup = $('#mssvGroup');
+            const namHocGroup = $('#namHocGroup');
+            const nienKhoacGroup=$('#nienKhoacGroup');            
+
+            function updateFormFields() {
+                const role = vaiTroSelect.val();
+                hocViGroup.hide();
+                lopHocGroup.hide();
+                mssvGroup.hide();
+                namHocGroup.hide();
+                nienKhoacGroup.hide();
+
+                if (role === 'sinh_vien') {
+                    lopHocGroup.show();
+                    mssvGroup.show();
+                    namHocGroup.show();
+                    nienKhoacGroup.show();
+                } else if (role === 'giang_vien') {
+                    hocViGroup.show();
+                }
             }
-            // Kiểm tra thông báo thành công từ session flash
+
+            vaiTroSelect.change(updateFormFields);
+            updateFormFields(); // init
+
+            $('#khoa_hoc').change(function () {
+                const khoa = $(this).val();
+                const lopSelect = $('#ma_lop');
+
+                lopSelect.html('<option value="">Đang tải lớp học...</option>');
+                if (khoa) {
+                    $.get(`/get-class-by-year/${khoa}`, function (data) {
+                        let html = '<option value="">-- Chọn lớp học --</option>';
+                        data.forEach(function (lop) {
+                            html += `<option value="${lop.ma_lop_hoc}">${lop.ten_lop_hoc}</option>`;
+                        });
+                        lopSelect.html(html);
+                    });
+                } else {
+                    lopSelect.html('<option value="">-- Chọn lớp học --</option>');
+                }
+            });
+
             @if(session('success'))
                 Swal.fire({
                     icon: 'success',
                     title: 'Thành công!',
                     text: '{{ session('success') }}',
-                    showConfirmButton: false, // Tự động đóng sau một khoảng thời gian
-                    timer: 2000 // Tự động đóng sau 2 giây
+                    showConfirmButton: false,
+                    timer: 2000
                 });
             @endif
 
-            // Kiểm tra thông báo lỗi từ session flash
             @if(session('error'))
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi!',
                     text: '{{ session('error') }}',
-                    showConfirmButton: true // Giữ thông báo lỗi cho người dùng đọc
-                });
-            @endif
-            @if ($errors->any())
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi nhập liệu!',
-                    html: `
-                                                                                            <ul>
-                                                                                                @foreach ($errors->all() as $error)
-                                                                                                    <li>{{ $error }}</li>
-                                                                                                @endforeach
-                                                                                            </ul>
-                                                                                            `,
                     showConfirmButton: true
                 });
             @endif
 
-            const vaiTroSelect = document.getElementById('user_role');
-            const hocViGroup = document.getElementById('hocViGroup');
-            const lopHocGroup = document.getElementById('lopHocGroup');
-            const mssvGroup = document.getElementById('mssvGroup');
-            const hocKyGroup = document.getElementById('hocKyGroup');
-            const namHocGroup = document.getElementById('namHocGroup');
-
-            const maLopSelect = document.getElementById('ma_lop');
-            const mssvInput = document.getElementById('user_mssv');
-            const hocKySelect = document.getElementById('hoc_ky');
-            const namHocInput = document.getElementById('nam_hoc');
-
-            function updateFields() {
-                const value = vaiTroSelect.value;
-
-                // Reset display
-                hocViGroup.style.display = 'none';
-                lopHocGroup.style.display = 'none';
-                mssvGroup.style.display = 'none';
-                hocKyGroup.style.display = 'none';
-                namHocGroup.style.display = 'none';
-
-                // Reset required
-                document.getElementById('hoc_vi').removeAttribute('required');
-                maLopSelect.removeAttribute('required');
-                mssvInput.removeAttribute('required');
-                hocKySelect.removeAttribute('required');
-                namHocInput.removeAttribute('required');
-
-                if (value === 'giang_vien') {
-                    hocViGroup.style.display = 'flex';
-                    // document.getElementById('hoc_vi').setAttribute('required', 'required');
-                } else if (value === 'sinh_vien') {
-                    lopHocGroup.style.display = 'flex';
-                    mssvGroup.style.display = 'flex';
-                    hocKyGroup.style.display = 'flex';
-                    namHocGroup.style.display = 'flex';
-
-                    maLopSelect.setAttribute('required', 'required');
-                    mssvInput.setAttribute('required', 'required');
-                    hocKySelect.setAttribute('required', 'required');
-                    namHocInput.setAttribute('required', 'required');
-                }
-            }
-
-            vaiTroSelect.addEventListener('change', updateFields);
-            updateFields(); // Gọi ban đầu khi trang load
-
+            @if($errors->any())
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi nhập liệu!',
+                    html: `{!! implode('<br>', $errors->all()) !!}`,
+                    showConfirmButton: true
+                });
+            @endif
         });
     </script>
 @endsection
