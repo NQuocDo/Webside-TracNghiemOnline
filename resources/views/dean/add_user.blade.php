@@ -153,15 +153,15 @@
                     <input type="text" id="hoc_vi" name="hoc_vi" placeholder="Chỉ nhập nếu là giảng viên">
                 </div>
                 <div id="nienKhoacGroup">
-                      @php
-                            $now = now()->year;
-                            $min = $now - 2;
-                            $max = $now + 3;
-                        @endphp
+                    @php
+                        $now = now()->year;
+                        $min = $now - 2;
+                        $max = $now + 3;
+                    @endphp
                     <label for="khoa_hoc">Niên khóa</label>
                     <select id="khoa_hoc" name="khoa_hoc" required>
                         <option value="">-- Chọn niên khóa --</option>
-                        @for ($i = $min; $i <= $max ; $i++)
+                        @for ($i = $min; $i <= $max; $i++)
                             <option value="{{ $i }}">{{ $i }}</option>
                         @endfor
                     </select>
@@ -211,6 +211,44 @@
                 </div>
                 <div class="button-group">
                     <button type="submit" class="btn btn-primary">Thêm Người Dùng</button>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#excelImportModal">
+                        Thêm Người Dùng (Excel)
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal fade" id="excelImportModal" tabindex="-1" aria-labelledby="excelImportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form action="{{ route('add_user_import_excel') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="excelImportModalLabel">Import Người Dùng từ Excel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Chọn vai trò -->
+                        <div class="mb-3">
+                            <label for="vai_tro" class="form-label">Chọn Vai Trò</label>
+                            <select class="form-select" name="vai_tro" id="vai_tro" required>
+                                <option value="">-- Chọn Vai Trò --</option>
+                                <option value="sinh_vien">Sinh viên</option>
+                                <option value="giang_vien">Giảng viên</option>
+                            </select>
+                        </div>
+
+                        <!-- Input file -->
+                        <div class="mb-3">
+                            <label for="file_excel" class="form-label">Chọn File Excel</label>
+                            <input type="file" class="form-control" id="file_excel" name="file_excel" accept=".xlsx,.xls"
+                                required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Gửi</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -226,7 +264,7 @@
             const lopHocGroup = $('#lopHocGroup');
             const mssvGroup = $('#mssvGroup');
             const namHocGroup = $('#namHocGroup');
-            const nienKhoacGroup=$('#nienKhoacGroup');            
+            const nienKhoacGroup = $('#nienKhoacGroup');
 
             function updateFormFields() {
                 const role = vaiTroSelect.val();
@@ -294,6 +332,6 @@
                     showConfirmButton: true
                 });
             @endif
-        });
+                });
     </script>
 @endsection

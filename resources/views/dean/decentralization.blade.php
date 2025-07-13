@@ -12,6 +12,21 @@
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
+    .decentralization-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .decentralization-header h2 {
+        margin: 0;
+        color: #343a40;
+        font-weight: 600;
+    }
+
     .search-decentralization {
         margin-bottom: 25px;
         margin-top: 25px;
@@ -426,6 +441,9 @@
 </style>
 @section('content')
     <div class="decentralization-content">
+        <div class="decentralization-header">
+            <h2>Phân quyền Giảng Dạy</h2>
+        </div>
         <form action="{{ route('decentralization') }}" method="GET" id="filter-form-decentralization"
             class="form-search-decentralization">
             <div class="mb-2 me-3">
@@ -864,6 +882,6 @@
                     showConfirmButton: true
                 });
             @endif
-                    });
+                            });
     </script>
 @endsection

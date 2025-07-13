@@ -68,7 +68,9 @@ class DeanController extends Controller
     {
         $tuKhoaTimKiem = $request->input('tu_khoa_tim_kiem');
         $maLopHoc = $request->input('ma_lop_hoc');
+        $loaiLopHoc = $request->input('loai_lop');
         $query = SinhVien::with(['nguoiDung', 'lopHienTai.lopHoc', 'sinhVienLopHocs.lopHoc'])
+            ->where('trang_thai', 'hien')
             ->whereHas('nguoiDung', function ($query) use ($tuKhoaTimKiem) {
                 $query->where('vai_tro', 'sinh_vien');
 
@@ -84,8 +86,11 @@ class DeanController extends Controller
                         });
                 });
             });
-
-        // Nếu có lọc lớp học
+        if (!empty($loaiLopHoc)) {
+            $query->whereHas('lopHienTai.lopHoc', function ($q) use ($loaiLopHoc) {
+                $q->where('loai_lop', $loaiLopHoc);
+            });
+        }
         if (!empty($maLopHoc)) {
             $query->whereHas('lopHienTai', function ($q) use ($maLopHoc) {
                 $q->where('ma_lop_hoc', $maLopHoc);
@@ -307,16 +312,19 @@ class DeanController extends Controller
     {
         $monHocId = $request->input('mon_hoc_id');
         $keyword = $request->input('tu_khoa_tim_kiem');
-
         $danhSachMonHoc = MonHoc::where('trang_thai', 'hien')->get();
-
         $query = ChuongMonHoc::with('monHoc')->orderBy('ma_mon_hoc')->orderBy('so_thu_tu');
 
         if ($monHocId) {
             $query->where('ma_mon_hoc', $monHocId);
         }
 
+        if ($keyword) {
+            $query->where('ten_chuong', 'like', '%' . $keyword . '%');
+        }
+
         $danhSachChuong = $query->paginate(10);
+
         $danhSachHocKy = MonHoc::select('hoc_ky')->distinct()->get();
 
         return view('dean.chapter_management', [
@@ -327,6 +335,7 @@ class DeanController extends Controller
             'danhSachHocKy' => $danhSachHocKy
         ]);
     }
+
     public function themChuong(Request $request)
     {
         $request->validate([
@@ -514,11 +523,11 @@ class DeanController extends Controller
         $danhSachMonHoc = MonHoc::orderBy('ten_mon_hoc')->get();
 
         // Nếu đang lọc theo giảng viên
-        if ($giangVienId) {
-            $danhSachPhanQuyen = PhanQuyenDay::where('ma_giang_vien', $giangVienId)->paginate(5);
-        } else {
-            $danhSachPhanQuyen = PhanQuyenDay::paginate(5);
-        }
+        $danhSachPhanQuyen = PhanQuyenDay::when($giangVienId, function ($query) use ($giangVienId) {
+            return $query->where('ma_giang_vien', $giangVienId);
+        })
+            ->paginate(5)
+            ->appends($request->only('giang_vien_id'));
 
         return view('dean.decentralization', [
             'danhSachLopHoc' => $danhSachLopHoc,
@@ -701,11 +710,11 @@ class DeanController extends Controller
     public function themNguoiDungExcel(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv',
+            'file_excel' => 'required|mimes:xlsx,xls,csv',
             'vai_tro' => 'required|in:sinh_vien,giang_vien',
         ]);
 
-        $path = $request->file('file')->store('temp');
+        $path = $request->file('file_excel')->store('temp');
         $absolutePath = Storage::path($path);
 
         if (!file_exists($absolutePath)) {
@@ -899,7 +908,6 @@ class DeanController extends Controller
         $validated = $request->validate([
             'ten_lop_hoc' => 'required|string|max:255',
             'nam_hoc' => 'required|integer|min:1900|max:2100',
-            'hoc_ky' => 'required|integer|min:1|max:10',
         ]);
 
         $lopHoc = LopHoc::find($id);

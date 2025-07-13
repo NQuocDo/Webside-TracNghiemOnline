@@ -10,6 +10,20 @@
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
+        .lecturer-list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .lecturer-list-header h2 {
+        margin: 0;
+        color: #343a40;
+        font-weight: 600;
+    }
 
     .form-search-student {
         width: 100%;
@@ -171,6 +185,9 @@
 </style>
 @section('content')
     <div class="lecturer-list-content">
+        <div class="lecturer-list-header">
+            <h2>Danh sách Giảng Viên</h2>
+        </div>
         <form action="{{ route('lecturer_list') }}" method="GET" id="form-search-lecturer" class="form-search-student"
             style="justify-content: end;">
             <div class="mb-2 me-3">

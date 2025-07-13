@@ -8,6 +8,21 @@
         margin: 20px;
     }
 
+    .student-manage-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .student-manage-header h2 {
+        margin: 0;
+        color: #343a40;
+        font-weight: 600;
+    }
+
     .form-search-student {
         width: 100%;
         display: flex;
@@ -231,14 +246,23 @@
 </style>
 @section('content')
     <div class="student-manage-content">
+        <div class="student-manage-header">
+            <h2>Quản lý Sinh Viên</h2>
+        </div>
         <form action="{{ route('student_management') }}" method="GET" id="form-search-student-list"
             class="form-search-student d-flex flex-wrap justify-content-end gap-2">
-
             <div class="mb-2">
                 <input type="text" class="form-control" id="keyword" name="tu_khoa_tim_kiem"
                     placeholder="Tìm theo tên sinh viên" value="{{ $tuKhoaTimKiem }}">
             </div>
-
+            <div class="mb-2">
+                <select class="form-select" name="loai_lop"
+                    onchange="document.getElementById('form-search-student-list').submit();">
+                    <option value="">-- Loại lớp học --</option>
+                    <option value="chinh_thuc">Chính thức</option>
+                    <option value="nang_cao">Nâng cao</option>
+                </select>
+            </div>
             <div class="mb-2">
                 <select class="form-select" name="ma_lop_hoc"
                     onchange="document.getElementById('form-search-student-list').submit();">

@@ -152,12 +152,9 @@ class LecturerController extends Controller
     }
 
 
-
-
     //Quản lý câu hỏi và đáp án
     public function hienThiCauHoiVaDapAn(Request $request)
     {
-
         if (!Auth::check()) {
             return redirect('/login')->with('error', 'Vui lòng đăng nhập.');
         }
@@ -168,7 +165,6 @@ class LecturerController extends Controller
             return redirect()->back()->with("error", "Bạn không có quyền truy cập trang này.");
         }
 
-        // Lấy giảng viên theo người dùng
         $giangVien = GiangVien::where('ma_nguoi_dung', $user->ma_nguoi_dung)->first();
 
         if (!$giangVien) {
@@ -187,15 +183,17 @@ class LecturerController extends Controller
 
         $maMonHocs = $danhSachMonHoc->pluck('ma_mon_hoc')->toArray();
 
+        // Query câu hỏi với điều kiện thêm: phải là do chính giảng viên tạo
         $thongTinCauHoi = CauHoi::with(['dapAns', 'monHoc', 'chuongMonHoc'])
             ->whereIn('ma_mon_hoc', $maMonHocs)
+            ->where('ma_giang_vien', $giangVien->ma_giang_vien) // 🔴 Chỉ lấy câu hỏi của chính giảng viên tạo ra
             ->where('trang_thai', 'hien');
+
         $tuKhoaTimKiem = $request->input('tu_khoa_tim_kiem');
         if ($tuKhoaTimKiem) {
             $thongTinCauHoi->where('noi_dung', 'like', '%' . $tuKhoaTimKiem . '%');
         }
 
-        // Lọc theo môn học cụ thể
         $locTheoMocHoc = $request->input('mon_hoc_id');
         if ($locTheoMocHoc) {
             $thongTinCauHoi->where('ma_mon_hoc', $locTheoMocHoc);
@@ -214,6 +212,7 @@ class LecturerController extends Controller
             'user' => $user,
         ]);
     }
+
     public function capNhatPhamVi(Request $request, $id)
     {
         $user = Auth::user();
@@ -1309,12 +1308,9 @@ class LecturerController extends Controller
         $bangDiem = DB::table('bang_diems')->where('ma_bang_diem', $id)->first();
 
         if ($bangDiem) {
-            // Xoá lịch sử làm bài theo mã bài kiểm tra (không cần ma_sinh_vien nếu không có cột đó)
             DB::table('lich_su_lam_bais')
                 ->where('ma_bai_kiem_tra', $bangDiem->ma_bai_kiem_tra)
                 ->delete();
-
-            // Xoá điểm
             DB::table('bang_diems')->where('ma_bang_diem', $id)->delete();
 
             return redirect()->back()->with('success', 'Xóa điểm và lịch sử làm bài thành công!');

@@ -11,6 +11,21 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
+    .subject-manage-header {
+
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .subject-manage-header h2 {
+        margin: 0;
+        color: #343a40;
+        font-weight: 600;
+    }
+
     .add-subject {
         padding: 30px;
         border-radius: 15px;
@@ -359,6 +374,9 @@
 @section('content')
     <div class="subject-manage-content">
         <div class="subject-manage-header">
+            <div class="subject-manage-header">
+                <h2>Quản lý Môn Học</h2>
+            </div>
             <div class="add-subject" id="add-subject">
                 <h2>Thêm môn học</h2>
                 @if ($errors->any())
@@ -621,16 +639,16 @@
                         icon: 'error',
                         title: 'Lỗi nhập liệu!',
                         html: `
-                                                                                                               <ul>
-                                                                                                                   @foreach ($errors->all() as $error)
-                                                                                                                    <li>{{ $error }}</li>
-                                                                                                                   @endforeach
-                                                                                                               </ul>
-                                                                                                          `,
+                                                                                                                               <ul>
+                                                                                                                                   @foreach ($errors->all() as $error)
+                                                                                                                                    <li>{{ $error }}</li>
+                                                                                                                                   @endforeach
+                                                                                                                               </ul>
+                                                                                                                          `,
                         showConfirmButton: true
                     });
                 @endif
-                                                          });
+                                                                  });
 
         </script>
     @endsection
