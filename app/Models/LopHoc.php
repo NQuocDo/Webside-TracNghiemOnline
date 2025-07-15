@@ -41,6 +41,7 @@ class LopHoc extends Model
         'ma_lop_hoc', // Có thể để trống nếu trigger tự tạo
         'ten_lop_hoc',
         'nien_khoa',
+        'loai_lop',
         'trang_thai'
     ];
 

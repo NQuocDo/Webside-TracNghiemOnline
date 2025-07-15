@@ -359,6 +359,16 @@
                             maxlength="255">
                     </div>
                     <div>
+                        <label for="type_class">Tên Lớp</label>
+                        <section>
+                            <select name="loai_lop" id="type_class">
+                                <option value="">-- Chọn loại lớp --</option>
+                                <option value="chinh_thuc">Chính thức</option>
+                                <option value="nang_cao">Nâng cao</option>
+                            </select>
+                        </section>
+                    </div>
+                    <div>
                         <label for="academic_year">Năm Học</label>
                         @php
                             $now = now()->year;
@@ -387,6 +397,7 @@
                     <tr>
                         <th>Mã Lớp</th>
                         <th>Tên Lớp</th>
+                        <th>Loại lớp</th>
                         <th>Khoá</th>
                         <th>Thao tác</th>
                     </tr>
@@ -396,9 +407,16 @@
                         <tr class="col-6 text-center p3">Không có lớp học nào được tạo.</tr>
                     @else
                         @foreach($danhSachLopHoc as $index => $lopHoc)
+                        @php
+                            $tenLoaiLop = [
+                                'chinh_thuc' => 'Chính thức',
+                                'nang_cao' => 'Nâng cao',
+                            ];
+                        @endphp
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $lopHoc->ten_lop_hoc }}</td>
+                                <td>{{ $tenLoaiLop[$lopHoc->loai_lop] }}</td>
                                 <td>{{ $lopHoc->nien_khoa }}</td>
                                 <td>
                                     <a href="javascript:void(0);" class="btn btn-primary edit-class-btn"
@@ -534,6 +552,6 @@
                     showConfirmButton: true
                 });
             @endif
-                                                                       });
+                                                                           });
     </script>
 @endsection

@@ -118,14 +118,14 @@
     }
 
     .actions-cell {
-        width: 300px;
+        width: 150px;
         text-align: center;
         padding: 12px 8px;
     }
 
     .actions-cell button {
         padding: 8px 16px;
-        margin: 0 4px;
+        margin: 4px 4px;
         border: none;
         border-radius: 8px;
         font-size: 13px;
@@ -287,54 +287,85 @@
                         <th>Giới tính</th>
                         <th>Lớp hiện tại</th>
                         <th>Lớp đã học</th>
+                        <th>Lớp ghép</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if($danhSachSinhVien->isEmpty())
                         <tr>
-                            <td colspan="8" class="text-center text-muted">Không có sinh viên</td>
+                            <td colspan="9" class="text-center text-muted">Không có sinh viên</td>
                         </tr>
                     @else
                         @foreach($danhSachSinhVien as $index => $sinhVien)
                             @php
                                 $nguoiDung = $sinhVien->nguoiDung;
                                 $stt = ($danhSachSinhVien->currentPage() - 1) * $danhSachSinhVien->perPage() + $index + 1;
-                                $lopHienTai = $sinhVien->lopHienTai;
                                 $tatCaLopHoc = $sinhVien->sinhVienLopHocs->sortByDesc('nam_hoc')->sortByDesc('hoc_ky');
+
+                                // Lớp hiện tại: is_hien_tai = 1
+                                $lopHienTai = $tatCaLopHoc->firstWhere('is_hien_tai', 1);
                                 $lopHienTaiID = $lopHienTai?->ma_lop_hoc;
-                                $lopDaHoc = $tatCaLopHoc->filter(fn($item) => $item->ma_lop_hoc !== $lopHienTaiID);
+
+                                // Lớp đã học: is_hien_tai = 0
+                                $lopDaHoc = $tatCaLopHoc->filter(fn($item) => $item->is_hien_tai == 0);
+
+                                // Lớp học ghép: hinh_thuc = 'hoc_ghep'
+                                $lopHocGhep = $tatCaLopHoc->filter(fn($item) => $item->hinh_thuc === 'hoc_ghep');
                             @endphp
 
                             <tr>
+                                <!-- STT và checkbox -->
                                 <td class="stt-cell text-center">
                                     <input type="checkbox" class="student-checkbox" value="{{ $sinhVien->ma_sinh_vien }}">
                                     {{ $stt }}
                                 </td>
 
+                                <!-- Thông tin cá nhân -->
                                 <td>{{ $nguoiDung->ho_ten ?? 'Không rõ' }}</td>
                                 <td>{{ $sinhVien->mssv ?? 'Không rõ' }}</td>
                                 <td>{{ $nguoiDung->email ?? 'Không rõ' }}</td>
                                 <td>{{ $nguoiDung->gioi_tinh ?? 'Không rõ' }}</td>
 
-                                {{-- Cột: Lớp hiện tại --}}
-                                <td>
-                                    {{ optional($lopHienTai?->lopHoc)->ten_lop_hoc ?? 'Chưa có lớp hiện tại' }}
-                                </td>
+                                    <!-- Lớp hiện tại -->
+                                    <td>
+                                        @if($lopHienTai)
+                                            {{ optional($lopHienTai->lopHoc)->ten_lop_hoc }}
+                                            ({{ $lopHienTai->hoc_ky }}/{{ $lopHienTai->nam_hoc }})
+                                        @else
+                                            <span class="text-muted">Chưa có lớp chính thức</span>
+                                        @endif
+                                    </td>
 
-                                {{-- Cột: Lớp đã học --}}
+                                    <!-- Lớp đã học -->
+                                    <td>
+                                        @if($lopDaHoc->isNotEmpty())
+                                            <ul class="mb-0 ps-3">
+                                                @foreach ($lopDaHoc as $lh)
+                                                    <li>{{ optional($lh->lopHoc)->ten_lop_hoc }} ({{ $lh->hoc_ky }}/{{ $lh->nam_hoc }}) -
+                                                        {{ $lh->hinh_thuc === 'chinh_thuc' ? 'Chính thức' : ($lh->hinh_thuc === 'hoc_ghep' ? 'Học ghép' : ucfirst($lh->hinh_thuc)) }}
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        @else
+                                            <span class="text-muted">Không có lớp đã học</span>
+                                        @endif
+                                    </td>
+
+                                <!-- Lớp ghép -->
                                 <td>
-                                    @if ($lopDaHoc->isNotEmpty())
+                                    @if($lopHocGhep->isNotEmpty())
                                         <ul class="mb-0 ps-3">
-                                            @foreach ($lopDaHoc as $lh)
-                                                <li>{{ optional($lh->lopHoc)->ten_lop_hoc ?? 'Không rõ tên lớp' }}</li>
+                                            @foreach ($lopHocGhep as $lh)
+                                                <li>{{ optional($lh->lopHoc)->ten_lop_hoc }} ({{ $lh->hoc_ky }}/{{ $lh->nam_hoc }})</li>
                                             @endforeach
                                         </ul>
                                     @else
-                                        Không có lớp đã học
+                                        <span class="text-muted">Không có lớp học ghép</span>
                                     @endif
                                 </td>
 
+                                <!-- Thao tác -->
                                 <td class="actions-cell">
                                     @if($nguoiDung)
                                         <button type="button" class="btn btn-sm btn-toggle-status" style="color:white;"
@@ -371,7 +402,6 @@
                         @endforeach
                     @endif
                 </tbody>
-
             </table>
         </div>
 
@@ -412,6 +442,16 @@
                             @foreach($danhSachLopHoc as $lop)
                                 <option value="{{ $lop->ma_lop_hoc }}">{{ $lop->ten_lop_hoc }}</option>
                             @endforeach
+                        </select>
+                        <label for="hinh_thuc" class="mt-3">Hình thức:</label>
+                        <select name="hinh_thuc" class="form-select" required>
+                            <option value="chinh_thuc" selected>Chính thức</option>
+                            <option value="hoc_ghep">Học ghép</option>
+                            <option value="nang_cao">Nâng cao</option>
+                        </select>
+                        <label for="ma_mon_hoc" class="mt-3">Môn học (bỏ qua nếu chuyển lớp):</label>
+                        <select name="ma_mon_hoc" id="monHocSelect" class="form-select">
+                            <option value="" disabled selected>-- Chọn môn học --</option>
                         </select>
                     </div>
                     <div class="modal-footer">
@@ -478,6 +518,7 @@
 @endsection
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('check-all').addEventListener('change', function () {
@@ -611,6 +652,34 @@
                         }
                     });
                 });
+            });
+        });
+        $(document).ready(function () {
+            $('select[name="ma_lop_hoc"]').on('change', function () {
+                let maLopHoc = $(this).val();
+
+                if (maLopHoc) {
+                    $.ajax({
+                        url: '/get-subject-by-class',
+                        type: 'GET',
+                        data: { ma_lop_hoc: maLopHoc },
+                        success: function (data) {
+                            let $monHocSelect = $('#monHocSelect');
+                            $monHocSelect.empty().append('<option value="" disabled selected>-- Chọn môn học --</option>');
+
+                            if (data.length > 0) {
+                                data.forEach(function (mon) {
+                                    $monHocSelect.append(`<option value="${mon.ma_mon_hoc}">${mon.ten_mon_hoc}</option>`);
+                                });
+                            } else {
+                                $monHocSelect.append('<option disabled>Không có môn học nào</option>');
+                            }
+                        },
+                        error: function () {
+                            alert('Lỗi khi tải môn học');
+                        }
+                    });
+                }
             });
         });
         @if(session('success'))

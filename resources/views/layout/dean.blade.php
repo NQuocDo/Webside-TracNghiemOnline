@@ -47,11 +47,6 @@
                                     <i class="fas fa-list-ul"></i>Danh sách Môn học
                                 </a>
                             </li>
-                            <li>
-                                <a href="{{ route('chapter_management') }}">
-                                    <i class="fas fa-bookmark"></i>Quản lý Chương môn học
-                                </a>
-                            </li>
                         </ul>
                     </li>
                     <li>

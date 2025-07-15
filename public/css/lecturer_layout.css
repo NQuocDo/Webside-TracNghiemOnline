@@ -128,7 +128,7 @@ body {
     background-color: #f8f9fa;
 }
 
-#dropdown-btn:checked ~ .sub-menu {
+#dropdown-manage:checked ~ .sub-menu {
     max-height: 200px;
     opacity: 1;
 }

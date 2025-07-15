@@ -32,8 +32,8 @@
                                 chủ</span></a>
                     </li>
                     <li>
-                        <input type="checkbox" name="" id="dropdown-btn" hidden>
-                        <label for="dropdown-btn" class="dropdown-btn">
+                        <input type="checkbox" name="" id="dropdown-manage" hidden>
+                        <label for="dropdown-manage" class="dropdown-btn">
                             <i class="fa-solid fa-bars-progress"></i>
                             <span>Quản lý</span>
                         </label>
@@ -42,8 +42,12 @@
                                     <i class="fa-solid fa-chalkboard-user"></i>Sinh viên
                                 </a>
                             </li>
-                            <li><a href="{{route('subject_list') }}">
+                            <li><a href="{{ route('subject_list') }}">
                                     <i class="fa-solid fa-graduation-cap"></i>Môn học
+                                </a>
+                            </li>
+                            <li><a href="{{ route('chapter_management') }}">
+                                    <i class="fas fa-bookmark"></i>Chương môn học
                                 </a>
                             </li>
                         </ul>
@@ -82,7 +86,7 @@
                     <input type="checkbox" name="" id="profile-btn" hidden>
                     <label for="profile-btn">
                         @if(empty($user->hinh_anh))
-                             <img src="{{ asset('images/lecturer.jpg') }}" alt="sinh viên nam" class="src user-avatar-icon">
+                            <img src="{{ asset('images/lecturer.jpg') }}" alt="sinh viên nam" class="src user-avatar-icon">
                         @else
                             <img src="{{ asset('images/' . $user->hinh_anh) }}" alt="Ảnh người dùng" width="70px"
                                 height="70px">
@@ -115,7 +119,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.min.js"
         crossorigin="anonymous"></script>
     <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{{ asset('js/layout.js') }}"></script>
     @yield('scripts')
 </body>

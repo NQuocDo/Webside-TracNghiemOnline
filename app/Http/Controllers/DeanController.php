@@ -64,7 +64,7 @@ class DeanController extends Controller
     }
 
     //Quản lý sinh viên
-    public function hienThiDanhSachSinhVien(Request $request)
+    public function hienThiDanhSachQuanLySinhVien(Request $request)
     {
         $tuKhoaTimKiem = $request->input('tu_khoa_tim_kiem');
         $maLopHoc = $request->input('ma_lop_hoc');
@@ -102,12 +102,14 @@ class DeanController extends Controller
             'ma_lop_hoc' => $maLopHoc,
         ]);
         $danhSachLopHoc = LopHoc::where('trang_thai', 'hien')->get();
+        $danhSachMonHoc = MonHoc::where('trang_thai', 'hien')->get();
 
         return view('dean.student_management', [
             'danhSachSinhVien' => $danhSachSinhVien,
             'tuKhoaTimKiem' => $tuKhoaTimKiem,
             'maLopHoc' => $maLopHoc,
-            'danhSachLopHoc' => $danhSachLopHoc
+            'danhSachLopHoc' => $danhSachLopHoc,
+            'danhSachMonHoc' => $danhSachMonHoc
         ]);
     }
 
@@ -137,38 +139,108 @@ class DeanController extends Controller
             'new_status' => $nguoiDung->trang_thai_tai_khoan
         ]);
     }
+    public function layMonTheoLop(Request $request)
+    {
+        $maLopHoc = $request->ma_lop_hoc;
+        // Lấy danh sách môn học từ phân quyền
+        $monHocs = DB::table('phan_quyen_days')
+            ->join('mon_hocs', 'phan_quyen_days.ma_mon_hoc', '=', 'mon_hocs.ma_mon_hoc')
+            ->where('phan_quyen_days.ma_lop_hoc', $maLopHoc)
+            ->select('mon_hocs.ma_mon_hoc', 'mon_hocs.ten_mon_hoc')
+            ->distinct()
+            ->get();
+
+        return response()->json($monHocs);
+    }
     public function themNhieuSinhVienVaoLop(Request $request)
     {
         $request->validate([
             'ma_sinh_viens' => 'required|array',
             'ma_lop_hoc' => 'required|string',
+            'hinh_thuc' => 'required|in:chinh_thuc,hoc_ghep,nang_cao,chuyen_lop',
+            'ma_mon_hoc' => 'required_if:hinh_thuc,hoc_ghep'
         ]);
 
         $daThem = 0;
         $boQua = 0;
 
+        $lopHoc = LopHoc::where('ma_lop_hoc', $request->ma_lop_hoc)->first();
+        $namHoc = 2000 + (int) $lopHoc->nien_khoa;
+        $hinhThuc = $request->hinh_thuc;
+        $maMonHoc = $request->ma_mon_hoc ?? null;
+
+        // Lấy năm và học kỳ hiện tại
+        $currentYear = now()->year;
+        $currentMonth = now()->month;
+        $currentHocKy = $currentMonth <= 4 ? 1 : ($currentMonth <= 8 ? 2 : 3);
+
         foreach ($request->ma_sinh_viens as $maSV) {
             $daTonTai = SinhVienLopHoc::where('ma_sinh_vien', $maSV)
                 ->where('ma_lop_hoc', $request->ma_lop_hoc)
+                ->where('danh_sach_mon_hoc', 'like', "%$maMonHoc%")
                 ->exists();
 
-            if (!$daTonTai) {
-                SinhVienLopHoc::where('ma_sinh_vien', $maSV)
-                    ->update(['is_hien_tai' => 0]);
-                SinhVienLopHoc::create([
-                    'ma_sv_lh' => 'MSVLH' . strtoupper(substr(uniqid(), -2)) . rand(10, 99),
-                    'ma_sinh_vien' => $maSV,
-                    'ma_lop_hoc' => $request->ma_lop_hoc,
-                    'is_hien_tai' => 1
-                ]);
-
-                $daThem++;
-            } else {
+            if ($daTonTai) {
                 $boQua++;
+                continue;
+            }
+
+            // Nếu là chuyển lớp hoặc nâng cao, set các lớp chính thức hiện tại về 0
+            if (in_array($hinhThuc, ['nang_cao', 'chuyen_lop'])) {
+                SinhVienLopHoc::where('ma_sinh_vien', $maSV)
+                    ->where('is_hien_tai', 1)
+                    ->where(function ($query) {
+                        $query->where('hinh_thuc', 'chinh_thuc')
+                            ->orWhereNull('hinh_thuc');
+                    })
+                    ->update(['is_hien_tai' => 0]);
+            }
+
+            // Xác định học kỳ
+            $hocKy = 4; // mặc định nếu không có
+            if ($hinhThuc === 'hoc_ghep' && $maMonHoc) {
+                $mon = MonHoc::where('ma_mon_hoc', $maMonHoc)->first();
+                if ($mon && $mon->hoc_ky) {
+                    $hocKy = $mon->hoc_ky;
+                }
+            }
+
+            // Xác định is_hien_tai cho bản ghi sắp thêm
+            $isHienTai = ($namHoc == $currentYear && $hocKy == $currentHocKy) ? 1 : 0;
+
+            do {
+                $maSvLh = 'MSVLH' . strtoupper(Str::random(5));
+            } while (SinhVienLopHoc::where('ma_sv_lh', $maSvLh)->exists());
+
+            // Thêm bản ghi
+            SinhVienLopHoc::create([
+                'ma_sv_lh' => $maSvLh,
+                'ma_sinh_vien' => $maSV,
+                'ma_lop_hoc' => $request->ma_lop_hoc,
+                'danh_sach_mon_hoc' => $maMonHoc,
+                'nam_hoc' => $namHoc,
+                'hoc_ky' => $hocKy,
+                'is_hien_tai' => $isHienTai,
+                'hinh_thuc' => $hinhThuc,
+            ]);
+
+            $daThem++;
+
+            // Nếu là lớp học ghép và được đánh dấu là hiện tại → reset các lớp học ghép khác về 0
+            if ($hinhThuc === 'hoc_ghep' && $isHienTai === 1) {
+                SinhVienLopHoc::where('ma_sinh_vien', $maSV)
+                    ->where('hinh_thuc', 'hoc_ghep')
+                    ->where('is_hien_tai', 1)
+                    ->where(function ($query) use ($namHoc, $hocKy, $request) {
+                        $query->where('ma_lop_hoc', '!=', $request->ma_lop_hoc)
+                            ->orWhere('nam_hoc', '!=', $namHoc)
+                            ->orWhere('hoc_ky', '!=', $hocKy);
+                    })
+                    ->update(['is_hien_tai' => 0]);
             }
         }
 
-        return redirect()->back()->with('success', " Đã thêm $daThem sinh viên vào lớp mới, bỏ qua $boQua sinh viên đã tồn tại.");
+        return redirect()->back()->with('success', "Đã thêm $daThem sinh viên vào lớp mới, bỏ qua $boQua sinh viên đã tồn tại.");
     }
 
     public function capNhatThongTinSinhVien(Request $request, $ma_sinh_vien)
@@ -298,115 +370,6 @@ class DeanController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Cập nhật môn học thành công');
-    }
-
-    public function layMonHocTheoHocKy(Request $request)
-    {
-        $hocKy = $request->query('hoc_ky');
-
-        $monHoc = MonHoc::where('hoc_ky', $hocKy)->where('trang_thai', 'hien')->get(['ma_mon_hoc', 'ten_mon_hoc']);
-
-        return response()->json($monHoc);
-    }
-    public function hienThiDanhSachChuong(Request $request)
-    {
-        $monHocId = $request->input('mon_hoc_id');
-        $keyword = $request->input('tu_khoa_tim_kiem');
-        $danhSachMonHoc = MonHoc::where('trang_thai', 'hien')->get();
-        $query = ChuongMonHoc::with('monHoc')->orderBy('ma_mon_hoc')->orderBy('so_thu_tu');
-
-        if ($monHocId) {
-            $query->where('ma_mon_hoc', $monHocId);
-        }
-
-        if ($keyword) {
-            $query->where('ten_chuong', 'like', '%' . $keyword . '%');
-        }
-
-        $danhSachChuong = $query->paginate(10);
-
-        $danhSachHocKy = MonHoc::select('hoc_ky')->distinct()->get();
-
-        return view('dean.chapter_management', [
-            'danhSachChuong' => $danhSachChuong,
-            'danhSachMonHoc' => $danhSachMonHoc,
-            'monHocDaChon' => $monHocId,
-            'keyword' => $keyword,
-            'danhSachHocKy' => $danhSachHocKy
-        ]);
-    }
-
-    public function themChuong(Request $request)
-    {
-        $request->validate([
-            'ma_mon_hoc' => 'required|exists:mon_hocs,ma_mon_hoc',
-            'ten_chuong' => 'required|string|max:255',
-            'so_thu_tu' => 'required|integer|min:1|max:20',
-        ]);
-        do {
-            $maChuong = 'CH' . strtoupper(substr(uniqid(), -4)) . rand(10, 99);
-        } while (ChuongMonHoc::where('ma_chuong', $maChuong)->exists());
-        $trung = ChuongMonHoc::where('ma_mon_hoc', $request->ma_mon_hoc)
-            ->where('so_thu_tu', $request->so_thu_tu)
-            ->exists();
-
-        if ($trung) {
-            return redirect()->back()->withInput()->with('error', 'Chương số này đã tồn tại trong môn học được chọn.');
-        }
-
-        ChuongMonHoc::create([
-            'ma_chuong' => $maChuong,
-            'ten_chuong' => $request->ten_chuong,
-            'so_thu_tu' => $request->so_thu_tu,
-            'ma_mon_hoc' => $request->ma_mon_hoc,
-        ]);
-
-        return redirect()->route('chapter_management')->with('success', 'Thêm chương thành công!');
-    }
-    public function suaChuong(Request $request)
-    {
-        $request->validate([
-            'ma_chuong' => 'required|exists:chuong_mon_hocs,ma_chuong',
-            'ten_chuong' => 'required|string|max:255',
-            'ma_mon_hoc' => 'required|exists:mon_hocs,ma_mon_hoc',
-            'so_thu_tu' => 'required|integer|min:1|max:20',
-        ]);
-
-        $chuong = ChuongMonHoc::findOrFail($request->ma_chuong);
-        $trung = ChuongMonHoc::where('ma_mon_hoc', $request->ma_mon_hoc)
-            ->where('so_thu_tu', $request->so_thu_tu)
-            ->where('ma_chuong', '!=', $request->ma_chuong)
-            ->exists();
-
-        if ($trung) {
-            return redirect()->route('chapter_management')->with('error', 'Chương số này đã tồn tại trong môn học được chọn.');
-        }
-
-        $chuong->update([
-            'ten_chuong' => $request->ten_chuong,
-            'ma_mon_hoc' => $request->ma_mon_hoc,
-            'so_thu_tu' => $request->so_thu_tu,
-        ]);
-
-        return redirect()->route('chapter_management')->with('success', 'Cập nhật chương thành công!');
-    }
-    public function xoaChuong($id)
-    {
-        $chuong = ChuongMonHoc::withCount('cauHois')->find($id);
-
-        if (!$chuong) {
-            return redirect()->route('chapter_management')->with('error', 'Không tìm thấy chương để xóa.');
-        }
-        if ($chuong->cau_hois_count > 0) {
-            return redirect()->route('chapter_management')->with('error', 'Không thể xóa chương vì đang có câu hỏi liên kết.');
-        }
-
-        try {
-            $chuong->delete();
-            return redirect()->route('chapter_management')->with('success', 'Xóa chương thành công!');
-        } catch (\Exception $e) {
-            return redirect()->route('chapter_management')->with('error', 'Xảy ra lỗi khi xóa: ' . $e->getMessage());
-        }
     }
 
 
@@ -864,6 +827,10 @@ class DeanController extends Controller
                 'integer',
                 Rule::in($dsNamChoPhep),
             ],
+            'loai_lop' => [
+                'required',
+                Rule::in(['chinh_thuc', 'nang_cao']),
+            ],
         ]);
 
         if ($validator->fails()) {
@@ -880,6 +847,7 @@ class DeanController extends Controller
             LopHoc::create([
                 'ten_lop_hoc' => $request->ten_lop_hoc,
                 'nien_khoa' => $nienKhoa,
+                'loai_lop' => $request->loai_lop,
             ]);
 
             return redirect()->route('add_class')->with('success', 'Thêm lớp học thành công!');
@@ -908,6 +876,10 @@ class DeanController extends Controller
         $validated = $request->validate([
             'ten_lop_hoc' => 'required|string|max:255',
             'nam_hoc' => 'required|integer|min:1900|max:2100',
+            'loai_lop' => [
+                'required',
+                Rule::in(['chinh_thuc', 'nang_cao']),
+            ],
         ]);
 
         $lopHoc = LopHoc::find($id);

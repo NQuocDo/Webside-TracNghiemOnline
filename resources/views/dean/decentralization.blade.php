@@ -13,9 +13,6 @@
     }
 
     .decentralization-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
         margin-bottom: 30px;
         padding-bottom: 15px;
         border-bottom: 2px solid #e9ecef;
@@ -634,14 +631,11 @@
                         <label>Học kỳ:</label>
                         <section>
                             <select id="edit_hoc_ky_select" disabled>
-                                <option value="1">Học kỳ 1</option>
-                                <option value="2">Học kỳ 2</option>
-                                <option value="3">Học kỳ 3</option>
-                                <option value="4">Học kỳ 4</option>
-                                <option value="5">Học kỳ 5</option>
+                                <option disabled selected>-- Chọn học kỳ --</option>
                             </select>
                         </section>
                     </div>
+
                     <div>
                         <label for="edit_class_select">Lớp học:</label>
                         <section>
@@ -799,12 +793,41 @@
                     });
                 });
             });
+            $(document).ready(function () {
+                // === 1. Khi chọn NIÊN KHÓA → cập nhật danh sách học kỳ ===
+                $('#year_select').on('change', function () {
+                    let rawNienKhoa = $(this).val();
+                    if (!rawNienKhoa) return;
 
-            function fetchDecentralizationData() {
-                let nienKhoa = $('#year_select').val();
-                let hocKy = $('#hoc_ky_select').val();
+                    let nienKhoa = parseInt(rawNienKhoa) + 2000;
+                    let currentYear = new Date().getFullYear();
+                    let yearDiff = currentYear - nienKhoa;
 
-                if (nienKhoa && hocKy) {
+                    let $hocKySelect = $('#hoc_ky_select');
+                    $hocKySelect.prop('disabled', false).html('<option disabled selected>-- Chọn học kỳ --</option>');
+
+                    let soHocKy = 2;
+                    if (yearDiff >= 2) soHocKy = 5;
+                    else if (yearDiff === 1) soHocKy = 4;
+
+                    for (let i = 1; i <= soHocKy; i++) {
+                        $hocKySelect.append(`<option value="${i}">Học kỳ ${i}</option>`);
+                    }
+
+                    // Reset các select phụ
+                    $('#class_select').prop('disabled', true).html('<option disabled selected>-- Chọn lớp học --</option>');
+                    $('#subject_select').prop('disabled', true).html('<option disabled selected>-- Chọn môn học --</option>');
+                    $('#lecturer_select').prop('disabled', true).html('<option disabled selected>-- Chọn giảng viên --</option>');
+                    $('#submitBtn').prop('disabled', true);
+                });
+
+                // === 2. Khi chọn HỌC KỲ → gọi API load lớp, môn, giảng viên ===
+                $('#hoc_ky_select').on('change', function () {
+                    let nienKhoa = $('#year_select').val();
+                    let hocKy = $(this).val();
+
+                    if (!nienKhoa || !hocKy) return;
+
                     $.get('/data-decentralization', { nien_khoa: nienKhoa, hoc_ky: hocKy }, function (data) {
                         // Cập nhật lớp học
                         $('#class_select').prop('disabled', false).html('<option disabled selected>-- Chọn lớp học --</option>');
@@ -836,32 +859,23 @@
                             $('#lecturer_select').append('<option disabled>Không có giảng viên nào</option>');
                         }
 
-                        // Reset nút submit
+                        // Reset submit
                         $('#submitBtn').prop('disabled', true);
                     });
-                } else {
-                    // Nếu chưa đủ điều kiện, reset các select và nút
-                    $('#class_select').prop('disabled', true).html('<option disabled selected>-- Chọn lớp học --</option>');
-                    $('#subject_select').prop('disabled', true).html('<option disabled selected>-- Chọn môn học --</option>');
-                    $('#lecturer_select').prop('disabled', true).html('<option disabled selected>-- Chọn giảng viên --</option>');
-                    $('#submitBtn').prop('disabled', true);
-                }
-            }
+                });
 
-            $('#year_select, #hoc_ky_select').on('change', fetchDecentralizationData);
-
-            $('#lecturer_select').on('change', function () {
-                // Bật nút submit khi chọn đủ
-                let lop = $('#class_select').val();
-                let mon = $('#subject_select').val();
-                let gv = $('#lecturer_select').val();
-                if (lop && mon && gv) {
-                    $('#submitBtn').prop('disabled', false);
-                } else {
-                    $('#submitBtn').prop('disabled', true);
-                }
+                // === 3. Khi chọn giảng viên → kích hoạt nút submit nếu đủ ===
+                $('#lecturer_select').on('change', function () {
+                    let lop = $('#class_select').val();
+                    let mon = $('#subject_select').val();
+                    let gv = $('#lecturer_select').val();
+                    if (lop && mon && gv) {
+                        $('#submitBtn').prop('disabled', false);
+                    } else {
+                        $('#submitBtn').prop('disabled', true);
+                    }
+                });
             });
-
 
             // ==== 9. HIỆN THÔNG BÁO SWEETALERT ====
             @if(session('success'))
@@ -882,6 +896,6 @@
                     showConfirmButton: true
                 });
             @endif
-                            });
+                                                                            });
     </script>
 @endsection

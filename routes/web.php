@@ -116,7 +116,11 @@ Route::middleware(['auth'])->group(function () {
 
         //{Quản lý môn học
         Route::get('/lecturer/subject-list', [LecturerController::class, 'hienThiMonGiangVienDay'])->name('subject_list');//hiển thị danh sách môn học giảng viên đang dạy
-        //}
+        Route::get('/lecturer/chapter-management', [LecturerController::class, 'hienThiDanhSachChuong'])->name('chapter_management');
+        Route::post('/lecturer/chapter-management/store', [LecturerController::class, 'themChuong'])->name('chapter_management_store');
+        Route::put('/lecturer/chapter-management', [LecturerController::class, 'suaChuong'])->name('chapter_management_update');
+        Route::delete('/lecturer/chapter-management/del/{id}', [LecturerController::class, 'xoaChuong'])->name('chapter_management_del');
+        Route::get('/get-subject-by-semester', [LecturerController::class, 'layMonHocTheoHocKy'])->name('layMonHocTheoHocKy');
 
         //Quản lý liên hệ
         Route::get('/lecturer/contact', [LecturerController::class, 'hienThiLienHe'])->name('lecturer_contact');
@@ -142,22 +146,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dean/dashboard', [DeanController::class, 'hienThiTenTruongKhoa'])->name('dean.dashboard');
 
         //Quản lý sinh viên{
-        Route::get('/dean/student-management', [DeanController::class, 'hienThiDanhSachSinhVien'])->name('student_management');//hiển thị danh sách sinh viên
-        Route::delete('dean/student-management/{id}/delete', [DeanController::class, 'xoaSinhVien'])->name('student_management_delete');//Xoá sinh viên
-        Route::put('/dean/student-management/{id}/status', [DeanController::class, 'thayDoiTrangThaiSinhVien'])->name('student_management_status');//khoá và mở tài khoản sinh viên
+        Route::get('/dean/student-management', [DeanController::class, 'hienThiDanhSachQuanLySinhVien'])->name('student_management');
+        Route::delete('dean/student-management/{id}/delete', [DeanController::class, 'xoaSinhVien'])->name('student_management_delete');
+        Route::put('/dean/student-management/{id}/status', [DeanController::class, 'thayDoiTrangThaiSinhVien'])->name('student_management_status');
         Route::put('/dean/student-management/{ma_sinh_vien}', [DeanController::class, 'capNhatThongTinSinhVien'])->name('student_management_edit');
         Route::post('/dean/student-management/store', [DeanController::class, 'themNhieuSinhVienVaoLop'])->name('student_management_store');
+        Route::get('/get-subject-by-class', [DeanController::class, 'layMonTheoLop']);
 
         //Quản lý môn học{
-        Route::get('/dean/subject-management', [DeanController::class, 'hienThiMonHoc'])->name('subject_management');//hiển thị danh sách môn học
-        Route::post('/dean/subject-management/store', [DeanController::class, 'themMonHoc'])->name('subject_management.store');//thêm môn học
-        Route::put('/dean/subject_management/{id}', [DeanController::class, 'suaMonHoc'])->name('subject_management.update');//sửa môn học
+        Route::get('/dean/subject-management', [DeanController::class, 'hienThiMonHoc'])->name('subject_management');
+        Route::post('/dean/subject-management/store', [DeanController::class, 'themMonHoc'])->name('subject_management.store');
+        Route::put('/dean/subject_management/{id}', [DeanController::class, 'suaMonHoc'])->name('subject_management.update');
         Route::delete('/dean/subject-management/del/{id}', [DeanController::class, 'xoaMonHoc'])->name('subject_management_del');
-        Route::get('/dean/chapter-management', [DeanController::class, 'hienThiDanhSachChuong'])->name('chapter_management');
-        Route::post('/dean/chapter-management/store', [DeanController::class, 'themChuong'])->name('chapter_management_store');
-        Route::put('/dean/chapter-management', [DeanController::class, 'suaChuong'])->name('chapter_management_update');
-        Route::delete('/dean/chapter-management/del/{id}', [DeanController::class, 'xoaChuong'])->name('chapter_management_del');
-        Route::get('/get-subject-by-semester', [DeanController::class, 'layMonHocTheoHocKy'])->name('layMonHocTheoHocKy');
 
         //}
 

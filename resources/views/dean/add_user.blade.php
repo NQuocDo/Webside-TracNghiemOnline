@@ -243,8 +243,23 @@
                             <label for="file_excel" class="form-label">Chọn File Excel</label>
                             <input type="file" class="form-control" id="file_excel" name="file_excel" accept=".xlsx,.xls"
                                 required>
+                            <label class="font-semibold d-block mt-3">Định dạng file Excel cho sinh viên:</label>
+                            <div class="bg-light p-2 rounded border text-sm">
+                                <code>Họ tên</code> <code>Email</code> <code>Mã số sinh viên</code> <code>Mật khẩu</code>
+                                <code>Giới tính</code>
+                                <code>Ngày sinh</code> <code>Địa chỉ</code> <code>Số điện thoai</code>
+                                <code>Lớp</code> <code>Học kỳ</code> <code>Năm học</code>
+                            </div>
+                            <label class="font-semibold d-block mt-3">Định dạng file Excel cho giảng viên:</label>
+                            <div class="bg-light p-2 rounded border text-sm">
+                                <code>Họ tên</code> <code>Email</code><code>Mật khẩu</code>
+                                <code>Giới tính</code>
+                                <code>Ngày sinh</code> <code>Địa chỉ</code> <code>Số điện thoai</code>
+                                <code>Học vị</code>
+                            </div>
                         </div>
                     </div>
+
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-primary">Gửi</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
@@ -332,6 +347,6 @@
                     showConfirmButton: true
                 });
             @endif
-                });
+                                                        });
     </script>
 @endsection

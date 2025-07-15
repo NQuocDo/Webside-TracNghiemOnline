@@ -10,7 +10,8 @@
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
-        .lecturer-list-header {
+
+    .lecturer-list-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -219,7 +220,8 @@
                                 <td class="lecturer-sex-cell">{{ $giangVien->nguoiDung->gioi_tinh ?? '' }}</td>
                                 <td class="lecturer-subject-cell">
                                     <ul>
-                                        @forelse($giangVien->monHocs->unique('ma_mon_hoc') as $monHoc) <li>{{ $monHoc->ten_mon_hoc }}</li>
+                                        @forelse($giangVien->monHocs->unique('ma_mon_hoc') as $monHoc) <li>
+                                            {{ $monHoc->ten_mon_hoc }}</li>
                                         @empty
                                             <li>Chưa phân công</li>
                                         @endforelse
@@ -399,6 +401,6 @@
                     confirmButtonText: 'Đóng'
                 });
             @endif
-                                    });
+                                        });
     </script>
 @endsection

@@ -35,7 +35,7 @@ class StudentController extends Controller
 
         $lopHienTai = DB::table('sinh_vien_lop_hoc as svlh')
             ->where('svlh.ma_sinh_vien', $maSinhVien)
-            ->where('svlh.is_hien_tai', 1)
+            ->where('svlh.is_hien_tai', 1)  
             ->pluck('svlh.ma_lop_hoc');
         if ($lopHienTai->isEmpty()) {
             return view('student.dashboard')->with(['monDangHoc' => collect()]);

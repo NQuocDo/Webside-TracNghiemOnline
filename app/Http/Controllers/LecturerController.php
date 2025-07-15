@@ -150,6 +150,123 @@ class LecturerController extends Controller
             'danhSachMonHoc' => $danhSachMonHoc
         ]);
     }
+    public function layMonHocTheoHocKy(Request $request)
+    {
+        $hocKy = $request->query('hoc_ky');
+
+        $monHoc = MonHoc::where('hoc_ky', $hocKy)->where('trang_thai', 'hien')->get(['ma_mon_hoc', 'ten_mon_hoc']);
+
+        return response()->json($monHoc);
+    }
+    public function hienThiDanhSachChuong(Request $request)
+    {
+        $monHocId = $request->input('mon_hoc_id');
+        $keyword = $request->input('tu_khoa_tim_kiem');
+        $giangVienId = Auth::user()->giangVien->ma_giang_vien ?? null;
+
+        $danhSachMonHoc = MonHoc::whereIn('ma_mon_hoc', function ($query) use ($giangVienId) {
+            $query->select('ma_mon_hoc')
+                ->from('phan_quyen_days')
+                ->where('ma_giang_vien', $giangVienId)
+                ->distinct();
+        })
+            ->where('trang_thai', 'hien')
+            ->get();
+        $query = ChuongMonHoc::with('monHoc')
+            ->whereIn('ma_mon_hoc', $danhSachMonHoc->pluck('ma_mon_hoc'))
+            ->orderBy('ma_mon_hoc')
+            ->orderBy('so_thu_tu');
+
+        if ($monHocId) {
+            $query->where('ma_mon_hoc', $monHocId);
+        }
+
+        if ($keyword) {
+            $query->where('ten_chuong', 'like', '%' . $keyword . '%');
+        }
+
+        $danhSachChuong = $query->paginate(10);
+
+        return view('lecturer.chapter_management', [
+            'danhSachChuong' => $danhSachChuong,
+            'danhSachMonHoc' => $danhSachMonHoc,
+            'monHocDaChon' => $monHocId,
+            'keyword' => $keyword,
+        ]);
+    }
+
+    public function themChuong(Request $request)
+    {
+        $request->validate([
+            'ma_mon_hoc' => 'required|exists:mon_hocs,ma_mon_hoc',
+            'ten_chuong' => 'required|string|max:255',
+            'so_thu_tu' => 'required|integer|min:1|max:20',
+        ]);
+        do {
+            $maChuong = 'CH' . strtoupper(substr(uniqid(), -4)) . rand(10, 99);
+        } while (ChuongMonHoc::where('ma_chuong', $maChuong)->exists());
+        $trung = ChuongMonHoc::where('ma_mon_hoc', $request->ma_mon_hoc)
+            ->where('so_thu_tu', $request->so_thu_tu)
+            ->exists();
+
+        if ($trung) {
+            return redirect()->back()->withInput()->with('error', 'Chương số này đã tồn tại trong môn học được chọn.');
+        }
+
+        ChuongMonHoc::create([
+            'ma_chuong' => $maChuong,
+            'ten_chuong' => $request->ten_chuong,
+            'so_thu_tu' => $request->so_thu_tu,
+            'ma_mon_hoc' => $request->ma_mon_hoc,
+        ]);
+
+        return redirect()->route('chapter_management')->with('success', 'Thêm chương thành công!');
+    }
+    public function suaChuong(Request $request)
+    {
+        $request->validate([
+            'ma_chuong' => 'required|exists:chuong_mon_hocs,ma_chuong',
+            'ten_chuong' => 'required|string|max:255',
+            'ma_mon_hoc' => 'required|exists:mon_hocs,ma_mon_hoc',
+            'so_thu_tu' => 'required|integer|min:1|max:20',
+        ]);
+
+        $chuong = ChuongMonHoc::findOrFail($request->ma_chuong);
+        $trung = ChuongMonHoc::where('ma_mon_hoc', $request->ma_mon_hoc)
+            ->where('so_thu_tu', $request->so_thu_tu)
+            ->where('ma_chuong', '!=', $request->ma_chuong)
+            ->exists();
+
+        if ($trung) {
+            return redirect()->route('chapter_management')->with('error', 'Chương số này đã tồn tại trong môn học được chọn.');
+        }
+
+        $chuong->update([
+            'ten_chuong' => $request->ten_chuong,
+            'ma_mon_hoc' => $request->ma_mon_hoc,
+            'so_thu_tu' => $request->so_thu_tu,
+        ]);
+
+        return redirect()->route('chapter_management')->with('success', 'Cập nhật chương thành công!');
+    }
+    public function xoaChuong($id)
+    {
+        $chuong = ChuongMonHoc::withCount('cauHois')->find($id);
+
+        if (!$chuong) {
+            return redirect()->route('chapter_management')->with('error', 'Không tìm thấy chương để xóa.');
+        }
+        if ($chuong->cau_hois_count > 0) {
+            return redirect()->route('chapter_management')->with('error', 'Không thể xóa chương vì đang có câu hỏi liên kết.');
+        }
+
+        try {
+            $chuong->delete();
+            return redirect()->route('chapter_management')->with('success', 'Xóa chương thành công!');
+        } catch (\Exception $e) {
+            return redirect()->route('chapter_management')->with('error', 'Xảy ra lỗi khi xóa: ' . $e->getMessage());
+        }
+    }
 
 
     //Quản lý câu hỏi và đáp án

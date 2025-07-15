@@ -18,6 +18,8 @@ class SinhVienLopHoc extends Model
         'hoc_ky',
         'nam_hoc',
         'is_hien_tai',
+        'hinh_thuc',
+        'danh_sach_mon_hoc',
     ];
 
     public $timestamps = false;
