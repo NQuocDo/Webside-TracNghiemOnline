@@ -327,37 +327,44 @@
                                 <td>{{ $nguoiDung->email ?? 'Không rõ' }}</td>
                                 <td>{{ $nguoiDung->gioi_tinh ?? 'Không rõ' }}</td>
 
-                                    <!-- Lớp hiện tại -->
-                                    <td>
-                                        @if($lopHienTai)
-                                            {{ optional($lopHienTai->lopHoc)->ten_lop_hoc }}
-                                            ({{ $lopHienTai->hoc_ky }}/{{ $lopHienTai->nam_hoc }})
-                                        @else
-                                            <span class="text-muted">Chưa có lớp chính thức</span>
-                                        @endif
-                                    </td>
+                                <!-- Lớp hiện tại -->
+                                <td>
+                                    @if($lopHienTai)
+                                        {{ optional($lopHienTai->lopHoc)->ten_lop_hoc }}
+                                        ({{ $lopHienTai->hoc_ky }}/{{ $lopHienTai->nam_hoc }})
+                                    @else
+                                        <span class="text-muted">Chưa có lớp chính thức</span>
+                                    @endif
+                                </td>
 
-                                    <!-- Lớp đã học -->
-                                    <td>
-                                        @if($lopDaHoc->isNotEmpty())
-                                            <ul class="mb-0 ps-3">
-                                                @foreach ($lopDaHoc as $lh)
-                                                    <li>{{ optional($lh->lopHoc)->ten_lop_hoc }} ({{ $lh->hoc_ky }}/{{ $lh->nam_hoc }}) -
-                                                        {{ $lh->hinh_thuc === 'chinh_thuc' ? 'Chính thức' : ($lh->hinh_thuc === 'hoc_ghep' ? 'Học ghép' : ucfirst($lh->hinh_thuc)) }}
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        @else
-                                            <span class="text-muted">Không có lớp đã học</span>
-                                        @endif
-                                    </td>
+                                <!-- Lớp đã học -->
+                                <td>
+                                    @if($lopDaHoc->isNotEmpty())
+                                        <ul class="mb-0 ps-3">
+                                            @foreach ($lopDaHoc as $lh)
+                                                <li>{{ optional($lh->lopHoc)->ten_lop_hoc }} ({{ $lh->hoc_ky }}/{{ $lh->nam_hoc }}) -
+                                                    {{ $lh->hinh_thuc === 'chinh_thuc' ? 'Chính thức' : ($lh->hinh_thuc === 'hoc_ghep' ? 'Học ghép' : ucfirst($lh->hinh_thuc)) }}
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        <span class="text-muted">Không có lớp đã học</span>
+                                    @endif
+                                </td>
 
                                 <!-- Lớp ghép -->
                                 <td>
                                     @if($lopHocGhep->isNotEmpty())
+                                        @php $seenGhep = []; @endphp
                                         <ul class="mb-0 ps-3">
                                             @foreach ($lopHocGhep as $lh)
-                                                <li>{{ optional($lh->lopHoc)->ten_lop_hoc }} ({{ $lh->hoc_ky }}/{{ $lh->nam_hoc }})</li>
+                                                @php
+                                                    $key = optional($lh->lopHoc)->ten_lop_hoc . '|' . $lh->hoc_ky . '|' . $lh->nam_hoc;
+                                                @endphp
+                                                @if(!in_array($key, $seenGhep))
+                                                    <li>{{ optional($lh->lopHoc)->ten_lop_hoc }} ({{ $lh->hoc_ky }}/{{ $lh->nam_hoc }})</li>
+                                                    @php $seenGhep[] = $key; @endphp
+                                                @endif
                                             @endforeach
                                         </ul>
                                     @else

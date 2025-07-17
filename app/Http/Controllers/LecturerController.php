@@ -1346,22 +1346,22 @@ class LecturerController extends Controller
         $maMon = $request->input('mon');
         $maBaiKiemTra = $request->input('bai_kiem_tra');
 
-        $bangDiemTruyVan = DB::table('sinhviens as sv')
+        $bangDiemTruyVan = DB::table('bang_diems as bd')
+            ->join('sinhviens as sv', 'bd.ma_sinh_vien', '=', 'sv.ma_sinh_vien')
             ->join('nguoidungs as nd', 'sv.ma_nguoi_dung', '=', 'nd.ma_nguoi_dung')
-            ->join('sinh_vien_lop_hoc as svlh', 'sv.ma_sinh_vien', '=', 'svlh.ma_sinh_vien')
-            ->join('lop_hocs as lh', 'svlh.ma_lop_hoc', '=', 'lh.ma_lop_hoc')
-            ->join('phan_quyen_days as pqd', 'lh.ma_lop_hoc', '=', 'pqd.ma_lop_hoc')
-            ->join('mon_hocs as mh', 'pqd.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
-            ->join('de_this as dt', function ($join) use ($maGiangVien) {
-                $join->on('dt.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
-                    ->where('dt.ma_giang_vien', $maGiangVien);
+            ->join('bai_kiem_tras as bkt', 'bd.ma_bai_kiem_tra', '=', 'bkt.ma_bai_kiem_tra')
+            ->join('de_this as dt', 'bkt.ma_de_thi', '=', 'dt.ma_de_thi')
+            ->join('mon_hocs as mh', 'dt.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
+            ->join('phan_quyen_days as pqd', function ($join) use ($maGiangVien) {
+                $join->on('pqd.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
+                    ->where('pqd.ma_giang_vien', $maGiangVien);
             })
-            ->join('bai_kiem_tras as bkt', 'bkt.ma_de_thi', '=', 'dt.ma_de_thi')
-            ->leftJoin('bang_diems as bd', function ($join) {
-                $join->on('bd.ma_sinh_vien', '=', 'sv.ma_sinh_vien')
-                    ->on('bd.ma_bai_kiem_tra', '=', 'bkt.ma_bai_kiem_tra');
+            ->join('lop_hocs as lh', 'pqd.ma_lop_hoc', '=', 'lh.ma_lop_hoc')
+            ->join('sinh_vien_lop_hoc as svlh', function ($join) {
+                $join->on('sv.ma_sinh_vien', '=', 'svlh.ma_sinh_vien')
+                    ->on('lh.ma_lop_hoc', '=', 'svlh.ma_lop_hoc');
             })
-            ->where('bkt.trang_thai', '=', 'mo')
+            ->where('bkt.trang_thai', 'mo')
             ->select(
                 'sv.ma_sinh_vien',
                 'nd.ho_ten as ten_sinh_vien',
@@ -1369,7 +1369,7 @@ class LecturerController extends Controller
                 'mh.ten_mon_hoc',
                 'bkt.ten_bai_kiem_tra',
                 'bd.ma_bang_diem',
-                'bd.diem_so as diem_so'
+                'bd.diem_so'
             )
             ->distinct();
 
@@ -1387,7 +1387,7 @@ class LecturerController extends Controller
 
         $bangDiem = $bangDiemTruyVan->paginate(10);
 
-        // Danh sách lớp từ phân quyền
+        // Lấy danh sách lớp từ phân quyền
         $danhSachLop = DB::table('phan_quyen_days as pq')
             ->join('lop_hocs as lh', 'pq.ma_lop_hoc', '=', 'lh.ma_lop_hoc')
             ->where('pq.ma_giang_vien', $maGiangVien)
@@ -1395,7 +1395,7 @@ class LecturerController extends Controller
             ->distinct()
             ->get();
 
-        // Danh sách môn
+        // Lấy danh sách môn học từ phân quyền
         $danhSachMon = DB::table('phan_quyen_days as pq')
             ->join('mon_hocs as mh', 'pq.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
             ->where('pq.ma_giang_vien', $maGiangVien)
@@ -1403,7 +1403,7 @@ class LecturerController extends Controller
             ->distinct()
             ->get();
 
-        // Danh sách bài kiểm tra
+        // Lấy danh sách bài kiểm tra từ đề thi thuộc giảng viên
         $danhSachBaiKiemTra = DB::table('de_this as dt')
             ->join('bai_kiem_tras as bkt', 'bkt.ma_de_thi', '=', 'dt.ma_de_thi')
             ->where('dt.ma_giang_vien', $maGiangVien)
@@ -1411,14 +1411,16 @@ class LecturerController extends Controller
             ->distinct()
             ->get();
 
-        return view('lecturer.score_board')
-            ->with('bangDiem', $bangDiem)
-            ->with('danhSachLop', $danhSachLop)
-            ->with('danhSachMon', $danhSachMon)
-            ->with('danhSachBaiKiemTra', $danhSachBaiKiemTra)
-            ->with('maLop', $maLop)
-            ->with('maMon', $maMon);
+        return view('lecturer.score_board', compact(
+            'bangDiem',
+            'danhSachLop',
+            'danhSachMon',
+            'danhSachBaiKiemTra',
+            'maLop',
+            'maMon'
+        ));
     }
+
 
     public function xoaDiemSinhVien($id)
     {
