@@ -622,10 +622,15 @@ class DeanController extends Controller
             'ngay_sinh' => 'required|date',
             'vai_tro' => 'required|in:sinh_vien,giang_vien,can_bo',
             'so_dien_thoai' => 'required',
-            'mssv' => 'required_if:vai_tro,sinh_vien',
-            'ma_lop' => 'required_if:vai_tro,sinh_vien',
-            'hoc_ky' => 'required_if:vai_tro,sinh_vien|integer|min:1|max:10',
-            'khoa_hoc' => 'required_if:vai_tro,sinh_vien|numeric|min:2000|max:' . (now()->year + 3),
+
+            // Dành cho sinh viên
+            'mssv' => 'required_if:vai_tro,sinh_vien|nullable',
+            'ma_lop' => 'required_if:vai_tro,sinh_vien|nullable',
+            'hoc_ky' => 'required_if:vai_tro,sinh_vien|nullable|integer|min:1|max:10',
+            'khoa_hoc' => 'required_if:vai_tro,sinh_vien|nullable|numeric|min:2000|max:' . (now()->year + 3),
+
+            // Dành cho giảng viên
+            'hoc_vi' => 'required_if:vai_tro,giang_vien|nullable',
         ]);
         $maNguoiDungMoi = 'ND' . strtoupper(substr(uniqid(), -4)) . rand(10, 99);
         $nguoiDung = NguoiDung::create([
@@ -643,7 +648,7 @@ class DeanController extends Controller
 
         if ($validated['vai_tro'] === 'giang_vien') {
             GiangVien::create([
-                'ma_giang_vien' => 'GV' . now()->format('is') . rand(10, 99),
+                'ma_giang_vien' => 'GV' . strtoupper(substr(uniqid(), -4)) . rand(10, 99),
                 'ma_nguoi_dung' => $nguoiDung->ma_nguoi_dung,
                 'hoc_vi' => $request->input('hoc_vi'),
             ]);
@@ -687,18 +692,49 @@ class DeanController extends Controller
         $rows = SimpleExcelReader::create($absolutePath)->getRows();
 
         $keyMapping = [
+            'hvt' => 'ho_ten',
+            'ho_va_ten' => 'ho_ten',
+            'họ tên' => 'ho_ten',
+            'họ và tên' => 'ho_ten',
+
+            'email' => 'email',
+
+            'mssv' => 'ma_so_sinh_vien',
+            'ma_sv' => 'ma_so_sinh_vien',
+            'mã số sinh viên' => 'ma_so_sinh_vien',
+
+            'matkhau' => 'mat_khau',
+            'mật khẩu' => 'mat_khau',
+
+            'gioitinh' => 'gioi_tinh',
+            'giới tính' => 'gioi_tinh',
+
+            'ngaysinh' => 'ngay_sinh',
+            'ngay_sinh' => 'ngay_sinh',
+            'ngày sinh' => 'ngay_sinh',
+
+            'diachi' => 'dia_chi',
+            'địa chỉ' => 'dia_chi',
+
             'sdt' => 'so_dien_thoai',
             'so_dt' => 'so_dien_thoai',
             'so_dthoai' => 'so_dien_thoai',
-            'mssv' => 'ma_so_sinh_vien',
-            'ma_sv' => 'ma_so_sinh_vien',
-            'hvt' => 'ho_ten',
-            'ho_va_ten' => 'ho_ten',
-            'ngaysinh' => 'ngay_sinh',
-            'hocvi' => 'hoc_vi',
+            'số điện thoại' => 'so_dien_thoai',
+
             'lop' => 'lop',
+            'lớp' => 'lop',
+            'lớp học' => 'lop',
+            'lop hoc' => 'lop',
+            'lop_hoc' => 'lop',
+
+            'hocvi' => 'hoc_vi',
+            'học vị' => 'hoc_vi',
+
             'hk' => 'hoc_ky',
+            'học kỳ' => 'hoc_ky',
+
             'namhoc' => 'nam_hoc',
+            'năm học' => 'nam_hoc',
         ];
         $successCount = 0;
         $failCount = 0;
@@ -710,7 +746,8 @@ class DeanController extends Controller
                     $newKey = Str::of($key)
                         ->ascii()
                         ->lower()
-                        ->replace([' ', '-', '.', ':'], '_')
+                        ->replaceMatches('/[^a-z0-9]+/', '_')
+                        ->trim()
                         ->__toString();
                     $newKey = rtrim($newKey, '_');
 
@@ -779,6 +816,9 @@ class DeanController extends Controller
             }
         }
         if ($failCount > 0) {
+            Log::error("Import lỗi tại dòng " . ($index + 2) . ": " . $e->getMessage(), [
+                'data' => $row
+            ]);
             return redirect()->back()->with('error', "Import xong: {$successCount} thành công, {$failCount} lỗi.")
                 ->with('detail_errors', $errors);
         }

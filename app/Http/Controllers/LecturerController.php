@@ -1421,7 +1421,7 @@ class LecturerController extends Controller
         ));
     }
 
-
+    
     public function xoaDiemSinhVien($id)
     {
         $bangDiem = DB::table('bang_diems')->where('ma_bang_diem', $id)->first();

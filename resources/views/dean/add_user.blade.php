@@ -278,48 +278,66 @@
             const hocViGroup = $('#hocViGroup');
             const lopHocGroup = $('#lopHocGroup');
             const mssvGroup = $('#mssvGroup');
-            const namHocGroup = $('#namHocGroup');
             const nienKhoacGroup = $('#nienKhoacGroup');
 
-            function updateFormFields() {
-                const role = vaiTroSelect.val();
+            const khoaHocSelect = $('#khoa_hoc');
+            const lopHocSelect = $('#ma_lop');
+
+            function updateFormFields(role) {
+                // Ẩn tất cả nhóm trước
                 hocViGroup.hide();
                 lopHocGroup.hide();
                 mssvGroup.hide();
-                namHocGroup.hide();
                 nienKhoacGroup.hide();
+
+                // Xóa required mặc định
+                khoaHocSelect.prop('required', false);
+                lopHocSelect.prop('required', false);
 
                 if (role === 'sinh_vien') {
                     lopHocGroup.show();
                     mssvGroup.show();
-                    namHocGroup.show();
                     nienKhoacGroup.show();
+
+                    khoaHocSelect.prop('required', true);
+                    lopHocSelect.prop('required', true);
                 } else if (role === 'giang_vien') {
                     hocViGroup.show();
                 }
             }
 
-            vaiTroSelect.change(updateFormFields);
-            updateFormFields(); // init
+            // Khi thay đổi vai trò
+            vaiTroSelect.change(function () {
+                const selectedRole = $(this).val();
+                updateFormFields(selectedRole);
+            });
 
-            $('#khoa_hoc').change(function () {
+            // Gọi khi trang load
+            const selectedRole = '{{ old('vai_tro') ?? '' }}';
+            if (selectedRole) {
+                vaiTroSelect.val(selectedRole);
+            }
+            updateFormFields(vaiTroSelect.val());
+
+            // Khi thay đổi niên khóa thì gọi API để load lớp học
+            khoaHocSelect.change(function () {
                 const khoa = $(this).val();
-                const lopSelect = $('#ma_lop');
+                lopHocSelect.html('<option value="">Đang tải lớp học...</option>');
 
-                lopSelect.html('<option value="">Đang tải lớp học...</option>');
                 if (khoa) {
                     $.get(`/get-class-by-year/${khoa}`, function (data) {
                         let html = '<option value="">-- Chọn lớp học --</option>';
                         data.forEach(function (lop) {
                             html += `<option value="${lop.ma_lop_hoc}">${lop.ten_lop_hoc}</option>`;
                         });
-                        lopSelect.html(html);
+                        lopHocSelect.html(html);
                     });
                 } else {
-                    lopSelect.html('<option value="">-- Chọn lớp học --</option>');
+                    lopHocSelect.html('<option value="">-- Chọn lớp học --</option>');
                 }
             });
 
+            // Hiển thị thông báo từ server
             @if(session('success'))
                 Swal.fire({
                     icon: 'success',
@@ -347,6 +365,7 @@
                     showConfirmButton: true
                 });
             @endif
-                                                        });
+        });
     </script>
+
 @endsection
