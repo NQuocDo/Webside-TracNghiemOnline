@@ -5,6 +5,46 @@
 @endsection
 
 <style>
+    .filter-form {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background-color: #f9f9f9;
+        padding: 12px 16px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        max-width: 400px;
+        margin-left:75px;
+    }
+
+    .filter-form label {
+        font-weight: 500;
+        margin-right: 5px;
+        white-space: nowrap;
+    }
+
+    .filter-form select {
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background-color: white;
+        font-size: 14px;
+    }
+
+    .filter-form button {
+        background-color: #007bff;
+        color: white;
+        padding: 6px 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .filter-form button:hover {
+        background-color: #0056b3;
+    }
+
     .department-statis-content {
         padding: 20px;
         margin: 20px;
@@ -54,23 +94,20 @@
 
 @section('content')
     <div class="department-statis-content">
-        <!-- <div class="department-statis-header">
-                    <div class="department-statis-header-title">Thống kê</div>
-                    <div class="department-statis-header-body">
-                        <form action="" method="" class="filler-statis-form">
-                            <section>
-                                <label for="">Chọn loại thống kê</label>
-                                <select name="" id="">
-                                    <option value="">Điểm trung bình khoa</option>
-                                    <option value="">Loại sinh viên</option>
-                                </select>
-                            </section>
-                        </form>
-                    </div>
-                </div> -->
+        <form method="GET" action="{{ route('hienthi_thongke') }}" class="filter-form mb-4">
+            <label for="nam_hoc">Năm học:</label>
+            <select name="nam_hoc" id="nam_hoc">
+                @for ($year = now()->year - 3; $year <= now()->year + 1; $year++)
+                    <option value="{{ $year }}" {{ request('nam_hoc', now()->year) == $year ? 'selected' : '' }}>
+                        {{ $year }}
+                    </option>
+                @endfor
+            </select>
+            <button type="submit">Lọc</button>
+        </form>
         <div class="department-statis-body">
             <div class="chart-container">
-                <h2>Thống kê Điểm Trung Bình Các Môn Học</h2>
+                <h2>Thống kê Điểm Trung Bình Các Môn Học Theo Năm</h2>
                 <canvas id="averageScoresChart"></canvas>
             </div>
             <div class="chart-container">

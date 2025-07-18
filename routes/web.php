@@ -180,6 +180,7 @@ Route::middleware(['auth'])->group(function () {
         //}
 
         Route::get('/dean/department-statis', [DeanController::class, 'hienThiThongKe'])->name('department_statis');
+        Route::get('/thong-ke', [DeanController::class, 'hienThiThongKe'])->name('hienthi_thongke');
 
         //Quản lý thêm người dùng
         Route::get('/get-class-by-year/{khoa}', [DeanController::class, 'layLopTheoKhoa']);

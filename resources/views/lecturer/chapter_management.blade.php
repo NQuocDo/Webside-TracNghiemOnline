@@ -455,7 +455,8 @@
     <div class="modal fade" id="editChapterModal" tabindex="-1" aria-labelledby="editChapterModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <form action="{{ route('chapter_management_update') }}" method="POST">
-                @csrf
+                 @csrf
+                @method('PUT')
                 <input type="hidden" name="ma_chuong" id="ma_chuong_edit">
                 <div class="modal-content">
                     <div class="modal-header">

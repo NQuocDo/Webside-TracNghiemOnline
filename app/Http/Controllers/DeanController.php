@@ -929,16 +929,22 @@ class DeanController extends Controller
     }
 
     //Quản lý thống kê
-    public function hienThiThongKe()
+    public function hienThiThongKe(Request $request)
     {
+        $namHienTai = $request->input('nam_hoc', now()->year);
+
         $diemTrungBinhTheoMon = DB::table('bang_diems as d')
-            ->join('mon_hocs as mh', 'd.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
+            ->join('bai_kiem_tras as bkt', 'd.ma_bai_kiem_tra', '=', 'bkt.ma_bai_kiem_tra')
+            ->join('de_this as dt', 'bkt.ma_de_thi', '=', 'dt.ma_de_thi')
+            ->join('mon_hocs as mh', 'dt.ma_mon_hoc', '=', 'mh.ma_mon_hoc')
+            ->whereYear('bkt.created_at', $namHienTai)
             ->select('mh.ten_mon_hoc', DB::raw('AVG(d.diem_so) as diem_tb'))
             ->groupBy('mh.ten_mon_hoc')
             ->get();
         $thongKeCauHoi = DB::table('cau_hois as ch')
             ->join('giangviens as gv', 'ch.ma_giang_vien', '=', 'gv.ma_giang_vien')
             ->join('nguoidungs as nd', 'gv.ma_nguoi_dung', '=', 'nd.ma_nguoi_dung')
+            ->whereYear('ch.created_at', $namHienTai) // lọc theo năm
             ->select(
                 'gv.ma_giang_vien',
                 'nd.ho_ten',
@@ -950,7 +956,8 @@ class DeanController extends Controller
 
         return view('dean.department_statis', [
             'thongKeDiem' => $diemTrungBinhTheoMon,
-            'thongKeCauHoi' => $thongKeCauHoi
+            'thongKeCauHoi' => $thongKeCauHoi,
+            'namHienTai' => $namHienTai
         ]);
     }
 }
